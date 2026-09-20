@@ -65,7 +65,24 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/data.json
+          git add docs/data.json docs/notifica.json
           git diff --staged --quiet && echo "nessuna variazione" && exit 0
           git commit -m "Aggiorna dati $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
+
+      # Se c'e' una novita' da annunciare aspetto che il sito sia
+      # ripubblicato (la notifica va a leggere li' il messaggio) e poi
+      # chiedo al servizio di avvisare i telefoni iscritti.
+      - name: Avvisa i telefoni
+        if: steps.decide.outputs.vai == 'true'
+        env:
+          SERVIZIO: ${{ secrets.SERVIZIO_PUSH }}
+          SEGRETO: ${{ secrets.SEGRETO_PUSH }}
+        run: |
+          if [ ! -f avvisare.txt ]; then echo "niente da annunciare"; exit 0; fi
+          if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then echo "notifiche non configurate"; exit 0; fi
+          echo "da annunciare: $(cat avvisare.txt)"
+          sleep 75
+          codice=$(curl -s -o /tmp/risposta.txt -w '%{http_code}' -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO")
+          echo "risposta $codice: $(cat /tmp/risposta.txt)"
+          [ "$codice" = "200" ]

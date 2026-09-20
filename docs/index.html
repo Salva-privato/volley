@@ -46,11 +46,18 @@ header.staccata{border-bottom-color:var(--line);box-shadow:0 2px 10px #0000000f}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]) header.staccata{box-shadow:0 2px 10px #00000055}
 }
-#theme{margin-left:auto;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
+#theme,#campana{margin-left:auto;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
   font:inherit;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;cursor:pointer;
   display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent}
-#theme:active{transform:scale(.96)}
-#theme svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#campana{padding:7px 10px}
+#campana + #theme{margin-left:8px}
+#campana.acceso{background:var(--gold-fill);color:#fff;border-color:transparent}
+#theme:active,#campana:active{transform:scale(.96)}
+#theme svg,#campana svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#campana svg{width:15px;height:15px}
+.brindisi{position:fixed;left:16px;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:70;
+  background:var(--text);color:var(--bg);font-size:13px;font-weight:600;text-align:center;
+  padding:11px 14px;border-radius:11px;box-shadow:0 6px 20px #00000030;animation:sali .2s}
 h1{font-size:19px;margin:0;letter-spacing:-.02em;white-space:nowrap}
 .ttl{display:flex;flex-direction:column;gap:1px;min-width:0}
 .mark{width:40px;height:40px;border-radius:50%;background:var(--gold-fill);flex:0 0 auto;
@@ -221,6 +228,7 @@ footer a{color:var(--muted)}
 <div class="wrap">
   <header><span class="mark"><img id="logo" src="logo.png" alt=""></span>
     <div class="ttl"><h1>Martesana Volley</h1><span class="upd" id="upd"></span></div>
+    <button id="campana" type="button" aria-label="Avvisami"></button>
     <button id="theme" type="button" aria-label="Cambia tema"></button></header>
   <main id="app"><p class="empty">Caricamento…</p></main>
   <footer>
@@ -738,6 +746,65 @@ fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
     String(u.getHours()).padStart(2,'0')+':'+String(u.getMinutes()).padStart(2,'0');
   render();
 }).catch(()=>{$('#app').innerHTML='<p class="empty">Dati non disponibili. Riprova quando sei online.</p>'});
+
+/* --- notifiche ---------------------------------------------------------
+   Indirizzo del servizio che spedisce le notifiche. Finche' resta vuoto il
+   campanello non compare nemmeno e l'app funziona esattamente come prima. */
+const SERVIZIO_PUSH='';
+
+const CAMPANA={
+  spenta:'<path d="M18 8a6 6 0 10-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9"/><path d="M10 21a2 2 0 004 0"/>',
+  accesa:'<path d="M18 8a6 6 0 10-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9" fill="currentColor"/><path d="M10 21a2 2 0 004 0"/>'
+};
+const daB64=b=>{ const p='='.repeat((4-b.length%4)%4);
+  const grezzo=atob((b+p).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from([...grezzo].map(c=>c.charCodeAt(0))); };
+function brindisi(testo){
+  document.querySelectorAll('.brindisi').forEach(x=>x.remove());
+  const d=document.createElement('div'); d.className='brindisi'; d.textContent=testo;
+  document.body.appendChild(d); setTimeout(()=>d.remove(),3800);
+}
+const campana=$('#campana');
+const pushPossibile = SERVIZIO_PUSH && 'serviceWorker' in navigator &&
+                      'PushManager' in window && 'Notification' in window;
+if(!pushPossibile){ campana.remove(); }
+else{
+  const disegna=acceso=>{
+    campana.innerHTML=`<svg viewBox="0 0 24 24">${acceso?CAMPANA.accesa:CAMPANA.spenta}</svg>`;
+    campana.classList.toggle('acceso',acceso);
+    campana.setAttribute('aria-label',acceso?'Notifiche attive':'Avvisami');
+  };
+  disegna(false);
+  navigator.serviceWorker.ready
+    .then(r=>r.pushManager.getSubscription()).then(s=>disegna(!!s)).catch(()=>{});
+
+  campana.addEventListener('click', async ()=>{
+    try{
+      const reg=await navigator.serviceWorker.ready;
+      const gia=await reg.pushManager.getSubscription();
+      if(gia){
+        await fetch(SERVIZIO_PUSH+'/iscritti',{method:'DELETE',headers:{'content-type':'application/json'},
+          body:JSON.stringify({endpoint:gia.endpoint})}).catch(()=>{});
+        await gia.unsubscribe();
+        disegna(false); brindisi('Notifiche disattivate.');
+        return;
+      }
+      const permesso=await Notification.requestPermission();
+      if(permesso!=='granted'){
+        brindisi(permesso==='denied'
+          ? 'Notifiche bloccate: riattivale nelle impostazioni del telefono.'
+          : 'Notifiche non attivate.');
+        return;
+      }
+      const {chiave}=await (await fetch(SERVIZIO_PUSH+'/chiave')).json();
+      const s=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:daB64(chiave)});
+      const r=await fetch(SERVIZIO_PUSH+'/iscritti',{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({endpoint:s.endpoint})});
+      if(!r.ok) throw new Error('il servizio non ha accettato l\'iscrizione');
+      disegna(true); brindisi('Fatto: ti avviso per risultati e partite spostate.');
+    }catch(e){ brindisi('Non riesco ad attivarle: '+e.message); }
+  });
+}
 
 // --- tema: auto (come il telefono) / chiaro / scuro, ricordato sul dispositivo ---
 const TEMI=[
