@@ -106,7 +106,10 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 /* --- risultati di tutto il girone --- */
 .gm{padding:11px 0;border-bottom:1px solid var(--line)}
 .gm:last-child{border-bottom:0}
-.gm.us{background:var(--accent-soft);margin:0 -14px;padding:11px 14px;border-radius:8px;border-bottom:0}
+.gm.us{background:var(--accent-soft);margin:0 -14px;padding:11px 14px 11px 17px;border-radius:8px;border-bottom:0;
+  box-shadow:inset 3px 0 var(--gold-fill)}
+/* staccata dall intestazione della giornata, che ha lo stesso colore */
+.mh + .gm.us{margin-top:9px}
 .gm .gh{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
 .gm .gr{display:flex;align-items:baseline;gap:10px;font-size:13px;line-height:1.5;color:var(--muted)}
 .gm .gr.w{color:var(--text);font-weight:700}
