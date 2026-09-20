@@ -103,6 +103,17 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .next .i{flex:1;min-width:0}
 .next .i .op{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .next .i .sub{font-size:11px;color:var(--muted);margin-top:2px}
+/* --- risultati di tutto il girone --- */
+.gm{padding:11px 0;border-bottom:1px solid var(--line)}
+.gm:last-child{border-bottom:0}
+.gm.us{background:var(--accent-soft);margin:0 -14px;padding:11px 14px;border-radius:8px;border-bottom:0}
+.gm .gh{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.gm .gr{display:flex;align-items:baseline;gap:10px;font-size:13px;line-height:1.5;color:var(--muted)}
+.gm .gr.w{color:var(--text);font-weight:700}
+.gm .gr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gm .gr .p{font-size:15px;font-weight:700;min-width:14px;text-align:right}
+.gm .gr .p.none{font-size:13px;font-weight:600}
+.gm .pz{font-size:9.5px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
 /* --- tabs --- */
 .tabs{display:flex;gap:6px;margin:22px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tabs button{flex:0 0 auto;background:var(--surface-2);color:var(--muted);border:0;font:inherit;
@@ -174,13 +185,14 @@ const GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì'
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-let DATA=null, state={champ:0, view:'cal', slide:0, month:null};
+let DATA=null, state={champ:0, view:'cal', slide:0, month:null, day:null};
 const NOSTRA='MARTESANA VOLLEY';   // in maiuscolo come i nomi che arrivano dalla FIPAV
 
 // Nomi accorciati per la lettura. Si tocca solo cio' che si vede: i dati
 // conservano il nome della FIPAV, che serve per i confronti e per le mappe.
 const RINOMINA={
   'ASPES VOLLEY CUS STATALE MEDNOW':'ASPES VOLLEY',
+  'MARTESANA VOLLEY COLOGNO':NOSTRA,
 };
 const nome=n=>RINOMINA[String(n||'').trim().toUpperCase()]||n;
 
@@ -370,6 +382,66 @@ function stdHTML(c){
       <td>${esc(s.setsWon)}-${esc(s.setsLost)}</td></tr>`).join('')+`</tbody></table>`;
 }
 
+/** Tutte le partite del girone raggruppate per giornata. */
+function giornateDi(c){
+  const gs=[];
+  for(const m of c.matches){
+    const n=m.giornata||0;
+    let g=gs.find(x=>x.n===n);
+    if(!g) gs.push(g={n, matches:[]});
+    g.matches.push(m);
+  }
+  gs.sort((a,b)=>a.n-b.n);
+  for(const g of gs){
+    g.matches.sort((a,b)=>{const x=when(a),y=when(b);
+      if(!x&&!y)return 0; if(!x)return 1; if(!y)return -1; return x-y;});
+    const date=g.matches.map(when).filter(Boolean).sort((a,b)=>a-b);
+    g.da=date[0]||null; g.a=date[date.length-1]||null;
+    g.finita=g.matches.every(played);
+  }
+  return gs;
+}
+/** L'arco di date di una giornata: "16 ott" oppure "16 – 18 ott". */
+function periodo(g){
+  if(!g.da) return 'date da destinarsi';
+  const a=g.da, b=g.a;
+  if(a.toDateString()===b.toDateString()) return `${a.getDate()} ${MESI[a.getMonth()]}`;
+  return a.getMonth()===b.getMonth()
+    ? `${a.getDate()} – ${b.getDate()} ${MESI[b.getMonth()]}`
+    : `${a.getDate()} ${MESI[a.getMonth()]} – ${b.getDate()} ${MESI[b.getMonth()]}`;
+}
+/** Una partita del girone: le due squadre, i set vinti, i parziali. */
+function gmHTML(m){
+  const d=when(m);
+  const [a,b]=played(m)?(m.sets.match(/\d+/g)||[]).map(Number):[null,null];
+  const riga=(squadra,set,vinta)=>`<div class="gr${vinta?' w':''}">
+      <span class="n">${esc(nome(squadra))}</span>
+      <span class="p${set===null?' none':''}">${set===null?'–':set}</span></div>`;
+  return `<div class="gm${m.mine?' us':''}">
+    <div class="gh">${d?esc(`${GIORNI[d.getDay()].slice(0,3)} ${d.getDate()} ${MESI[d.getMonth()]}`+(m.time?` · ${m.time}`:''))
+                     :'data da destinarsi'}</div>
+    ${riga(m.home,a,a!==null&&a>b)}
+    ${riga(m.away,b,b!==null&&b>a)}
+    ${m.partials?`<div class="pz">${esc(m.partials)}</div>`:''}
+  </div>`;
+}
+function gironeHTML(c){
+  const gs=giornateDi(c);
+  if(!gs.length) return '<p class="empty">Nessuna partita.</p>';
+
+  // di default si apre sulla prima giornata non ancora completata
+  if(state.day===null || !gs.some(g=>g.n===state.day)){
+    state.day=(gs.find(g=>!g.finita)||gs[gs.length-1]).n;
+  }
+  const g=gs.find(x=>x.n===state.day);
+
+  return `<div class="months">${gs.map(x=>
+      `<button aria-selected="${x.n===state.day}" onclick="setGiornata(${x.n})">${x.n?x.n+'ª':'—'}</button>`
+    ).join('')}</div>
+    <div class="mh first">Giornata ${g.n} · ${esc(periodo(g))}</div>
+    ${g.matches.map(gmHTML).join('')}`;
+}
+
 function render(){
   calcolaConflitti();
   const ms=ourMatches();
@@ -392,11 +464,15 @@ function render(){
       `<button role="tab" aria-selected="${i===state.champ}" onclick="pick(${i})">${esc(x.label.replace(' Femminile',''))}</button>`).join('')+`</div>`;
   h+=`<div class="seg">
       <button aria-selected="${state.view==='cal'}" onclick="setView('cal')">Calendario</button>
+      <button aria-selected="${state.view==='gir'}" onclick="setView('gir')">Risultati</button>
       <button aria-selected="${state.view==='std'}" onclick="setView('std')">Classifica</button></div>`;
-  h+=`<div class="card">${state.view==='cal'?calHTML(c):stdHTML(c)}</div>`;
+  h+=`<div class="card">${state.view==='cal'?calHTML(c):state.view==='gir'?gironeHTML(c):stdHTML(c)}</div>`;
   firma=slides.map(m=>m.gara).join(',');
   $('#app').innerHTML=h;
   initTrack(slides.length);
+  // il chip scelto puo' finire fuori schermo a destra: lo riporto al centro
+  const scelto=$('.months button[aria-selected="true"]');
+  if(scelto) scelto.scrollIntoView({block:'nearest',inline:'center'});
   $('#foot').textContent=DATA.championships.map(x=>`${x.label} · girone ${x.girone}`).join(' — ');
 }
 /** Carosello: swipe orizzontale con aggancio, pallini sincronizzati. */
@@ -427,9 +503,10 @@ function controlla(){
 }
 setInterval(controlla, 60*1000);
 
-window.pick=i=>{state.champ=i;state.month=null;render()};   // i mesi cambiano da campionato a campionato
+window.pick=i=>{state.champ=i;state.month=null;state.day=null;render()};   // i mesi cambiano da campionato a campionato
 window.setMese=k=>{state.month=k;render()};
 window.setView=v=>{state.view=v;render()};
+window.setGiornata=n=>{state.day=n;render()};
 
 fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
   DATA=d;
