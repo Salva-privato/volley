@@ -49,7 +49,9 @@ Il workflow riesegue lo scraper e committa `docs/data.json` **solo se qualcosa
 è cambiato**. Si può lanciare anche a mano dalla scheda **Actions** di GitHub.
 
 Prima della data indicata in `config.json` come `startDate` (16 ottobre 2026)
-non viene fatto **nessun** controllo: non c'è ancora niente da raccogliere.
+si fa **un solo controllo ogni due giorni**: non ci sono risultati da
+raccogliere, ma il calendario può ancora cambiare (date da destinarsi,
+cambi di palestra).
 
 Quando gira, a stagione iniziata:
 
