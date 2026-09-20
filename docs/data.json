@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-20T14:22:40.612Z",
+ "updatedAt": "2026-09-20T17:01:41.613Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1822,128 +1822,7 @@
      "mine": false
     }
    ],
-   "standings": [
-    {
-     "pos": 1,
-     "team": "G.S. SF 82",
-     "club": "G.S. SF 82",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 2,
-     "team": "MARTESANA VOLLEY COLOGNO",
-     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 3,
-     "team": "GEAS VOLLEY",
-     "club": "GEAS VOLLEY ASD",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 4,
-     "team": "PALLAVOLO RONDO' MUGGIO'",
-     "club": "PALLAVOLO RONDO' MUGGIO'",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 5,
-     "team": "CALIMAN BRESSO",
-     "club": "POL. CIRCOLO GIOVANILE BRESSO",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 6,
-     "team": "EXPERIENCE FITNESS CLUB",
-     "club": "LISSONE VOLLEY TEAM",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 7,
-     "team": "BILLA VOLLEY MILANO GIALLA",
-     "club": "BILLA VOLLEY TEAM",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 8,
-     "team": "ASD OSG 2001",
-     "club": "ASD OSG 2001",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    }
-   ]
+   "standings": []
   }
  ],
  "avvisi": []
