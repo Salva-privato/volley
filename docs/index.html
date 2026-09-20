@@ -116,7 +116,7 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .gm .gr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gm .gr .p{font-size:15px;font-weight:700;min-width:14px;text-align:right}
 .gm .gr .p.none{font-size:13px;font-weight:600}
-.gm .pz{font-size:9.5px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
+.gm .pz{font-size:10.5px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
 /* --- tabs --- */
 .tabs{display:flex;gap:6px;margin:22px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tabs button{flex:0 0 auto;background:var(--surface-2);color:var(--muted);border:0;font:inherit;
@@ -212,6 +212,30 @@ function ourMatches(){
     if(!x&&!y)return 0; if(!x)return 1; if(!y)return -1; return x-y;});
 }
 const played=m=>!!(m.sets&&/\d/.test(m.sets));
+const numeri=t=>(String(t??'').match(/\d+/g)||[]).map(Number);
+
+/** I parziali dei set, come coppie [casa, ospite].
+ *  La FIPAV li manda su due righe (sopra i punti di casa, sotto quelli degli
+ *  ospiti); a volte pero' arrivano appiattiti o gia' scritti "25-20".
+ *  Li accetto in tutti e tre i modi, cosi' non si rompe nulla. */
+function parziali(m){
+  const righe=m.partialsLines;
+  if(Array.isArray(righe)&&righe.length===2){
+    const a=numeri(righe[0]), b=numeri(righe[1]);
+    if(a.length&&a.length===b.length) return a.map((x,i)=>[x,b[i]]);
+  }
+  const pezzi=String(m.partials||'').trim().split(/\s+/).filter(Boolean);
+  if(pezzi.length&&pezzi.every(t=>/^\d+[-–]\d+$/.test(t))) return pezzi.map(numeri);
+  const tutti=numeri(m.partials);
+  if(tutti.length>=2&&tutti.length%2===0){
+    const meta=tutti.length/2;
+    return tutti.slice(0,meta).map((x,i)=>[x,tutti[meta+i]]);
+  }
+  return [];
+}
+/** I parziali scritti di seguito; "girati" se la nostra squadra gioca fuori. */
+const parzialiTesto=(m,girati)=>parziali(m)
+  .map(([a,b])=>girati?`${b}-${a}`:`${a}-${b}`).join('  ');
 
 function fmtLong(m){
   const d=when(m); if(!d) return 'Data da destinarsi';
@@ -347,7 +371,7 @@ function rigaHTML(m){
   if(played(m)){
     const [a,b]=(m.sets.match(/\d+/g)||[]).map(Number);
     const ourS=us_home?a:b, thS=us_home?b:a;
-    sc=`<div class="sc ${ourS>thS?'w':'l'}">${ourS}-${thS}${m.partials?`<small>${esc(m.partials)}</small>`:''}</div>`;
+    sc=`<div class="sc ${ourS>thS?'w':'l'}">${ourS}-${thS}${parzialiTesto(m,!us_home)?`<small>${esc(parzialiTesto(m,!us_home))}</small>`:''}</div>`;
   }
   return `<div class="row">
     <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
@@ -425,7 +449,7 @@ function gmHTML(m){
                      :'data da destinarsi'}</div>
     ${riga(m.home,a,a!==null&&a>b)}
     ${riga(m.away,b,b!==null&&b>a)}
-    ${m.partials?`<div class="pz">${esc(m.partials)}</div>`:''}
+    ${parzialiTesto(m,false)?`<div class="pz">${esc(parzialiTesto(m,false))}</div>`:''}
   </div>`;
 }
 function gironeHTML(c){

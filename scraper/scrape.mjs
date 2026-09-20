@@ -94,6 +94,9 @@ async function scrapeChampionship(page, champ) {
           away: (c[2] || [])[1] || null,
           sets: (c[3] || []).join(' ') || null,
           partials: (c[4] || []).join(' ') || null,
+          // le righe originali della colonna Punteggio: la prima e' la squadra di
+          // casa, la seconda gli ospiti. Servono per accoppiare i parziali.
+          partialsLines: (c[4] || []).length ? c[4] : null,
           venue: (c[5] || [])[0] || null,
           address: (c[5] || []).slice(1).join(' ') || null,
         });
