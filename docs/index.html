@@ -167,6 +167,13 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 let DATA=null, state={champ:0, view:'cal', slide:0, month:null};
 const NOSTRA='MARTESANA VOLLEY';   // in maiuscolo come i nomi che arrivano dalla FIPAV
 
+// Nomi accorciati per la lettura. Si tocca solo cio' che si vede: i dati
+// conservano il nome della FIPAV, che serve per i confronti e per le mappe.
+const RINOMINA={
+  'ASPES VOLLEY CUS STATALE MEDNOW':'ASPES VOLLEY',
+};
+const nome=n=>RINOMINA[String(n||'').trim().toUpperCase()]||n;
+
 const isUs=(d,n)=>norm(n).includes(norm(d.teamMatch));
 const norm=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const when=m=>m.date?new Date(`${m.date}T${m.time||'00:00'}:00`):null;
@@ -260,9 +267,9 @@ function matchHTML(m){
     <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
     ${avvisoHTML(m,false)}
     <div class="vs">
-      <div class="t ${m.home_us?'us':''}">${esc(m.home)}</div>
+      <div class="t ${m.home_us?'us':''}">${esc(nome(m.home))}</div>
       <div class="sep">VS</div>
-      <div class="t ${m.home_us?'':'us'}">${esc(m.away)}</div>
+      <div class="t ${m.home_us?'':'us'}">${esc(nome(m.away))}</div>
     </div>
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
       ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
@@ -280,7 +287,7 @@ function nextHTML(m){
   return `<div class="next">
     <div class="d">${d?`<div class="dd">${d.getDate()}</div><div class="mm">${MESI[d.getMonth()]}</div>`
                      :'<div class="mm">da<br>dest.</div>'}</div>
-    <div class="i"><div class="op">${esc(opp)}</div>
+    <div class="i"><div class="op">${esc(nome(opp))}</div>
       <div class="sub">${m.home_us?'in casa':'trasferta'}${m.time?' · '+m.time:''} · ${esc(m.champ.replace(' Femminile',''))}</div></div>
   </div>`;
 }
@@ -320,7 +327,7 @@ function rigaHTML(m){
   return `<div class="row">
     <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
                      :'<span class="tbd">da<br>destinarsi</span>'}</div>
-    <div class="tm"><span class="u">${us_home?NOSTRA:esc(opp)}</span> – ${us_home?esc(opp):NOSTRA}
+    <div class="tm"><span class="u">${us_home?NOSTRA:esc(nome(opp))}</span> – ${us_home?esc(nome(opp)):NOSTRA}
       <div class="sub" style="font-size:11px;color:var(--muted)">${us_home?'casa':'trasferta'} · ${esc(m.venue||'—')}</div>
       ${avvisoHTML(m,true)}</div>
     ${sc}</div>`;
@@ -348,7 +355,7 @@ function stdHTML(c){
   if(!c.standings.length) return '<p class="empty">Classifica non ancora disponibile.</p>';
   return `<table><thead><tr><th></th><th>Squadra</th><th>P</th><th>G</th><th>V</th><th>S</th><th>Set</th></tr></thead><tbody>`+
     c.standings.map(s=>`<tr class="${isUs(DATA,s.team)?'us':''}">
-      <td>${s.pos}</td><td>${esc(s.team)}</td><td class="pt">${esc(s.points)}</td>
+      <td>${s.pos}</td><td>${esc(nome(s.team))}</td><td class="pt">${esc(s.points)}</td>
       <td>${esc(s.played)}</td><td>${esc(s.won)}</td><td>${esc(s.lost)}</td>
       <td>${esc(s.setsWon)}-${esc(s.setsLost)}</td></tr>`).join('')+`</tbody></table>`;
 }
