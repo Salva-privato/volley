@@ -1,0 +1,67 @@
+name: Aggiorna dati volley
+
+on:
+  schedule:
+    # Orari in UTC; d'inverno l'Italia e' UTC+1, quindi 8 UTC = 09:00 italiane.
+    # Di notte nessuno inserisce risultati: si va dalle 09:00 alle 23:00.
+    - cron: '0 8,10,12,14,16,18,20,22 * * *'
+  workflow_dispatch:            # avvio manuale dal sito di GitHub
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Si scarica il sito solo se manca qualche risultato di gare gia' giocate.
+      # La prima corsa del mattino va comunque a fondo, per intercettare
+      # cambi di calendario, rinvii e nuovi campionati.
+      - id: verifica
+        run: node scraper/verifica.mjs >> "$GITHUB_OUTPUT"
+      - id: decide
+        run: |
+          if [ "${{ steps.verifica.outputs.serve }}" = "true" ] \
+             || [ "$(date -u +%H)" = "08" ] \
+             || [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "vai=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "vai=false" >> "$GITHUB_OUTPUT"
+            echo "Tutti i risultati sono gia' dentro: niente da fare." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - run: npm ci || npm install
+        if: steps.decide.outputs.vai == 'true'
+      # Chromium pesa ~130 MB: in cache evita di riscaricarlo a ogni corsa.
+      - uses: actions/cache@v4
+        if: steps.decide.outputs.vai == 'true'
+        id: browser
+        with:
+          path: ~/.cache/ms-playwright
+          key: chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npx playwright install --with-deps chromium
+        if: steps.decide.outputs.vai == 'true' && steps.browser.outputs.cache-hit != 'true'
+      - run: npx playwright install-deps chromium
+        if: steps.decide.outputs.vai == 'true' && steps.browser.outputs.cache-hit == 'true'
+      - run: node scraper/scrape.mjs
+        if: steps.decide.outputs.vai == 'true'
+      - name: Commit se i dati sono cambiati
+        if: steps.decide.outputs.vai == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json
+          git diff --staged --quiet && echo "nessuna variazione" && exit 0
+          git commit -m "Aggiorna dati $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

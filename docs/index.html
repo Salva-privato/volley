@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Martesana Volley</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1d4f50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Martesana">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{
+  --bg:#eef3f1; --surface:#fff; --surface-2:#e0e9e7; --text:#0d1d1c; --muted:#5b706e;
+  --line:#cfdedb; --accent:#1d4f50; --accent-text:#1a4a4b; --accent-soft:#e2edeb;
+  --gold:#8a6614; --gold-fill:#b98a22; --on-accent:#fff;
+  --win:#1a7f4b; --loss:#a8342a; --warn:#96331f; --warn-soft:#fbe9e4; --radius:14px;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#07100f; --surface:#102120; --surface-2:#1a2f2d; --text:#e7efed; --muted:#8fa5a2;
+  --line:#23403d; --accent:#256966; --accent-text:#74c4b8; --accent-soft:#15302e;
+  --gold:#deb055; --gold-fill:#c9922f; --on-accent:#fff;
+  --win:#5fd08f; --loss:#f08072; --warn:#ffa593; --warn-soft:#3a1c17;
+}}
+:root[data-theme="dark"]{
+  --bg:#07100f; --surface:#102120; --surface-2:#1a2f2d; --text:#e7efed; --muted:#8fa5a2;
+  --line:#23403d; --accent:#256966; --accent-text:#74c4b8; --accent-soft:#15302e;
+  --gold:#deb055; --gold-fill:#c9922f; --on-accent:#fff;
+  --win:#5fd08f; --loss:#f08072; --warn:#ffa593; --warn-soft:#3a1c17;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding:0 16px calc(32px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:contain}
+.wrap{max-width:560px;margin:0 auto}
+header{padding:calc(18px + env(safe-area-inset-top)) 0 10px;display:flex;align-items:center;gap:8px}
+#theme{margin-left:auto;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
+  font:inherit;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent}
+#theme:active{transform:scale(.96)}
+#theme svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+h1{font-size:19px;margin:0;letter-spacing:-.02em;white-space:nowrap}
+.ttl{display:flex;flex-direction:column;gap:1px;min-width:0}
+.mark{width:40px;height:40px;border-radius:50%;background:var(--gold-fill);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center}
+#logo{height:36px;width:auto;display:block}
+.upd{font-size:11px;color:var(--muted);white-space:nowrap}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+   margin:26px 0 10px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+/* --- carosello prossime partite --- */
+.track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+.track::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always}
+.wk{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:9px}
+.dots{display:flex;gap:6px;justify-content:center;align-items:center;margin-top:11px;min-height:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:width .18s,background .18s}
+.dot.on{width:18px;border-radius:3px;background:var(--gold-fill)}
+.cnt{font-size:11px;font-weight:600;color:var(--muted)}
+/* --- prossima partita --- */
+.hero{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold-fill);
+  border-radius:var(--radius);padding:16px}
+.hero .when{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.hero .day{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.hero .cd{font-size:11px;font-weight:700;background:var(--gold-fill);color:#fff;
+  padding:3px 9px;border-radius:999px;white-space:nowrap}
+.vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:4px 0 14px}
+.vs .t{font-size:15px;font-weight:600;line-height:1.25;text-align:center}
+.vs .t.us{color:var(--accent-text)}
+.vs .sep{font-size:11px;color:var(--muted);font-weight:700}
+.venue{font-size:13px;color:var(--muted);line-height:1.45;border-top:1px solid var(--line);padding-top:11px}
+.venue b{color:var(--text);font-weight:600;display:block}
+.venue .addr{display:block;font-size:11px;line-height:1.45;text-transform:lowercase}
+.btn{display:inline-block;margin-top:11px;background:var(--accent);color:var(--on-accent);
+  text-decoration:none;font-size:13px;font-weight:600;padding:9px 15px;border-radius:9px}
+.badge{display:block;width:max-content;max-width:100%;margin-inline:auto;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  background:var(--accent-soft);color:var(--accent-text);padding:3px 8px;border-radius:5px}
+.clash{display:block;width:max-content;max-width:100%;margin:9px auto 0;font-size:10px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:5px;
+  background:var(--surface-2);color:var(--muted)}
+.clash.hot{background:var(--warn-soft);color:var(--warn)}
+.clash.mini{margin:5px 0 0;font-size:9.5px;padding:2px 7px}
+/* --- lista prossime --- */
+.next{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.next:last-child{border-bottom:0}
+.next .d{text-align:center;min-width:44px}
+.next .d .dd{font-size:17px;font-weight:700;line-height:1}
+.next .d .mm{font-size:10px;color:var(--muted);text-transform:uppercase}
+.next .i{flex:1;min-width:0}
+.next .i .op{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.next .i .sub{font-size:11px;color:var(--muted);margin-top:2px}
+/* --- tabs --- */
+.tabs{display:flex;gap:6px;margin:22px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs button{flex:0 0 auto;background:var(--surface-2);color:var(--muted);border:0;font:inherit;
+  font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.seg{display:flex;background:var(--surface-2);border-radius:9px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;background:none;border:0;font:inherit;font-size:13px;font-weight:600;color:var(--muted);
+  padding:7px;border-radius:7px;cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px #0002}
+/* --- calendario --- */
+.months{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -14px 12px;padding:0 14px}
+.months::-webkit-scrollbar{display:none}
+.months button{flex:0 0 auto;background:transparent;color:var(--muted);border:1px solid var(--line);
+  font:inherit;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+  padding:6px 13px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.months button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.mh{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
+  background:var(--accent-soft);margin:16px -14px 0;padding:7px 14px;border-radius:7px}
+.mh.first{margin-top:0}
+.mh + .row{border-top:0}
+.row{display:flex;gap:11px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row.us{background:var(--accent-soft);margin:0 -14px;padding:11px 14px;border-radius:8px;border-bottom:0}
+.row .gd{min-width:42px;text-align:center;font-size:10px;color:var(--muted);line-height:1.3}
+.row .gd b{display:block;font-size:15px;color:var(--text)}
+.row .tm{flex:1;min-width:0;font-size:13px;line-height:1.35}
+.row .tm .u{font-weight:700}
+.row .sc{font-size:15px;font-weight:700;min-width:40px;text-align:right}
+.row .sc.w{color:var(--win)} .row .sc.l{color:var(--loss)}
+.row .sc small{display:block;font-size:9px;font-weight:500;color:var(--muted);margin-top:2px}
+.tbd{font-size:11px;color:var(--muted)}
+/* --- classifica --- */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+   font-weight:700;text-align:right;padding:0 0 8px 7px}
+th:nth-child(2){text-align:left}
+td{padding:9px 0 9px 7px;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{width:37px;padding-left:0;padding-right:0;text-align:center;color:var(--muted)}
+th:last-child,td:last-child{padding-right:7px}
+tr.us td:first-child{color:inherit}
+th:nth-child(n+3),td:nth-child(n+3){padding-left:9px;white-space:nowrap}
+td:nth-child(2){text-align:left;font-size:12px;line-height:1.3}
+tr.us td{background:var(--accent-soft);font-weight:700}
+tr.us td:nth-child(2){box-shadow:inset 3px 0 0 var(--gold-fill)}
+tr.us td:first-child{border-radius:7px 0 0 7px}
+tr.us td:last-child{border-radius:0 7px 7px 0}
+td.pt{font-weight:700;color:var(--gold)}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:22px 0}
+footer{margin-top:28px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="mark"><img id="logo" src="logo.png" alt=""></span>
+    <div class="ttl"><h1>Martesana Volley</h1><span class="upd" id="upd"></span></div>
+    <button id="theme" type="button" aria-label="Cambia tema"></button></header>
+  <main id="app"><p class="empty">Caricamento…</p></main>
+  <footer>
+    Dati da <a href="https://www.sol.milano.federvolley.it/" target="_blank" rel="noopener">FIPAV Milano</a><br>
+    <span id="foot"></span>
+  </footer>
+</div>
+<script>
+const MESI=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+const MESI_LUNGHI=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+let DATA=null, state={champ:0, view:'cal', slide:0, month:null};
+const NOSTRA='MARTESANA VOLLEY';   // in maiuscolo come i nomi che arrivano dalla FIPAV
+
+const isUs=(d,n)=>norm(n).includes(norm(d.teamMatch));
+const norm=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const when=m=>m.date?new Date(`${m.date}T${m.time||'00:00'}:00`):null;
+
+/** Tutte le partite della nostra squadra, di tutti i campionati, ordinate nel tempo. */
+function ourMatches(){
+  const out=[];
+  DATA.championships.forEach((c,ci)=>c.matches.filter(m=>m.mine).forEach(m=>
+    out.push({...m, champ:c.label, champIdx:ci, home_us:isUs(DATA,m.home)})));
+  return out.sort((a,b)=>{const x=when(a),y=when(b);
+    if(!x&&!y)return 0; if(!x)return 1; if(!y)return -1; return x-y;});
+}
+const played=m=>!!(m.sets&&/\d/.test(m.sets));
+
+function fmtLong(m){
+  const d=when(m); if(!d) return 'Data da destinarsi';
+  return `${cap(GIORNI[d.getDay()])} ${d.getDate()} ${MESI[d.getMonth()]}` +
+         (m.time?` · ${m.time}`:'');
+}
+function countdown(m){
+  const d=when(m); if(!d) return '';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const day=new Date(d); day.setHours(0,0,0,0);
+  const n=Math.round((day-today)/864e5);
+  return n===0?'oggi':n===1?'domani':n>1?`tra ${n} giorni`:'';
+}
+
+/** Lunedi' della settimana in cui cade la data. */
+function weekStart(d){
+  const x=new Date(d); x.setHours(0,0,0,0);
+  x.setDate(x.getDate()-((x.getDay()+6)%7));   // 0=lunedi'
+  return x;
+}
+function weekLabel(ws){
+  if(ws==='tbd') return 'Data da destinarsi';
+  const diff=Math.round((ws-weekStart(new Date()))/(7*864e5));
+  if(diff===0) return 'Questa settimana';
+  if(diff===1) return 'Settimana prossima';
+  const we=new Date(ws); we.setDate(we.getDate()+6);
+  return `${ws.getDate()} ${MESI[ws.getMonth()]} – ${we.getDate()} ${MESI[we.getMonth()]}`;
+}
+
+/** Mappa data -> partite della squadra, per segnalare i giorni con piu' impegni. */
+let GIORNI_PIENI=new Map();
+function calcolaConflitti(){
+  GIORNI_PIENI=new Map();
+  for(const m of ourMatches()){
+    if(!m.date) continue;
+    if(!GIORNI_PIENI.has(m.date)) GIORNI_PIENI.set(m.date,[]);
+    GIORNI_PIENI.get(m.date).push(m);
+  }
+}
+const minuti=t=>{ const x=/^(\d{1,2}):(\d{2})$/.exec(t||''); return x?(+x[1])*60+(+x[2]):null; };
+
+/** Le altre partite dello stesso giorno, con l'indicazione se si sovrappongono. */
+function altreDelGiorno(m){
+  return (GIORNI_PIENI.get(m.date)||[])
+    .filter(x=>x.gara!==m.gara)
+    .map(x=>{
+      const a=minuti(m.time), b=minuti(x.time);
+      const vicine = a!==null && b!==null && Math.abs(a-b)<120;
+      return {...x, vicine};
+    });
+}
+function avvisoHTML(m, compatto){
+  const altre=altreDelGiorno(m);
+  if(!altre.length) return '';
+  const grave=altre.some(x=>x.vicine);
+  const elenco=altre.map(x=>`${esc(x.champ.replace(' Femminile','').replace('Under ','U'))}${x.time?' '+x.time:''}`).join(', ');
+  const testo=grave?`In contemporanea · ${elenco}`:`Stesso giorno · ${elenco}`;
+  return `<span class="clash${grave?' hot':''}${compatto?' mini':''}">${testo}</span>`;
+}
+
+/** Una partita resta in elenco fino a 1 minuto dopo il suo inizio. */
+const scadenza=()=>new Date(Date.now()-60*1000);
+
+/** Le partite della settimana in cui cade la prossima partita in programma. */
+function settimanaCorrente(ms){
+  const conData=ms.filter(when);
+  if(!conData.length) return [];
+  const w=weekStart(when(conData[0])).getTime();
+  return conData.filter(m=>weekStart(when(m)).getTime()===w);
+}
+
+function matchHTML(m){
+  const cd=countdown(m);
+  const maps=m.address?`https://maps.google.com/?q=${encodeURIComponent(m.venue+' '+m.address)}`:null;
+  return `<div class="match">
+    <div class="when"><span class="day">${esc(fmtLong(m))}</span>
+      ${cd?`<span class="cd">${esc(cd)}</span>`:''}</div>
+    <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
+    ${avvisoHTML(m,false)}
+    <div class="vs">
+      <div class="t ${m.home_us?'us':''}">${esc(m.home)}</div>
+      <div class="sep">VS</div>
+      <div class="t ${m.home_us?'':'us'}">${esc(m.away)}</div>
+    </div>
+    <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
+      ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
+    </div></div>`;
+}
+function slideHTML(m){
+  const d=when(m);
+  return `<div class="slide"><div class="hero">
+    <div class="wk">${esc(d?weekLabel(weekStart(d)):'Data da destinarsi')}</div>
+    ${matchHTML(m)}
+  </div></div>`;
+}
+function nextHTML(m){
+  const d=when(m), opp=m.home_us?m.away:m.home;
+  return `<div class="next">
+    <div class="d">${d?`<div class="dd">${d.getDate()}</div><div class="mm">${MESI[d.getMonth()]}</div>`
+                     :'<div class="mm">da<br>dest.</div>'}</div>
+    <div class="i"><div class="op">${esc(opp)}</div>
+      <div class="sub">${m.home_us?'in casa':'trasferta'}${m.time?' · '+m.time:''} · ${esc(m.champ.replace(' Femminile',''))}</div></div>
+  </div>`;
+}
+
+/** Le partite della squadra raggruppate per mese, in ordine di data. */
+function mesiDi(c){
+  const rows=c.matches.filter(m=>m.mine).sort((a,b)=>{
+    const x=when(a), y=when(b);
+    if(!x&&!y) return (a.giornata||99)-(b.giornata||99);
+    if(!x) return 1; if(!y) return -1;
+    return x-y;
+  });
+  const gruppi=[];
+  for(const m of rows){
+    const d=when(m);
+    const key = d ? `${d.getFullYear()}-${d.getMonth()}` : 'tbd';
+    let g=gruppi.find(x=>x.key===key);
+    if(!g){
+      gruppi.push(g={ key,
+        breve: d?MESI[d.getMonth()]:'da dest.',
+        lungo: d?`${MESI_LUNGHI[d.getMonth()]} ${d.getFullYear()}`:'Data da destinarsi',
+        matches:[] });
+    }
+    g.matches.push(m);
+  }
+  return gruppi;
+}
+
+function rigaHTML(m){
+  const d=when(m), us_home=isUs(DATA,m.home), opp=us_home?m.away:m.home;
+  let sc='';
+  if(played(m)){
+    const [a,b]=(m.sets.match(/\d+/g)||[]).map(Number);
+    const ourS=us_home?a:b, thS=us_home?b:a;
+    sc=`<div class="sc ${ourS>thS?'w':'l'}">${ourS}-${thS}${m.partials?`<small>${esc(m.partials)}</small>`:''}</div>`;
+  }
+  return `<div class="row">
+    <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
+                     :'<span class="tbd">da<br>destinarsi</span>'}</div>
+    <div class="tm"><span class="u">${us_home?NOSTRA:esc(opp)}</span> – ${us_home?esc(opp):NOSTRA}
+      <div class="sub" style="font-size:11px;color:var(--muted)">${us_home?'casa':'trasferta'} · ${esc(m.venue||'—')}</div>
+      ${avvisoHTML(m,true)}</div>
+    ${sc}</div>`;
+}
+
+function calHTML(c){
+  const gruppi=mesiDi(c);
+  if(!gruppi.length) return '<p class="empty">Nessuna partita.</p>';
+
+  // di default si apre sul mese della prossima partita da giocare
+  if(state.month===null || !gruppi.some(g=>g.key===state.month)){
+    const pross=gruppi.find(g=>g.matches.some(m=>!played(m)&&when(m)&&when(m)>scadenza()));
+    state.month=(pross||gruppi[0]).key;
+  }
+  const g=gruppi.find(x=>x.key===state.month);
+
+  return `<div class="months">${gruppi.map(x=>
+      `<button aria-selected="${x.key===state.month}" onclick="setMese('${x.key}')">${esc(x.breve)}</button>`
+    ).join('')}</div>
+    <div class="mh first">${esc(g.lungo)} · ${g.matches.length} ${g.matches.length===1?'partita':'partite'}</div>
+    ${g.matches.map(rigaHTML).join('')}`;
+}
+
+function stdHTML(c){
+  if(!c.standings.length) return '<p class="empty">Classifica non ancora disponibile.</p>';
+  return `<table><thead><tr><th></th><th>Squadra</th><th>P</th><th>G</th><th>V</th><th>S</th><th>Set</th></tr></thead><tbody>`+
+    c.standings.map(s=>`<tr class="${isUs(DATA,s.team)?'us':''}">
+      <td>${s.pos}</td><td>${esc(s.team)}</td><td class="pt">${esc(s.points)}</td>
+      <td>${esc(s.played)}</td><td>${esc(s.won)}</td><td>${esc(s.lost)}</td>
+      <td>${esc(s.setsWon)}-${esc(s.setsLost)}</td></tr>`).join('')+`</tbody></table>`;
+}
+
+function render(){
+  calcolaConflitti();
+  const ms=ourMatches();
+  const upcoming=ms.filter(m=>!played(m)&&(!when(m)||when(m)>scadenza()));
+  const c=DATA.championships[state.champ];
+  const slides=settimanaCorrente(upcoming);
+  let h='';
+  if(slides.length){
+    h+=`<h2>Prossime partite</h2>
+        <div class="track" id="track">${slides.map(slideHTML).join('')}</div>`;
+    h+= slides.length>1
+        ? (slides.length<=8
+            ? `<div class="dots" id="dots">${slides.map(()=>'<span class="dot"></span>').join('')}</div>`
+            : `<div class="dots" id="dots"><span class="cnt" id="cnt"></span></div>`)
+        : '';
+  }else{
+    h+=`<h2>Prossime partite</h2><div class="card"><p class="empty">Nessuna partita in programma.</p></div>`;
+  }
+  h+=`<div class="tabs" role="tablist">`+DATA.championships.map((x,i)=>
+      `<button role="tab" aria-selected="${i===state.champ}" onclick="pick(${i})">${esc(x.label.replace(' Femminile',''))}</button>`).join('')+`</div>`;
+  h+=`<div class="seg">
+      <button aria-selected="${state.view==='cal'}" onclick="setView('cal')">Calendario</button>
+      <button aria-selected="${state.view==='std'}" onclick="setView('std')">Classifica</button></div>`;
+  h+=`<div class="card">${state.view==='cal'?calHTML(c):stdHTML(c)}</div>`;
+  firma=slides.map(m=>m.gara).join(',');
+  $('#app').innerHTML=h;
+  initTrack(slides.length);
+  $('#foot').textContent=DATA.championships.map(x=>`${x.label} · girone ${x.girone}`).join(' — ');
+}
+/** Carosello: swipe orizzontale con aggancio, pallini sincronizzati. */
+function initTrack(n){
+  const t=$('#track'); if(!t) return;
+  const dots=[...document.querySelectorAll('#dots .dot')];
+  const passo=()=>t.firstElementChild.getBoundingClientRect().width+12;   // larghezza slide + gap
+  const cnt=$('#cnt');
+  const segna=i=>{ state.slide=i;
+    dots.forEach((d,j)=>d.classList.toggle('on',j===i));
+    if(cnt) cnt.textContent=`${i+1} di ${n}`; };
+  segna(Math.min(state.slide||0, n-1));
+  t.scrollLeft=(state.slide||0)*passo();
+  let timer;
+  t.addEventListener('scroll',()=>{
+    clearTimeout(timer);
+    timer=setTimeout(()=>segna(Math.max(0,Math.min(n-1,Math.round(t.scrollLeft/passo())))),80);
+  },{passive:true});
+  dots.forEach((d,i)=>d.addEventListener('click',()=>t.scrollTo({left:i*passo(),behavior:'smooth'})));
+}
+/** Ricontrolla ogni minuto: se una partita e' scaduta, la scheda cambia da sola. */
+let firma='';
+function controlla(){
+  if(!DATA) return;
+  const f=settimanaCorrente(ourMatches().filter(m=>!played(m)&&(!when(m)||when(m)>scadenza())))
+            .map(m=>m.gara).join(',');
+  if(f!==firma){ firma=f; state.slide=0; render(); }
+}
+setInterval(controlla, 60*1000);
+
+window.pick=i=>{state.champ=i;state.month=null;render()};   // i mesi cambiano da campionato a campionato
+window.setMese=k=>{state.month=k;render()};
+window.setView=v=>{state.view=v;render()};
+
+fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  DATA=d;
+  const u=new Date(d.updatedAt);
+  $('#upd').textContent='agg. '+u.getDate()+' '+MESI[u.getMonth()]+', '+
+    String(u.getHours()).padStart(2,'0')+':'+String(u.getMinutes()).padStart(2,'0');
+  render();
+}).catch(()=>{$('#app').innerHTML='<p class="empty">Dati non disponibili. Riprova quando sei online.</p>'});
+
+// --- tema: auto (come il telefono) / chiaro / scuro, ricordato sul dispositivo ---
+const TEMI=[
+  {k:'auto', t:'Auto',   i:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5 5l1.5 1.5M17.5 17.5L19 19M3 12h2M19 12h2M5 19l1.5-1.5M17.5 6.5L19 5"/>'},
+  {k:'light',t:'Chiaro', i:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5 5l1.5 1.5M17.5 17.5L19 19M3 12h2M19 12h2M5 19l1.5-1.5M17.5 6.5L19 5"/>'},
+  {k:'dark', t:'Scuro',  i:'<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>'}
+];
+const leggi=()=>{try{return localStorage.getItem('tema')||'auto'}catch{return 'auto'}};
+function applicaTema(k){
+  const r=document.documentElement;
+  if(k==='auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme',k);
+  const t=TEMI.find(x=>x.k===k)||TEMI[0];
+  $('#theme').innerHTML=`<svg viewBox="0 0 24 24">${t.i}</svg>${t.t}`;
+  const scuro = k==='dark' || (k==='auto' && matchMedia('(prefers-color-scheme:dark)').matches);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', scuro?'#07100f':'#eef3f1');
+  try{localStorage.setItem('tema',k)}catch{}
+}
+applicaTema(leggi());
+$('#theme').addEventListener('click',()=>{
+  const i=TEMI.findIndex(x=>x.k===leggi());
+  applicaTema(TEMI[(i+1)%TEMI.length].k);
+});
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
+  if(leggi()==='auto') applicaTema('auto');
+});
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

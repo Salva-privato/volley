@@ -1,0 +1,18 @@
+{
+  "name": "volley-martesana",
+  "version": "1.0.0",
+  "description": "App personale per calendario, risultati e classifiche volley (FIPAV Milano)",
+  "scripts": {
+    "scrape": "node scraper/scrape.mjs",
+    "icons": "node make-icons.mjs",
+    "serve": "npx --yes serve docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.63.0"
+  },
+  "private": true
+}
