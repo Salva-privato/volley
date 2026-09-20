@@ -85,6 +85,9 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .venue{font-size:13px;color:var(--muted);line-height:1.45;border-top:1px solid var(--line);padding-top:11px}
 .venue b{color:var(--text);font-weight:600;display:block}
 .venue .addr{display:block;font-size:11px;line-height:1.45;text-transform:lowercase}
+.azioni{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.azioni .btn{margin-top:0}
+.btn.ghost{background:transparent;color:var(--accent-text);border:1px solid var(--line);cursor:pointer;font-family:inherit}
 .btn{display:inline-block;margin-top:11px;background:var(--accent);color:var(--on-accent);
   text-decoration:none;font-size:13px;font-weight:600;padding:9px 15px;border-radius:9px}
 .badge{display:block;width:max-content;max-width:100%;margin-inline:auto;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
@@ -103,6 +106,38 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .next .i{flex:1;min-width:0}
 .next .i .op{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .next .i .sub{font-size:11px;color:var(--muted);margin-top:2px}
+/* --- scheda di una squadra --- */
+.tlink{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:inherit;
+  cursor:pointer;-webkit-tap-highlight-color:transparent}
+.vs .t.tlink{width:100%}
+.sfondo{position:fixed;inset:0;background:#000a;z-index:60;animation:sfuma .15s ease-out;border:0}
+@keyframes sfuma{from{opacity:0}}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--surface);
+  border-radius:18px 18px 0 0;padding:6px 16px calc(20px + env(safe-area-inset-bottom));
+  max-height:84vh;overflow:auto;animation:sali .22s cubic-bezier(.2,.8,.3,1)}
+@keyframes sali{from{transform:translateY(100%)}}
+.sheet .presa{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.sheet h3{font-size:17px;line-height:1.25;margin:0 0 2px}
+.sheet .sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sheet h4{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin:18px 0 6px}
+.pos{display:flex;gap:8px;align-items:center;margin-top:12px;
+  background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.pos .n{font-size:22px;font-weight:700;line-height:1;color:var(--gold)}
+.pos .n small{font-size:11px}
+.pos .d{font-size:12px;color:var(--muted);line-height:1.4}
+.pos .d b{color:var(--text)}
+.sr{display:flex;align-items:center;gap:9px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--line)}
+.sr:last-child{border-bottom:0}
+.sr .e{flex:0 0 auto;width:19px;height:19px;border-radius:5px;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted)}
+.sr .e.v{background:var(--win);color:#fff} .sr .e.s{background:var(--loss);color:#fff}
+.sr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr .n em{font-style:normal;color:var(--muted);font-size:11px}
+.sr .p{font-weight:700;font-size:13px}
+.sr .p.att{font-weight:600;font-size:11px;color:var(--muted);text-transform:uppercase}
+.sr.mia{background:var(--accent-soft);margin:0 -12px;padding:8px 12px;border-radius:8px;border-bottom:0}
+.sr.mia + .sr.mia{margin-top:4px}
 /* --- risultati di tutto il girone --- */
 .gm{padding:11px 0;border-bottom:1px solid var(--line)}
 .gm:last-child{border-bottom:0}
@@ -307,6 +342,25 @@ function settimanaCorrente(ms){
   return conData.filter(m=>weekStart(when(m)).getTime()===w);
 }
 
+/** Le squadre del girone, in ordine alfabetico: l'indice fa da indirizzo
+ *  per aprire la scheda senza dover passare il nome dentro l'HTML. */
+function squadreDi(c){
+  if(!c._squadre){
+    const viste=new Map();
+    for(const m of c.matches) for(const t of [m.home,m.away])
+      if(t && !viste.has(norm(t))) viste.set(norm(t),t);
+    c._squadre=[...viste.values()].sort((a,b)=>a.localeCompare(b,'it'));
+  }
+  return c._squadre;
+}
+const indiceSquadra=(ci,t)=>squadreDi(DATA.championships[ci]).findIndex(x=>norm(x)===norm(t));
+/** Il nome di una squadra, toccabile per aprirne la scheda. */
+function tlink(ci,t,classe){
+  const i=indiceSquadra(ci,t);
+  if(i<0) return `<span class="${classe||''}">${esc(nome(t))}</span>`;
+  return `<button type="button" class="tlink ${classe||''}" onclick="apriSquadra(${ci},${i})">${esc(nome(t))}</button>`;
+}
+
 function matchHTML(m){
   const cd=countdown(m);
   const maps=m.address?`https://maps.google.com/?q=${encodeURIComponent(m.venue+' '+m.address)}`:null;
@@ -316,12 +370,15 @@ function matchHTML(m){
     <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
     ${avvisoHTML(m,false)}
     <div class="vs">
-      <div class="t ${m.home_us?'us':''}">${esc(nome(m.home))}</div>
+      ${tlink(m.champIdx,m.home,'t '+(m.home_us?'us':''))}
       <div class="sep">VS</div>
-      <div class="t ${m.home_us?'':'us'}">${esc(nome(m.away))}</div>
+      ${tlink(m.champIdx,m.away,'t '+(m.home_us?'':'us'))}
     </div>
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
-      ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
+      <div class="azioni">
+        ${maps?`<a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
+        ${when(m)?`<button type="button" class="btn ghost" onclick="salvaCalendario('${esc(m.gara)}')">Aggiungi al calendario</button>`:''}
+      </div>
     </div></div>`;
 }
 function slideHTML(m){
@@ -376,7 +433,8 @@ function rigaHTML(m){
   return `<div class="row">
     <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
                      :'<span class="tbd">da<br>destinarsi</span>'}</div>
-    <div class="tm"><span class="u">${us_home?NOSTRA:esc(nome(opp))}</span> – ${us_home?esc(nome(opp)):NOSTRA}
+    <div class="tm">${us_home?`<span class="u">${NOSTRA}</span> – ${tlink(state.champ,opp)}`
+                       :`${tlink(state.champ,opp,'u')} – <span>${NOSTRA}</span>`}
       <div class="sub" style="font-size:11px;color:var(--muted)">${us_home?'casa':'trasferta'} · ${esc(m.venue||'—')}</div>
       ${avvisoHTML(m,true)}</div>
     ${sc}</div>`;
@@ -442,7 +500,7 @@ function gmHTML(m){
   const d=when(m);
   const [a,b]=played(m)?(m.sets.match(/\d+/g)||[]).map(Number):[null,null];
   const riga=(squadra,set,vinta)=>`<div class="gr${vinta?' w':''}">
-      <span class="n">${esc(nome(squadra))}</span>
+      <span class="n">${tlink(state.champ,squadra)}</span>
       <span class="p${set===null?' none':''}">${set===null?'–':set}</span></div>`;
   return `<div class="gm${m.mine?' us':''}">
     <div class="gh">${d?esc(`${GIORNI[d.getDay()].slice(0,3)} ${d.getDate()} ${MESI[d.getMonth()]}`+(m.time?` · ${m.time}`:''))
@@ -467,6 +525,105 @@ function gironeHTML(c){
     ).join('')}</div>
     <div class="mh first">Giornata ${g.n} · ${esc(periodo(g))}</div>
     ${g.matches.map(gmHTML).join('')}`;
+}
+
+/* ============ scheda di una squadra ============ */
+
+/** Una riga della scheda: com'e' finita (o quando si gioca) per quella squadra. */
+function srHTML(m, squadra){
+  const casa=norm(m.home)===norm(squadra), avv=casa?m.away:m.home, d=when(m);
+  const data=d?`${d.getDate()} ${MESI[d.getMonth()]}`:'da dest.';
+  // se l'avversaria siamo noi lo dico dal nostro punto di vista, per non confondere
+  const dove=isUs(DATA,avv) ? (casa?'in casa loro':'in casa nostra') : (casa?'in casa':'fuori');
+  if(!played(m)) return `<div class="sr${isUs(DATA,avv)?' mia':''}">
+    <span class="e">·</span>
+    <span class="n">${esc(nome(avv))} <em>${dove}</em></span>
+    <span class="p att">${esc(data)}</span></div>`;
+  const [a,b]=numeri(m.sets), suoi=casa?a:b, loro=casa?b:a, vinta=suoi>loro;
+  return `<div class="sr${isUs(DATA,avv)?' mia':''}">
+    <span class="e ${vinta?'v':'s'}">${vinta?'V':'S'}</span>
+    <span class="n">${esc(nome(avv))} <em>${dove}</em></span>
+    <span class="p">${suoi}-${loro}</span></div>`;
+}
+
+function schedaHTML(ci, squadra){
+  const c=DATA.championships[ci];
+  const sue=c.matches.filter(m=>norm(m.home)===norm(squadra)||norm(m.away)===norm(squadra));
+  const ordina=(a,b)=>{const x=when(a),y=when(b); if(!x&&!y)return 0; if(!x)return 1; if(!y)return -1; return x-y;};
+  const fatte=sue.filter(played).sort(ordina).reverse().slice(0,5);
+  const noi=isUs(DATA,squadra);
+  const prossime=sue.filter(m=>!played(m) && (noi || !(isUs(DATA,m.home)||isUs(DATA,m.away))))
+                    .sort(ordina).slice(0,2);
+  const scontri=sue.filter(m=>isUs(DATA,m.home)||isUs(DATA,m.away)).sort(ordina);
+  const cl=c.standings.find(x=>norm(x.team)===norm(squadra));
+
+  let h=`<div class="presa"></div>
+    <h3>${esc(nome(squadra))}</h3>
+    <div class="sub">${esc(c.label)} · girone ${esc(c.girone)}</div>`;
+
+  const iniziato=cl && numeri(cl.played)[0]>0;
+  h+= !cl ? `<div class="pos"><div class="d">Classifica non ancora disponibile.</div></div>`
+    : !iniziato ? `<div class="pos"><div class="d">Campionato non ancora iniziato.</div></div>`
+    : `<div class="pos"><div class="n">${esc(cl.pos)}<small>ª</small></div>
+      <div class="d"><b>${esc(cl.points)} punti</b> in ${esc(cl.played)} partite<br>
+      ${esc(cl.won)} vinte · ${esc(cl.lost)} perse · set ${esc(cl.setsWon)}-${esc(cl.setsLost)}</div></div>`;
+
+  if(fatte.length) h+=`<h4>Ultime partite</h4>${fatte.map(m=>srHTML(m,squadra)).join('')}`;
+  if(prossime.length) h+=`<h4>Prossimi impegni</h4>${prossime.map(m=>srHTML(m,squadra)).join('')}`;
+  if(!noi) h+= scontri.length
+      ? `<h4>Contro di noi</h4>${scontri.map(m=>srHTML(m,squadra)).join('')}`
+      : '';
+  return h;
+}
+
+function apriSquadra(ci, ti){
+  const squadra=squadreDi(DATA.championships[ci])[ti];
+  if(!squadra) return;
+  chiudiSquadra();
+  const bg=document.createElement('div'); bg.className='sfondo'; bg.onclick=chiudiSquadra;
+  const sh=document.createElement('div'); sh.className='sheet'; sh.innerHTML=schedaHTML(ci,squadra);
+  document.body.append(bg,sh);
+  document.body.style.overflow='hidden';
+}
+function chiudiSquadra(){
+  document.querySelectorAll('.sfondo,.sheet').forEach(x=>x.remove());
+  document.body.style.overflow='';
+}
+addEventListener('keydown',e=>{ if(e.key==='Escape') chiudiSquadra(); });
+
+/* ============ aggiungi al calendario ============ */
+
+/** Un evento .ics con ora, palestra, indirizzo e promemoria 3 ore prima.
+ *  Ora "fluttuante" (senza fuso): il telefono la legge come ora locale. */
+function ics(m){
+  const d=when(m); if(!d) return null;
+  const due=n=>String(n).padStart(2,'0');
+  const stampa=n=>`${n.getFullYear()}${due(n.getMonth()+1)}${due(n.getDate())}T${due(n.getHours())}${due(n.getMinutes())}00`;
+  const fuga=t=>String(t||'').replace(/([,;\\])/g,'\\$1').replace(/\r?\n/g,'\\n');
+  const dove=[m.venue,m.address].filter(Boolean).join(', ');
+  const piega=r=>{ let out=r.slice(0,74), resto=r.slice(74);
+    while(resto.length){ out+='\r\n '+resto.slice(0,73); resto=resto.slice(73); }
+    return out; };
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Martesana Volley//IT','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:fipav-${m.gara}@martesana.volley`,
+    `DTSTAMP:${stampa(new Date())}`,
+    `DTSTART:${stampa(d)}`,
+    `DTEND:${stampa(new Date(d.getTime()+2*60*60*1000))}`,
+    `SUMMARY:${fuga(`${nome(m.home)} – ${nome(m.away)}`)}`,
+    `LOCATION:${fuga(dove)}`,
+    `DESCRIPTION:${fuga(`${m.champ} · ${m.home_us?'in casa':'trasferta'}`)}`,
+    'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT3H','DESCRIPTION:Partita tra 3 ore','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].map(piega).join('\r\n');
+}
+function salvaCalendario(gara){
+  const m=ourMatches().find(x=>String(x.gara)===String(gara));
+  const testo=m&&ics(m); if(!testo) return;
+  const url=URL.createObjectURL(new Blob([testo],{type:'text/calendar;charset=utf-8'}));
+  const a=document.createElement('a');
+  a.href=url; a.download=`martesana-${gara}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 
 function render(){
@@ -495,6 +652,7 @@ function render(){
       <button aria-selected="${state.view==='std'}" onclick="setView('std')">Classifica</button></div>`;
   h+=`<div class="card">${state.view==='cal'?calHTML(c):state.view==='gir'?gironeHTML(c):stdHTML(c)}</div>`;
   firma=slides.map(m=>m.gara).join(',');
+  chiudiSquadra();
   $('#app').innerHTML=h;
   initTrack(slides.length);
   // il chip scelto puo' finire fuori schermo a destra: lo riporto al centro
@@ -534,6 +692,9 @@ window.pick=i=>{state.champ=i;state.month=null;state.day=null;render()};   // i 
 window.setMese=k=>{state.month=k;render()};
 window.setView=v=>{state.view=v;render()};
 window.setGiornata=n=>{state.day=n;render()};
+window.apriSquadra=apriSquadra;
+window.chiudiSquadra=chiudiSquadra;
+window.salvaCalendario=salvaCalendario;
 
 fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
   DATA=d;
