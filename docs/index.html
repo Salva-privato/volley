@@ -85,9 +85,6 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .venue{font-size:13px;color:var(--muted);line-height:1.45;border-top:1px solid var(--line);padding-top:11px}
 .venue b{color:var(--text);font-weight:600;display:block}
 .venue .addr{display:block;font-size:11px;line-height:1.45;text-transform:lowercase}
-.azioni{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
-.azioni .btn{margin-top:0}
-.btn.ghost{background:transparent;color:var(--accent-text);border:1px solid var(--line);cursor:pointer;font-family:inherit}
 .btn{display:inline-block;margin-top:11px;background:var(--accent);color:var(--on-accent);
   text-decoration:none;font-size:13px;font-weight:600;padding:9px 15px;border-radius:9px}
 .badge{display:block;width:max-content;max-width:100%;margin-inline:auto;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
@@ -375,10 +372,7 @@ function matchHTML(m){
       ${tlink(m.champIdx,m.away,'t '+(m.home_us?'':'us'))}
     </div>
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
-      <div class="azioni">
-        ${maps?`<a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
-        ${when(m)?`<button type="button" class="btn ghost" onclick="salvaCalendario('${esc(m.gara)}')">Aggiungi al calendario</button>`:''}
-      </div>
+      ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
     </div></div>`;
 }
 function slideHTML(m){
@@ -591,41 +585,6 @@ function chiudiSquadra(){
 }
 addEventListener('keydown',e=>{ if(e.key==='Escape') chiudiSquadra(); });
 
-/* ============ aggiungi al calendario ============ */
-
-/** Un evento .ics con ora, palestra, indirizzo e promemoria 3 ore prima.
- *  Ora "fluttuante" (senza fuso): il telefono la legge come ora locale. */
-function ics(m){
-  const d=when(m); if(!d) return null;
-  const due=n=>String(n).padStart(2,'0');
-  const stampa=n=>`${n.getFullYear()}${due(n.getMonth()+1)}${due(n.getDate())}T${due(n.getHours())}${due(n.getMinutes())}00`;
-  const fuga=t=>String(t||'').replace(/([,;\\])/g,'\\$1').replace(/\r?\n/g,'\\n');
-  const dove=[m.venue,m.address].filter(Boolean).join(', ');
-  const piega=r=>{ let out=r.slice(0,74), resto=r.slice(74);
-    while(resto.length){ out+='\r\n '+resto.slice(0,73); resto=resto.slice(73); }
-    return out; };
-  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Martesana Volley//IT','CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT',
-    `UID:fipav-${m.gara}@martesana.volley`,
-    `DTSTAMP:${stampa(new Date())}`,
-    `DTSTART:${stampa(d)}`,
-    `DTEND:${stampa(new Date(d.getTime()+2*60*60*1000))}`,
-    `SUMMARY:${fuga(`${nome(m.home)} – ${nome(m.away)}`)}`,
-    `LOCATION:${fuga(dove)}`,
-    `DESCRIPTION:${fuga(`${m.champ} · ${m.home_us?'in casa':'trasferta'}`)}`,
-    'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT3H','DESCRIPTION:Partita tra 3 ore','END:VALARM',
-    'END:VEVENT','END:VCALENDAR'].map(piega).join('\r\n');
-}
-function salvaCalendario(gara){
-  const m=ourMatches().find(x=>String(x.gara)===String(gara));
-  const testo=m&&ics(m); if(!testo) return;
-  const url=URL.createObjectURL(new Blob([testo],{type:'text/calendar;charset=utf-8'}));
-  const a=document.createElement('a');
-  a.href=url; a.download=`martesana-${gara}.ics`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
-}
-
 function render(){
   calcolaConflitti();
   const ms=ourMatches();
@@ -694,7 +653,6 @@ window.setView=v=>{state.view=v;render()};
 window.setGiornata=n=>{state.day=n;render()};
 window.apriSquadra=apriSquadra;
 window.chiudiSquadra=chiudiSquadra;
-window.salvaCalendario=salvaCalendario;
 
 fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
   DATA=d;
