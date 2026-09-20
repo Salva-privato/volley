@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { confronta } from './cambi.mjs';
 
 const cfg = JSON.parse(readFileSync(new URL('../config.json', import.meta.url)));
 const BASE = 'https://www.sol.milano.federvolley.it/calendarioris';
@@ -142,8 +143,20 @@ for (const champ of cfg.championships) {
   } catch (e) { console.error(`   ERRORE ${champ.label}: ${e.message}`); }
 }
 await browser.close();
+// confronto con lo scrape precedente: segnalo le partite spostate
+const dove = new URL('../docs/data.json', import.meta.url);
+let vecchio = null;
+try { if (existsSync(dove)) vecchio = JSON.parse(readFileSync(dove)); }
+catch (e) { console.error(`   dati precedenti illeggibili: ${e.message}`); }
+if (out.championships.length) {
+  out.avvisi = confronta(vecchio, out);
+  const nuovi = out.avvisi.filter(a => a.quando >= new Date(Date.now() - 6e4).toISOString());
+  if (nuovi.length) for (const a of nuovi)
+    console.log(`   spostata: ${a.champ} gara ${a.gara} — ${a.cosa.join(', ')}`);
+}
+
 mkdirSync(new URL('../docs/', import.meta.url), { recursive: true });
-writeFileSync(new URL('../docs/data.json', import.meta.url), JSON.stringify(out, null, 1));
+writeFileSync(dove, JSON.stringify(out, null, 1));
 const tot = out.championships.reduce((n, c) => n + c.matches.filter(m => m.mine).length, 0);
 console.log(`\nScritto docs/data.json — ${out.championships.length} campionati, ${tot} partite di ${cfg.teamMatch}`);
 if (!out.championships.length) process.exit(1);

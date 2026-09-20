@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-20T14:03:35.339Z",
+ "updatedAt": "2026-09-20T14:08:52.434Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1945,5 +1945,6 @@
     }
    ]
   }
- ]
+ ],
+ "avvisi": []
 }

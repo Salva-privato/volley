@@ -71,6 +71,18 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:width .18s,background .18s}
 .dot.on{width:18px;border-radius:3px;background:var(--gold-fill)}
 .cnt{font-size:11px;font-weight:600;color:var(--muted)}
+/* --- avvisi di partita spostata --- */
+.avviso{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);
+  border:1px solid transparent;border-left:4px solid var(--warn);border-radius:var(--radius);
+  padding:12px 12px 12px 13px;margin-bottom:10px}
+.avviso .c{flex:1;min-width:0}
+.avviso .t{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn)}
+.avviso .q{font-size:13px;font-weight:600;margin-top:3px;line-height:1.35}
+.avviso .v{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+.avviso .v del{text-decoration:line-through;opacity:.75}
+.avviso .v b{color:var(--text);font-weight:600}
+.avviso .x{flex:0 0 auto;background:none;border:0;font:inherit;font-size:17px;line-height:1;
+  color:var(--muted);padding:2px 2px 6px 8px;cursor:pointer}
 /* --- prossima partita --- */
 .hero{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold-fill);
   border-radius:var(--radius);padding:16px}
@@ -78,6 +90,10 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .hero .day{font-size:22px;font-weight:700;letter-spacing:-.02em}
 .hero .cd{font-size:11px;font-weight:700;background:var(--gold-fill);color:#fff;
   padding:3px 9px;border-radius:999px;white-space:nowrap}
+.hero .cd.att{background:var(--surface-2);color:var(--muted)}
+.hero .cd.vinta{background:var(--win)} .hero .cd.persa{background:var(--loss)}
+.vs .sep.ris{font-size:20px;color:var(--text);letter-spacing:-.02em}
+.parz{text-align:center;font-size:11px;color:var(--muted);margin:-6px 0 12px;letter-spacing:.02em}
 .vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:4px 0 14px}
 .vs .t{font-size:15px;font-weight:600;line-height:1.25;text-align:center}
 .vs .t.us{color:var(--accent-text)}
@@ -331,6 +347,21 @@ function avvisoHTML(m, compatto){
 /** Una partita resta in elenco fino a 1 minuto dopo il suo inizio. */
 const scadenza=()=>new Date(Date.now()-60*1000);
 
+const DOPO_FINITA=36*60*60*1000;   // col risultato: un giorno e mezzo
+const DOPO_GIOCATA=4*24*60*60*1000; // senza risultato: quattro giorni, poi lascio perdere
+
+/** Se la partita merita ancora un posto nella bacheca in alto.
+ *  Dopo il fischio d'inizio non sparisce: resta in attesa del risultato
+ *  ufficiale, che la FIPAV pubblica anche qualche giorno dopo. */
+function inBacheca(m){
+  const d=when(m);
+  if(!d) return !played(m);
+  const passato=Date.now()-d.getTime();
+  if(passato<0) return true;
+  return passato < (played(m)?DOPO_FINITA:DOPO_GIOCATA);
+}
+const iniziata=m=>{ const d=when(m); return !!d && d<=scadenza(); };
+
 /** Le partite della settimana in cui cade la prossima partita in programma. */
 function settimanaCorrente(ms){
   const conData=ms.filter(when);
@@ -360,17 +391,27 @@ function tlink(ci,t,classe){
 
 function matchHTML(m){
   const cd=countdown(m);
+  const [nostri,loro]=(()=>{
+    if(!played(m)) return [null,null];
+    const [a,b]=numeri(m.sets);
+    return m.home_us?[a,b]:[b,a];
+  })();
+  const finita=nostri!==null, vinta=finita&&nostri>loro;
+  const attesa=!finita&&iniziata(m);
   const maps=m.address?`https://maps.google.com/?q=${encodeURIComponent(m.venue+' '+m.address)}`:null;
   return `<div class="match">
     <div class="when"><span class="day">${esc(fmtLong(m))}</span>
-      ${cd?`<span class="cd">${esc(cd)}</span>`:''}</div>
+      ${finita?`<span class="cd ${vinta?'vinta':'persa'}">${vinta?'Vinta':'Persa'} ${nostri}-${loro}</span>`
+       :attesa?`<span class="cd att">In attesa del risultato</span>`
+       :cd?`<span class="cd">${esc(cd)}</span>`:''}</div>
     <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
     ${avvisoHTML(m,false)}
     <div class="vs">
       ${tlink(m.champIdx,m.home,'t '+(m.home_us?'us':''))}
-      <div class="sep">VS</div>
+      <div class="sep${finita?' ris':''}">${finita?`${m.home_us?nostri:loro}-${m.home_us?loro:nostri}`:'VS'}</div>
       ${tlink(m.champIdx,m.away,'t '+(m.home_us?'':'us'))}
     </div>
+    ${finita&&parzialiTesto(m,false)?`<div class="parz">${esc(parzialiTesto(m,false))}</div>`:''}
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
       ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
     </div></div>`;
@@ -585,13 +626,47 @@ function chiudiSquadra(){
 }
 addEventListener('keydown',e=>{ if(e.key==='Escape') chiudiSquadra(); });
 
+/* ============ partite spostate ============ */
+const CHIAVE_VISTI='avvisiVisti';
+function visti(){ try{ return JSON.parse(localStorage.getItem(CHIAVE_VISTI)||'[]'); }catch(e){ return []; } }
+function segnaVisto(id){
+  const v=visti(); if(!v.includes(id)) v.push(id);
+  try{ localStorage.setItem(CHIAVE_VISTI, JSON.stringify(v.slice(-40))); }catch(e){}
+  render();
+}
+/** Gli spostamenti che non ho ancora letto, dal piu' recente. */
+const daLeggere=()=>(DATA.avvisi||[]).filter(a=>!visti().includes(a.id)).slice(0,3);
+
+const quando=x=>{
+  if(!x||!x.date) return 'data da destinarsi';
+  const d=new Date(`${x.date}T${x.time||'00:00'}:00`);
+  return `${GIORNI[d.getDay()].slice(0,3)} ${d.getDate()} ${MESI[d.getMonth()]}`+(x.time?` · ${x.time}`:'');
+};
+function avvisoSpostamentoHTML(a){
+  const soloCampo=a.cosa.length===1&&a.cosa[0]==='campo';
+  const titolo=soloCampo?'Cambio campo':a.cosa.includes('data')?'Partita spostata':'Cambio orario';
+  const righe=[];
+  if(!soloCampo) righe.push(`<del>${esc(quando(a.prima))}</del> → <b>${esc(quando(a.dopo))}</b>`);
+  if(a.cosa.includes('campo'))
+    righe.push(`campo: <del>${esc(a.prima.venue||'—')}</del> → <b>${esc(a.dopo.venue||'da definire')}</b>`);
+  return `<div class="avviso"><div class="c">
+      <div class="t">${titolo}</div>
+      <div class="q">${esc(nome(a.home))} – ${esc(nome(a.away))}</div>
+      <div class="v">${righe.join('<br>')}</div>
+    </div>
+    <button type="button" class="x" title="Ho letto" onclick="segnaVisto('${esc(a.id)}')">✕</button></div>`;
+}
+
 function render(){
   calcolaConflitti();
-  const ms=ourMatches();
-  const upcoming=ms.filter(m=>!played(m)&&(!when(m)||when(m)>scadenza()));
+  const ms=ourMatches().filter(inBacheca);
   const c=DATA.championships[state.champ];
-  const slides=settimanaCorrente(upcoming);
-  let h='';
+  // le gia' iniziate restano davanti finche' non arriva il risultato;
+  // dietro di loro le altre partite della settimana in corso
+  const appena=ms.filter(iniziata);
+  const prossime=settimanaCorrente(ms.filter(m=>!iniziata(m)));
+  const slides=[...appena,...prossime];
+  let h=daLeggere().map(avvisoSpostamentoHTML).join('');
   if(slides.length){
     h+=`<h2>Prossime partite</h2>
         <div class="track" id="track">${slides.map(slideHTML).join('')}</div>`;
@@ -641,7 +716,8 @@ function initTrack(n){
 let firma='';
 function controlla(){
   if(!DATA) return;
-  const f=settimanaCorrente(ourMatches().filter(m=>!played(m)&&(!when(m)||when(m)>scadenza())))
+  const ms=ourMatches().filter(inBacheca);
+  const f=[...ms.filter(iniziata),...settimanaCorrente(ms.filter(m=>!iniziata(m)))]
             .map(m=>m.gara).join(',');
   if(f!==firma){ firma=f; state.slide=0; render(); }
 }
@@ -651,6 +727,7 @@ window.pick=i=>{state.champ=i;state.month=null;state.day=null;render()};   // i 
 window.setMese=k=>{state.month=k;render()};
 window.setView=v=>{state.view=v;render()};
 window.setGiornata=n=>{state.day=n;render()};
+window.segnaVisto=segnaVisto;
 window.apriSquadra=apriSquadra;
 window.chiudiSquadra=chiudiSquadra;
 
