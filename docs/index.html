@@ -98,6 +98,10 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .hero .cd{font-size:11px;font-weight:700;background:var(--gold-fill);color:#fff;
   padding:3px 9px;border-radius:999px;white-space:nowrap}
 .hero .cd.att{background:var(--surface-2);color:var(--muted)}
+.hero .cd.diretta{background:var(--loss);display:inline-flex;align-items:center;gap:5px}
+.hero .cd.diretta i{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulsa 1.4s infinite}
+@keyframes pulsa{50%{opacity:.25}}
+.btn.diretta{background:var(--loss)}
 .hero .cd.vinta{background:var(--win)} .hero .cd.persa{background:var(--loss)}
 .vs .sep.ris{font-size:20px;color:var(--text);letter-spacing:-.02em}
 .parz{text-align:center;font-size:11px;color:var(--muted);margin:-6px 0 12px;letter-spacing:.02em}
@@ -244,7 +248,7 @@ const GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì'
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-let DATA=null, state={champ:0, view:'cal', slide:0, month:null, day:null};
+let DATA=null, DIRETTE={canale:null,gare:{}}, state={champ:0, view:'cal', slide:0, month:null, day:null};
 const NOSTRA='MARTESANA VOLLEY';   // in maiuscolo come i nomi che arrivano dalla FIPAV
 
 // Nomi accorciati per la lettura. Si tocca solo cio' che si vede: i dati
@@ -352,6 +356,18 @@ function avvisoHTML(m, compatto){
   return `<span class="clash${grave?' hot':''}${compatto?' mini':''}">${testo}</span>`;
 }
 
+const PRIMA_DIRETTA=15*60*1000;       // la diretta parte poco prima del fischio
+const DURATA_DIRETTA=150*60*1000;     // e dura al massimo due ore e mezza
+
+/** Se in questo momento la partita si sta giocando. */
+function siGiocaOra(m){
+  const d=when(m); if(!d) return false;
+  const t=Date.now()-d.getTime();
+  return t>-PRIMA_DIRETTA && t<DURATA_DIRETTA;
+}
+/** Il video di quella partita, se qualcuno l'ha segnato in dirette.json. */
+const videoDi=m=>DIRETTE.gare?.[String(m.gara)]||null;
+
 /** Una partita resta in elenco fino a 1 minuto dopo il suo inizio. */
 const scadenza=()=>new Date(Date.now()-60*1000);
 
@@ -406,10 +422,14 @@ function matchHTML(m){
   })();
   const finita=nostri!==null, vinta=finita&&nostri>loro;
   const attesa=!finita&&iniziata(m);
+  const ora=!finita&&siGiocaOra(m);
+  const video=videoDi(m);
+  const diretta = ora ? (video||DIRETTE.canale) : (video||null);
   const maps=m.address?`https://maps.google.com/?q=${encodeURIComponent(m.venue+' '+m.address)}`:null;
   return `<div class="match">
     <div class="when"><span class="day">${esc(fmtLong(m))}</span>
       ${finita?`<span class="cd ${vinta?'vinta':'persa'}">${vinta?'Vinta':'Persa'} ${nostri}-${loro}</span>`
+       :ora?`<span class="cd diretta"><i></i>Si gioca ora</span>`
        :attesa?`<span class="cd att">In attesa del risultato</span>`
        :cd?`<span class="cd">${esc(cd)}</span>`:''}</div>
     <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
@@ -421,7 +441,10 @@ function matchHTML(m){
     </div>
     ${finita&&parzialiTesto(m,false)?`<div class="parz">${esc(parzialiTesto(m,false))}</div>`:''}
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
-      ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
+      ${diretta?`<br><a class="btn diretta" href="${esc(diretta)}" target="_blank" rel="noopener">${
+          ora ? (video?'Guarda la diretta':'Cerca la diretta su SpikeVolley TV')
+              : iniziata(m)?'Rivedi la partita':'Guarda la diretta'}</a>`:''}
+      ${maps&&!iniziata(m)?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
     </div></div>`;
 }
 function slideHTML(m){
@@ -726,7 +749,7 @@ function controlla(){
   if(!DATA) return;
   const ms=ourMatches().filter(inBacheca);
   const f=[...ms.filter(iniziata),...settimanaCorrente(ms.filter(m=>!iniziata(m)))]
-            .map(m=>m.gara).join(',');
+            .map(m=>m.gara+(siGiocaOra(m)?'!':'')).join(',');   // cambia anche quando inizia la diretta
   if(f!==firma){ firma=f; state.slide=0; render(); }
 }
 setInterval(controlla, 60*1000);
@@ -746,6 +769,14 @@ fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
     String(u.getHours()).padStart(2,'0')+':'+String(u.getMinutes()).padStart(2,'0');
   render();
 }).catch(()=>{$('#app').innerHTML='<p class="empty">Dati non disponibili. Riprova quando sei online.</p>'});
+
+// i collegamenti alle dirette stanno in un file a parte, che si puo'
+// modificare dal telefono senza toccare il resto
+fetch('dirette.json?v='+Date.now()).then(r=>r.ok?r.json():null).then(d=>{
+  if(!d) return;
+  DIRETTE={canale:d.canale||null, gare:d.gare||{}};
+  if(DATA) render();
+}).catch(()=>{});
 
 /* --- notifiche ---------------------------------------------------------
    Indirizzo del servizio che spedisce le notifiche. Finche' resta vuoto il
