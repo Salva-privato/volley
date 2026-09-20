@@ -1,8 +1,15 @@
 {
   "season": "2026",
+  "startDate": "2026-10-16",
   "teamMatch": "MARTESANA",
   "championships": [
-    { "id": "1001240", "label": "Under 17 Femminile" },
-    { "id": "1001237", "label": "Under 19 Femminile" }
+    {
+      "id": "1001240",
+      "label": "Under 17 Femminile"
+    },
+    {
+      "id": "1001237",
+      "label": "Under 19 Femminile"
+    }
   ]
 }

@@ -8,6 +8,17 @@ import { readFileSync } from 'node:fs';
 const ATTESA_FINE = 2 * 60 * 60 * 1000;   // una gara si considera finita 2h dopo l'inizio
 const LIMITE      = 12 * 24 * 60 * 60 * 1000; // oltre 12 giorni si rinuncia (gara annullata o non omologata)
 
+// Prima dell'inizio della stagione non c'e' nulla da raccogliere: si sta fermi.
+const cfg = JSON.parse(readFileSync(new URL('../config.json', import.meta.url)));
+if (cfg.startDate && Date.now() < new Date(`${cfg.startDate}T00:00:00`).getTime()) {
+  console.log('motivo=stagione-non-iniziata');
+  console.log('attiva=false');
+  console.log('serve=false');
+  console.error(`La stagione parte il ${cfg.startDate}: nessun controllo fino ad allora.`);
+  process.exit(0);
+}
+console.log('attiva=true');
+
 let dati;
 try { dati = JSON.parse(readFileSync(new URL('../docs/data.json', import.meta.url))); }
 catch { console.log('motivo=nessun-dato'); console.log('serve=true'); process.exit(0); }

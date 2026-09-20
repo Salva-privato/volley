@@ -32,9 +32,13 @@ jobs:
         run: node scraper/verifica.mjs >> "$GITHUB_OUTPUT"
       - id: decide
         run: |
-          if [ "${{ steps.verifica.outputs.serve }}" = "true" ] \
-             || [ "$(date -u +%H)" = "08" ] \
-             || [ "${{ github.event_name }}" != "schedule" ]; then
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "vai=true" >> "$GITHUB_OUTPUT"       # avvio manuale: si esegue sempre
+          elif [ "${{ steps.verifica.outputs.attiva }}" != "true" ]; then
+            echo "vai=false" >> "$GITHUB_OUTPUT"
+            echo "Stagione non ancora iniziata: nulla da fare." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.verifica.outputs.serve }}" = "true" ] \
+             || [ "$(date -u +%H)" = "08" ]; then
             echo "vai=true" >> "$GITHUB_OUTPUT"
           else
             echo "vai=false" >> "$GITHUB_OUTPUT"

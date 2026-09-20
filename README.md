@@ -48,7 +48,10 @@ npx serve docs                 # prova l'app in locale
 Il workflow riesegue lo scraper e committa `docs/data.json` **solo se qualcosa
 è cambiato**. Si può lanciare anche a mano dalla scheda **Actions** di GitHub.
 
-Quando gira:
+Prima della data indicata in `config.json` come `startDate` (16 ottobre 2026)
+non viene fatto **nessun** controllo: non c'è ancora niente da raccogliere.
+
+Quando gira, a stagione iniziata:
 
 - **ogni 2 ore dalle 09:00 alle 23:00**; di notte mai, perche' nessuno inserisce
   risultati mentre dormiamo.
