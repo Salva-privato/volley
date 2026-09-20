@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-20T13:30:12.924Z",
+ "updatedAt": "2026-09-20T13:37:30.133Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -20,6 +20,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": false
@@ -34,6 +35,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -48,6 +50,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -62,6 +65,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -76,6 +80,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -90,6 +95,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": true
@@ -104,6 +110,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -118,6 +125,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -132,6 +140,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -146,6 +155,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -160,6 +170,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -174,6 +185,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -188,6 +200,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -202,6 +215,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -216,6 +230,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": true
@@ -230,6 +245,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -244,6 +260,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -258,6 +275,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -272,6 +290,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -286,6 +305,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -300,6 +320,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -314,6 +335,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": false
@@ -328,6 +350,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -342,6 +365,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": true
@@ -356,6 +380,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": true
@@ -370,6 +395,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -384,6 +410,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -398,6 +425,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -412,6 +440,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -426,6 +455,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -440,6 +470,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": true
@@ -454,6 +485,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -468,6 +500,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -482,6 +515,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -496,6 +530,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -510,6 +545,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": false
@@ -524,6 +560,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": false
@@ -538,6 +575,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": true
@@ -552,6 +590,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -566,6 +605,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -580,6 +620,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -594,6 +635,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -608,6 +650,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -622,6 +665,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -636,6 +680,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": true
@@ -650,6 +695,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": false
@@ -664,6 +710,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -678,6 +725,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -692,6 +740,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -706,6 +755,7 @@
      "away": "CEM TORRICELLI ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -720,6 +770,7 @@
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -734,6 +785,7 @@
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -748,6 +800,7 @@
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -762,6 +815,7 @@
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -776,6 +830,7 @@
      "away": "VOLLEY SEGRATE U17 BLU",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SCOLASTICO UNIONE EUROPEA",
      "address": "MILANO - VIA SAN DIONIGI 36",
      "mine": false
@@ -790,6 +845,7 @@
      "away": "A.S.D CITTA' DI OPERA GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -935,6 +991,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": false
@@ -949,6 +1006,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": false
@@ -963,6 +1021,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": true
@@ -977,6 +1036,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -991,6 +1051,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1005,6 +1066,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1019,6 +1081,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1033,6 +1096,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1047,6 +1111,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": false
@@ -1061,6 +1126,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1075,6 +1141,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1089,6 +1156,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1103,6 +1171,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": true
@@ -1117,6 +1186,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1131,6 +1201,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": false
@@ -1145,6 +1216,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1159,6 +1231,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1173,6 +1246,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1187,6 +1261,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1201,6 +1276,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1215,6 +1291,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1229,6 +1306,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": true
@@ -1243,6 +1321,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": false
@@ -1257,6 +1336,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1271,6 +1351,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1285,6 +1366,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1299,6 +1381,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1313,6 +1396,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1327,6 +1411,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1341,6 +1426,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1355,6 +1441,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1369,6 +1456,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1383,6 +1471,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": true
@@ -1397,6 +1486,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1411,6 +1501,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": false
@@ -1425,6 +1516,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": false
@@ -1439,6 +1531,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": false
@@ -1453,6 +1546,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1467,6 +1561,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1481,6 +1576,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": true
@@ -1495,6 +1591,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1509,6 +1606,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1523,6 +1621,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1537,6 +1636,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": false
@@ -1551,6 +1651,7 @@
      "away": "GEAS VOLLEY",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": false
@@ -1565,6 +1666,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": false
@@ -1579,6 +1681,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": true
@@ -1593,6 +1696,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1607,6 +1711,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1621,6 +1726,7 @@
      "away": "BILLA VOLLEY MILANO GIALLA",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1635,6 +1741,7 @@
      "away": "G.S. SF 82",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1649,6 +1756,7 @@
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1663,6 +1771,7 @@
      "away": "CALIMAN BRESSO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1677,6 +1786,7 @@
      "away": "MARTESANA VOLLEY COLOGNO",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA RODARI",
      "address": "NOVATE MILANESE - VIA PRAMPOLINI 13",
      "mine": true
@@ -1691,6 +1801,7 @@
      "away": "ASD OSG 2001",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": false
@@ -1705,6 +1816,7 @@
      "away": "PALLAVOLO RONDO' MUGGIO'",
      "sets": null,
      "partials": null,
+     "partialsLines": null,
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
