@@ -58,12 +58,15 @@
   .invito button{width:100%;margin-top:8px;font-size:14px;padding:10px}
   .nascosto{display:none}
   /* Aggiunta all'app sulla schermata di casa, la regia si apre nella stessa
-     finestra e senza i tasti del browser: senza questa riga, per tornare
-     all'app bisognerebbe chiudere tutto e riaprire. */
-  .torna{display:inline-flex;align-items:center;gap:6px;margin-top:10px;
-    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+     finestra e senza i tasti del browser: senza questo collegamento, per
+     tornare all'app bisognerebbe chiudere tutto e riaprire. Resta appiccicato
+     in alto perche' mentre si battono i punti si scorre, e la strada di
+     ritorno deve essere sempre sotto il pollice. */
+  .torna{position:sticky;top:calc(env(safe-area-inset-top) + 6px);z-index:5;
+    display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
     padding:8px 14px;font-size:13px;font-weight:700;color:var(--text);
-    text-decoration:none}
+    text-decoration:none;box-shadow:0 2px 10px #0006}
   .torna:active{transform:translateY(1px)}
 </style>
 </head>
