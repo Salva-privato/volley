@@ -1,0 +1,55 @@
+# Promemoria delle partite: la sera prima alle 18 italiane e tre ore
+# prima del fischio d'inizio. Gira ogni ora nella fascia utile; e' lo
+# script a decidere se c'e' qualcosa da dire, e a non ripetersi.
+name: Promemoria partite
+
+on:
+  schedule:
+    - cron: '0 11-20 * * *'     # 12:00-21:00 d'inverno, 13:00-22:00 d'estate
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: notifiche
+  cancel-in-progress: false
+
+jobs:
+  ricorda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Guarda se c'e' qualcosa da ricordare
+        run: node scraper/promemoria.mjs
+
+      - name: Pubblica il messaggio
+        run: |
+          if [ ! -f avvisare.txt ]; then echo "niente da ricordare"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/notifica.json promemoria-inviati.json
+          git commit -m "Promemoria $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
+
+      - name: Suona il campanello
+        env:
+          SERVIZIO: ${{ secrets.SERVIZIO_PUSH }}
+          SEGRETO: ${{ secrets.SEGRETO_PUSH }}
+        run: |
+          if [ ! -f avvisare.txt ]; then exit 0; fi
+          if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then echo "notifiche non configurate"; exit 0; fi
+          echo "aspetto che il sito sia ripubblicato..."
+          sleep 75
+          for tentativo in 1 2 3; do
+            codice=$(curl -s -o /tmp/r.txt -w '%{http_code}' -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO")
+            echo "tentativo $tentativo — risposta $codice: $(cat /tmp/r.txt)"
+            if [ "$codice" = "200" ] && ! grep -q '"inviate":0' /tmp/r.txt; then exit 0; fi
+            sleep 15
+          done
+          grep -q '"iscritti":0' /tmp/r.txt && exit 0
+          exit 1
