@@ -766,7 +766,7 @@ function schedaHTML(ci, squadra){
     if(and?.attendibile && serie.length>1)
       h+=`<h4>Posizione, giornata per giornata</h4>${graficoHTML(serie, and.squadre)}`;
   }
-  if(fatte.length) h+=`<h4>Ultime partite</h4>${fatte.map(m=>srHTML(m,squadra)).join('')}`;
+  if(fatte.length) h+=`<h4>Ultime ${fatte.length} partite</h4>${fatte.map(m=>srHTML(m,squadra)).join('')}`;
   if(prossime.length) h+=`<h4>Prossimi impegni</h4>${prossime.map(m=>srHTML(m,squadra)).join('')}`;
   if(!noi) h+= scontri.length
       ? `<h4>Contro di noi</h4>${scontri.map(m=>srHTML(m,squadra)).join('')}`
