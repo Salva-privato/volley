@@ -1,5 +1,5 @@
 // Cache "network first" sui dati: online mostra i dati freschi, offline l'ultima copia.
-const CACHE = 'volley-v6';
+const CACHE = 'volley-v7';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 const CONTO = 'volley-conto';   // quante notifiche non hai ancora guardato
 
@@ -28,10 +28,20 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks =>
     Promise.all(ks.filter(k => k !== CACHE && k !== CONTO).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
+/* Le pagine si chiedono alla rete saltando la scorta del browser: GitHub
+   tiene buona per dieci minuti la sua copia, e senza questa riga chi aveva
+   gia' aperto l'app continuava a vedere la versione di prima anche a
+   modifica pubblicata. Il resto (immagini, dati) passa dalla scorta:
+   la' non da' fastidio ed e' piu' veloce. */
+function dallaRete(req){
+  if (req.destination !== 'document') return fetch(req);
+  try { return fetch(req.url, { cache: 'reload', credentials: 'same-origin' }); }
+  catch (e) { return fetch(req); }
+}
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request)
+    dallaRete(e.request)
       .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
       .catch(() => caches.match(e.request).then(r => r || caches.match('index.html')))
   );
