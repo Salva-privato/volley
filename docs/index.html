@@ -530,7 +530,7 @@ function stdHTML(c){
   if(!c.standings.length) return '<p class="empty">Classifica non ancora disponibile.</p>';
   return `<table><thead><tr><th></th><th>Squadra</th><th>P</th><th>G</th><th>V</th><th>S</th><th>Set</th></tr></thead><tbody>`+
     c.standings.map(s=>`<tr class="${isUs(DATA,s.team)?'us':''}">
-      <td>${s.pos}</td><td>${esc(nome(s.team))}</td><td class="pt">${esc(s.points)}</td>
+      <td>${s.pos}</td><td>${tlink(state.champ,s.team)}</td><td class="pt">${esc(s.points)}</td>
       <td>${esc(s.played)}</td><td>${esc(s.won)}</td><td>${esc(s.lost)}</td>
       <td>${esc(s.setsWon)}-${esc(s.setsLost)}</td></tr>`).join('')+`</tbody></table>`;
 }
