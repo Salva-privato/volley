@@ -434,7 +434,7 @@ function matchHTML(m){
   const maps=m.address?`https://maps.google.com/?q=${encodeURIComponent(m.venue+' '+m.address)}`:null;
   return `<div class="match">
     <div class="when"><span class="day">${esc(fmtLong(m))}</span>
-      ${finita?`<span class="cd ${vinta?'vinta':'persa'}">${vinta?'Vinta':'Persa'} ${nostri}-${loro}</span>`
+      ${finita?`<span class="cd ${vinta?'vinta':'persa'}">${vinta?'Vinta':'Persa'}</span>`
        :attesa?`<span class="cd att">In attesa del risultato</span>`
        :cd?`<span class="cd">${esc(cd)}</span>`:''}</div>
     <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
@@ -495,8 +495,8 @@ function rigaHTML(m){
   let sc='';
   if(played(m)){
     const [a,b]=(m.sets.match(/\d+/g)||[]).map(Number);
-    const ourS=us_home?a:b, thS=us_home?b:a;
-    sc=`<div class="sc ${ourS>thS?'w':'l'}">${ourS}-${thS}${parzialiTesto(m,!us_home)?`<small>${esc(parzialiTesto(m,!us_home))}</small>`:''}</div>`;
+    const vinta = us_home ? a>b : b>a;
+    sc=`<div class="sc ${vinta?'w':'l'}">${a}-${b}${parzialiTesto(m,false)?`<small>${esc(parzialiTesto(m,false))}</small>`:''}</div>`;
   }
   return `<div class="row">
     <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
@@ -709,11 +709,11 @@ function srHTML(m, squadra){
     <span class="e">·</span>
     <span class="n">${esc(nome(avv))} <em>${dove}</em></span>
     <span class="p att">${esc(data)}</span></div>`;
-  const [a,b]=numeri(m.sets), suoi=casa?a:b, loro=casa?b:a, vinta=suoi>loro;
+  const [a,b]=numeri(m.sets), vinta=casa?a>b:b>a;
   return `<div class="sr${isUs(DATA,avv)?' mia':''}">
     <span class="e ${vinta?'v':'s'}">${vinta?'V':'S'}</span>
     <span class="n">${esc(nome(avv))} <em>${dove}</em></span>
-    <span class="p">${suoi}-${loro}</span></div>`;
+    <span class="p">${a}-${b}</span></div>`;
 }
 
 function schedaHTML(ci, squadra){
