@@ -11,7 +11,9 @@
   Fondo trasparente: fuori dal tabellone non si disegna niente, cosi' quando
   nessuno sta segnando i punti il video resta pulito.
 
-  Indirizzo:  tabellone.html?gara=70392&modo=video|app
+  Indirizzo:  tabellone.html?gara=70392&modo=video|app|solo
+   - "solo" e' l'app quando non c'e' il video: il tabellone ha tutta la
+     larghezza della scheda, quindi i numeri si tengono grandi.
 -->
 <style>
   /* tutto in "rem" e la radice legata alla larghezza: cosi' il tabellone
@@ -64,6 +66,14 @@
   body.app{padding:.55rem}
   body.app .tab{box-shadow:0 .2rem .7rem #0007}
   body.app .sponsor{display:none !important}
+  /* Senza video il tabellone e' l'unica cosa nella scheda: prende tutta la
+     larghezza e i numeri crescono con lei, perche' si legga da lontano. */
+  html.solo{font-size:calc(100vw / 25)}
+  body.solo{padding:0}
+  body.solo .tab{display:block; width:100%; min-width:0; box-shadow:none}
+  body.solo .riga{padding:.55rem .8rem}
+  body.solo .punti{font-size:2.1rem}
+  body.solo .parziali{font-size:.8rem; padding:.35rem .8rem}
 </style>
 </head>
 <body>
@@ -78,13 +88,19 @@
 const SERVIZIO = 'https://volley-notifiche.n8ns-piazzolla.workers.dev';
 const opzioni = new URLSearchParams(location.search);
 const GARA = opzioni.get('gara') || '';
-const MODO = opzioni.get('modo') === 'app' ? 'app' : 'video';
+// "app" e "solo" stanno tutti e due dentro l'app: cambia solo quanto spazio c'e'
+const MODO = ['app', 'solo'].includes(opzioni.get('modo')) ? opzioni.get('modo') : 'video';
 // nome della nostra squadra: serve solo a decidere quale riga si colora di casa
 const NOSTRA = (opzioni.get('noi') || 'MARTESANA').toUpperCase();
 // se il punteggio non si muove da mezz'ora vuol dire che nessuno sta segnando
 const SCADUTO = 30 * 60e3;
 
-if (MODO === 'app') { document.body.classList.add('app'); document.documentElement.classList.add('app'); }
+if (MODO !== 'video') {
+  for (const e of [document.body, document.documentElement]){
+    e.classList.add('app');
+    if (MODO === 'solo') e.classList.add('solo');
+  }
+}
 
 const el = id => document.getElementById(id);
 const esc = t => String(t == null ? '' : t);
@@ -144,8 +160,11 @@ function disegna(p){
    ci ospita quanto spazio serve davvero. */
 let ultimaAltezza = 0;
 function misura(){
-  if (MODO !== 'app' || !parent || parent === window) return;
-  const h = Math.ceil(el('tab').getBoundingClientRect().height + 2);
+  if (MODO === 'video' || !parent || parent === window) return;
+  // si misura fin dove arriva il tabellone, non quanto e' alto: sopra c'e'
+  // il margine del corpo, e senza contarlo l'ultima riga restava tagliata
+  const sotto = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+  const h = Math.ceil(el('tab').getBoundingClientRect().bottom + sotto + 1);
   if (!h || h === ultimaAltezza) return;
   ultimaAltezza = h;
   try { parent.postMessage({ tabellone: { altezza: h } }, '*'); } catch (e) {}
@@ -166,7 +185,7 @@ setInterval(chiedi, 1200);
 
 // --- gli sponsor, solo nel video ------------------------------------------
 async function sponsor(){
-  if (MODO === 'app') return;
+  if (MODO !== 'video') return;
   let elenco = [];
   try {
     const r = await fetch('sponsor.json');

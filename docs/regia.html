@@ -57,9 +57,19 @@
   .invito{font-size:12px;color:var(--muted);line-height:1.5}
   .invito button{width:100%;margin-top:8px;font-size:14px;padding:10px}
   .nascosto{display:none}
+  /* Aggiunta all'app sulla schermata di casa, la regia si apre nella stessa
+     finestra e senza i tasti del browser: senza questa riga, per tornare
+     all'app bisognerebbe chiudere tutto e riaprire. */
+  .torna{display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:8px 14px;font-size:13px;font-weight:700;color:var(--text);
+    text-decoration:none}
+  .torna:active{transform:translateY(1px)}
 </style>
 </head>
 <body>
+
+<a class="torna" href="./">‹ Torna all'app</a>
 
 <div id="entra" class="card">
   <h1 style="margin-top:0">Regia</h1>
@@ -115,8 +125,26 @@
 
 <script>
 const SERVIZIO = 'https://volley-notifiche.n8ns-piazzolla.workers.dev';
-const GETTONE = new URLSearchParams(location.search).get('t') || '';
 const CHIAVE_PAROLA = 'regiaParola';
+const CHIAVE_GETTONE = 'regiaGettone';
+
+/* Chi e' stato invitato ha il gettone nell'indirizzo. Ma se va a vedere l'app
+   e poi torna qui dal collegamento in fondo alla pagina, l'indirizzo e' quello
+   pulito e il gettone sarebbe perso: percio' si tiene da parte per la giornata,
+   quanto dura l'invito. */
+function ricordaGettone(){
+  const nuovo = new URLSearchParams(location.search).get('t') || '';
+  if (nuovo){
+    try { localStorage.setItem(CHIAVE_GETTONE, JSON.stringify({ t: nuovo, quando: Date.now() })); } catch (e) {}
+    return nuovo;
+  }
+  try {
+    const v = JSON.parse(localStorage.getItem(CHIAVE_GETTONE) || 'null');
+    if (v && v.t && Date.now() - v.quando < 12 * 3600e3) return v.t;
+  } catch (e) {}
+  return '';
+}
+const GETTONE = ricordaGettone();
 
 const el = id => document.getElementById(id);
 const esc = t => String(t == null ? '' : t);

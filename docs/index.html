@@ -289,10 +289,12 @@ td.pt{font-weight:700;color:var(--gold)}
   animation:pulsa 1.6s ease-in-out infinite;font-style:normal}
 @keyframes pulsa{0%,100%{opacity:1}50%{opacity:.25}}
 .dir .fuori{font-size:11px;color:var(--muted);text-decoration:none;margin-left:auto}
+.dir .fuori+.fuori{margin-left:0}
+.dir .allaregia{font-weight:700;color:var(--accent-text)}
 .rivedi{display:inline-block;font-size:12px;font-weight:600;text-decoration:none;
   color:var(--accent-text);background:var(--accent-soft);border-radius:9px;padding:7px 11px;margin:10px 0 2px}
 .dir .solotab{overflow:hidden}
-.dir .solotab iframe{position:static;height:92px;width:100%;border:0;transition:height .2s ease}
+.dir .solotab iframe{position:static;height:120px;width:100%;border:0;transition:height .2s ease}
 #regia{display:inline-block;margin-top:6px;font-size:11px;color:var(--muted);text-decoration:none;opacity:.55}
 /* ### FINE DIRETTA ### */
 footer{margin-top:28px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7}
@@ -1171,16 +1173,30 @@ function partitaInCorso(){
   return ourMatches().find(m=>String(m.gara)===String(chi)) || null;
 }
 
+/* Chi sta segnando i punti fa avanti e indietro fra la regia e l'app: se e'
+   gia' entrato una volta, il richiamo alla regia gli sta qui sotto mano,
+   senza andarlo a cercare in fondo alla pagina. */
+function chiSegna(){
+  try{
+    if(localStorage.getItem('regiaParola')) return true;
+    const g=JSON.parse(localStorage.getItem('regiaGettone')||'null');
+    return !!(g&&g.t&&Date.now()-g.quando<12*3600e3);
+  }catch(e){ return false; }
+}
+
 function direttaHTML(){
   const m=partitaInCorso();
   const viva=DIRETTA&&DIRETTA.video&&!DIRETTA.finita;
   const punti=m?punteggioVivo(m):false;
   if(!viva&&!punti) return '';
-  const tabellone=`<iframe class="sopra" src="tabellone.html?modo=app&gara=${encodeURIComponent(m?m.gara:'')}" title="Punteggio" scrolling="no"></iframe>`;
+  /* sopra il video il tabellone e' un francobollo in un angolo; da solo nella
+     scheda si prende tutta la larghezza, e allora i numeri possono crescere */
+  const tabellone=`<iframe class="sopra" src="tabellone.html?modo=${viva?'app':'solo'}&gara=${encodeURIComponent(m?m.gara:'')}" title="Punteggio" scrolling="no"></iframe>`;
   const titolo=m?`${esc(m.home)} – ${esc(m.away)}`:'';
   return `<div class="dir">
     <div class="riga"><span class="onda"><i></i>${viva?'in diretta':'punteggio dal vivo'}</span>
-      ${viva?`<a class="fuori" href="https://www.youtube.com/watch?v=${encodeURIComponent(DIRETTA.video)}" target="_blank" rel="noopener">apri su YouTube</a>`:''}</div>
+      ${viva?`<a class="fuori" href="https://www.youtube.com/watch?v=${encodeURIComponent(DIRETTA.video)}" target="_blank" rel="noopener">apri su YouTube</a>`:''}
+      ${chiSegna()?`<a class="fuori allaregia" href="regia.html">regia ›</a>`:''}</div>
     ${titolo?`<div class="chi">${titolo}</div>`:''}
     ${viva?`<div class="telaio">
       <iframe src="${VIDEO_YT(DIRETTA.video)}" title="Diretta" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
