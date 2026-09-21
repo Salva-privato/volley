@@ -83,6 +83,13 @@ jobs:
           if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then echo "notifiche non configurate"; exit 0; fi
           echo "da annunciare: $(cat avvisare.txt)"
           sleep 75
-          codice=$(curl -s -o /tmp/risposta.txt -w '%{http_code}' -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO")
-          echo "risposta $codice: $(cat /tmp/risposta.txt)"
-          [ "$codice" = "200" ]
+          # ogni tanto la prima consegna fallisce: riprovo fino a tre volte
+          for tentativo in 1 2 3; do
+            codice=$(curl -s -o /tmp/risposta.txt -w '%{http_code}' -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO")
+            echo "tentativo $tentativo — risposta $codice: $(cat /tmp/risposta.txt)"
+            if [ "$codice" = "200" ] && ! grep -q '"inviate":0' /tmp/risposta.txt; then exit 0; fi
+            sleep 15
+          done
+          # nessuno iscritto non e' un errore
+          grep -q '"iscritti":0' /tmp/risposta.txt && exit 0
+          exit 1
