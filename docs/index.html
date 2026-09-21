@@ -501,8 +501,8 @@ function rigaHTML(m){
   return `<div class="row">
     <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
                      :'<span class="tbd">da<br>destinarsi</span>'}</div>
-    <div class="tm">${us_home?`<span class="u">${NOSTRA}</span> – ${tlink(state.champ,opp)}`
-                       :`${tlink(state.champ,opp,'u')} – <span>${NOSTRA}</span>`}
+    <div class="tm">${us_home?`${tlink(state.champ,m.home,'u')} – ${tlink(state.champ,opp)}`
+                       :`${tlink(state.champ,opp,'u')} – ${tlink(state.champ,m.away)}`}
       <div class="sub" style="font-size:11px;color:var(--muted)">${us_home?'casa':'trasferta'} · ${esc(m.venue||'—')}</div>
       ${avvisoHTML(m,true)}</div>
     ${sc}</div>`;
