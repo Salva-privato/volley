@@ -217,11 +217,47 @@ async function orarioDaPartita(env) {
   return null;
 }
 
+/** L'identificativo del video, comunque sia scritto il collegamento:
+ *  watch?v=..., youtu.be/..., /live/..., o gia' l'identificativo nudo. */
+function idVideo(testo) {
+  const t = String(testo || '').trim();
+  if (/^[\w-]{11}$/.test(t)) return t;
+  const m = t.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
 const googleDice = async (via) => {
   const r = await fetch(YT + via);
   if (!r.ok) throw new Error('youtube ' + r.status);
   return r.json();
 };
+
+/** Si va in onda: si annota e si avvisa, una volta sola. */
+async function accendi(env, video, gara, aMano) {
+  const prima = await leggi(env, 'diretta');
+  if (prima?.video === video && !prima.finita) return { stato: 'gia in onda', video };
+  const adesso = Date.now();
+  await scrivi(env, 'diretta', { video, gara: gara || prima?.gara || '', aMano: !!aMano,
+                                 dal: new Date(adesso).toISOString(), finita: false });
+  await scrivi(env, 'messaggio', {
+    titolo: 'Siamo in diretta',
+    testo: 'La partita e\' cominciata: tocca per vederla.',
+    tag: 'diretta-' + video,
+    quando: new Date(adesso).toISOString(),
+  });
+  const esito = await avvisaTutti(env, false);
+  return { stato: 'appena cominciata', video, ...esito };
+}
+
+/** E' finita: il video diventa la registrazione di quella giornata. */
+async function finisci(env, prima) {
+  const adesso = Date.now();
+  await scrivi(env, 'diretta', { ...prima, finita: true, fino: new Date(adesso).toISOString() });
+  const archivio = (await leggi(env, 'registrazioni')) || {};
+  archivio[new Date(adesso).toISOString().slice(0, 10)] = prima.video;
+  await scrivi(env, 'registrazioni', archivio);
+  return { stato: 'finita', video: prima.video };
+}
 
 /** Il controllo del canale. Cercare costa cento gettoni, controllare un
  *  video gia' noto ne costa uno: quindi si cerca solo finche' non si trova,
@@ -234,18 +270,22 @@ async function guardaCanale(env) {
 
   // 1) se sapevamo di un video in onda, basta chiedere se lo e' ancora
   if (prima?.video && !prima.finita) {
-    let ancora = false;
+    // una diretta non puo' durare in eterno: se per qualsiasi motivo non
+    // arriva la conferma, dopo cinque ore si chiude lo stesso
+    const troppoVecchia = adesso - Date.parse(prima.dal || 0) > 5 * 36e5;
+    let ancora = false, saputo = false;
     try {
       const d = await googleDice(`videos?part=snippet&id=${prima.video}&${chiavi}`);
-      ancora = d.items?.[0]?.snippet?.liveBroadcastContent === 'live';
-    } catch (e) { return { stato: 'google muto' }; }
+      // Attenzione: se il video e' "non in elenco" Google potrebbe non
+      // restituirlo affatto. Nessuna notizia non vuol dire "finita":
+      // spegnere per questo chiuderebbe la diretta dopo due minuti.
+      if (d.items?.length) { ancora = d.items[0].snippet?.liveBroadcastContent === 'live'; saputo = true; }
+    } catch (e) { /* Google muto */ }
     if (ancora) return { stato: 'in onda', video: prima.video };
-    // finita: il video diventa la registrazione di quella partita
-    await scrivi(env, 'diretta', { ...prima, finita: true, fino: new Date(adesso).toISOString() });
-    const archivio = (await leggi(env, 'registrazioni')) || {};
-    archivio[new Date(adesso).toISOString().slice(0, 10)] = prima.video;
-    await scrivi(env, 'registrazioni', archivio);
-    return { stato: 'finita', video: prima.video };
+    // non si sa: si resta in onda fino alle cinque ore, o finche' non lo
+    // dice chi trasmette con "Ho finito"
+    if (!saputo) return troppoVecchia ? finisci(env, prima) : { stato: 'in onda, senza conferma', video: prima.video };
+    return finisci(env, prima);
   }
 
   // 2) altrimenti si cerca, ma solo negli orari delle partite e con misura
@@ -268,15 +308,7 @@ async function guardaCanale(env) {
   if (!video) return { stato: 'non ancora in onda', cercate: conto.fatte };
 
   // trovata: si avvisano tutti, una volta sola
-  await scrivi(env, 'diretta', { video, gara: partita.gara, dal: new Date(adesso).toISOString(), finita: false });
-  await scrivi(env, 'messaggio', {
-    titolo: 'Siamo in diretta',
-    testo: 'La partita e\' cominciata: tocca per vederla.',
-    tag: 'diretta-' + video,
-    quando: new Date(adesso).toISOString(),
-  });
-  const esito = await avvisaTutti(env, false);
-  return { stato: 'appena cominciata', video, ...esito };
+  return accendi(env, video, partita.gara, false);
 }
 
 /** Tutte le rotte della diretta. Torna null se l'indirizzo non e' suo,
@@ -332,6 +364,22 @@ async function rottaDiretta(req, env, url) {
 
   // --- siamo in onda? ---------------------------------------------------
   if (via === '/diretta' && req.method === 'GET') return risposta(await leggi(env, 'diretta') || {});
+
+  // A mano: serve quando la diretta e' "non in elenco", perche' il catalogo
+  // di Google, interrogato senza credenziali, quei video non li mostra.
+  // Vale anche come rete di sicurezza se il riconoscimento non funzionasse.
+  if (via === '/diretta' && (req.method === 'POST' || req.method === 'DELETE')) {
+    if (!(await permesso(req, env, 'trasmetti')).ok) return risposta({ errore: 'no' }, 401);
+    if (req.method === 'DELETE') {
+      const prima = await leggi(env, 'diretta');
+      if (prima?.video) await finisci(env, prima);
+      return risposta({ ok: true });
+    }
+    const corpo = await req.json().catch(() => ({}));
+    const video = idVideo(corpo.video || corpo.url || '');
+    if (!video) return risposta({ errore: 'non riconosco il collegamento' }, 400);
+    return risposta(await accendi(env, video, corpo.gara, true));
+  }
   if (via === '/registrazioni' && req.method === 'GET') return risposta(await leggi(env, 'registrazioni') || {});
 
   // il controllo del canale si puo' forzare a mano, per provarlo

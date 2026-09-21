@@ -63,6 +63,17 @@
   <p class="nota">Moblin chiederà conferma prima di prendere la configurazione.
     Non può farlo mentre sta già trasmettendo: se sei in onda, ferma prima.</p>
 
+  <h2 id="tSeNonInElenco">Se la diretta è "non in elenco"</h2>
+  <div class="card" id="aMano">
+    <p style="margin-top:0">Google non vede i video nascosti dalle ricerche: il link
+      va consegnato una volta, qui. Con le dirette pubbliche non serve.</p>
+    <input id="link" type="url" inputmode="url" placeholder="incolla il link della diretta"
+           autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button id="accendi" style="background:#b3261e;border-color:transparent">È partita: avvisa tutti</button>
+    <button id="spegni">Ho finito</button>
+    <p id="esito" class="nota"></p>
+  </div>
+
   <h2>La prima volta, solo la prima</h2>
   <div class="card">
     <ol class="passi">
@@ -123,9 +134,10 @@ function collegamento(chiave){
   return 'moblin://?' + encodeURIComponent(JSON.stringify(conf));
 }
 
-async function prepara(intestazione){
+async function prepara(quale){
+  intestazione = quale;
   const via = SERVIZIO + '/config' + (GETTONE ? '?t=' + encodeURIComponent(GETTONE) : '');
-  const r = await fetch(via, { headers: intestazione });
+  const r = await fetch(via, { headers: quale });
   if (!r.ok) return false;
   const cfg = await r.json();
   if (!cfg.chiave) {
@@ -146,6 +158,30 @@ el('copia').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(TABELLONE); el('copia').textContent = 'Copiato ✓'; }
   catch (e) { prompt('Copia questo indirizzo:', TABELLONE); }
 });
+
+// --- comando a mano, per le dirette non in elenco -------------------------
+let intestazione = {};
+function viaConGettone(via){
+  return SERVIZIO + via + (GETTONE ? '?t=' + encodeURIComponent(GETTONE) : '');
+}
+async function comanda(metodo, corpo){
+  const r = await fetch(viaConGettone('/diretta'), {
+    method: metodo, headers: { 'content-type': 'application/json', ...intestazione },
+    body: corpo ? JSON.stringify(corpo) : undefined,
+  });
+  const d = await r.json().catch(() => ({}));
+  el('esito').textContent = r.ok
+    ? (metodo === 'DELETE' ? 'Diretta chiusa. La registrazione resta nell\'app.'
+                           : 'Fatto: la notifica è partita e il video è comparso nell\'app.')
+    : (d.errore || 'non ha funzionato');
+  el('esito').className = 'nota' + (r.ok ? '' : ' male');
+}
+el('accendi').addEventListener('click', () => {
+  const v = el('link').value.trim();
+  if (!v) return void (el('esito').textContent = 'Manca il link.');
+  comanda('POST', { video: v });
+});
+el('spegni').addEventListener('click', () => comanda('DELETE'));
 
 el('entraOk').addEventListener('click', async () => {
   const p = el('parola').value.trim();

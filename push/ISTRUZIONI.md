@@ -146,6 +146,24 @@ consegna la pagina `diretta.html` con un collegamento `moblin://`.
 Apri `diretta.html` → **Apri Moblin gia' pronto** → tasto rosso.
 Qualcuno apre `regia.html` e batte i punti.
 
+## Dirette "non in elenco" (e periodo di prova)
+
+Le dirette non in elenco non compaiono nelle ricerche, sul canale o nel feed:
+le vede solo chi ha il collegamento, ma si incorporano regolarmente nell'app.
+Quelle **private** no: YouTube non permette di incorporarle da nessuna parte.
+
+Google pero' i video non in elenco non li mostra a chi interroga il catalogo
+senza credenziali, quindi il riconoscimento automatico non li trova. Per
+questo `diretta.html` ha il comando a mano: si incolla il collegamento una
+volta e si preme "E' partita", e a fine partita "Ho finito".
+
+Questo vale anche come rete di sicurezza per le dirette pubbliche, se un
+giorno il riconoscimento non dovesse funzionare.
+
+Il servizio non spegne mai una diretta solo perche' Google non risponde o
+non conosce quel video: si resta in onda fino a "Ho finito", o al massimo
+cinque ore.
+
 ## Inviti
 
 Quando filma o segna qualcun altro, la regia genera un collegamento a tempo
