@@ -47,3 +47,26 @@ telefono una spinta **senza testo**; è l'app sul telefono che legge
 
 Sull'iPhone le notifiche funzionano **solo con l'app aggiunta alla schermata
 Home** (è una regola di Apple), e ognuno deve toccare il campanello una volta.
+
+## La sentinella (aggiunta dopo)
+
+Il servizio fa anche da guardiano dell'automazione. Per attivarla, dopo aver
+incollato la versione nuova di `push/worker.js` e fatto **Deploy**:
+
+**Worker → Impostazioni → Eventi trigger → Trigger cron → Aggiungi**, e metti:
+
+```
+30 12,20 * * *
+```
+
+Sono due controlli al giorno (14:30 e 22:30 italiane d'estate, un'ora prima
+d'inverno), scelti dentro la fascia in cui l'automazione lavora: di notte non
+gira nessuno ed e' normale che non ci sia battito.
+
+Come funziona: a ogni giro GitHub manda un "battito" a `POST /battito`. Se al
+controllo il battito manca da piu' di sei ore, il servizio scrive il messaggio
+e manda la notifica, al massimo una al giorno.
+
+Indirizzi aggiunti: `POST /battito`, `POST /messaggio`, `GET /messaggio`,
+`GET /stato` (per guardare), `POST /controlla` (per forzare il controllo).
+Tutti quelli che scrivono vogliono la parola d'ordine.

@@ -1,5 +1,5 @@
 // Cache "network first" sui dati: online mostra i dati freschi, offline l'ultima copia.
-const CACHE = 'volley-v4';
+const CACHE = 'volley-v5';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 const CONTO = 'volley-conto';   // quante notifiche non hai ancora guardato
 
@@ -41,13 +41,34 @@ self.addEventListener('fetch', e => {
    La spinta che arriva dal servizio non porta testo: il messaggio sta in
    notifica.json, che l'automazione pubblica insieme ai dati. Cosi' non
    serve cifrare niente e il contenuto e' sempre l'ultimo disponibile. */
+const SERVIZIO = 'https://volley-notifiche.n8ns-piazzolla.workers.dev';
+
+/** Legge un messaggio, se c'e'; niente rete o niente contenuto: null. */
+async function messaggio(indirizzo) {
+  try {
+    const r = await fetch(indirizzo, { cache: 'no-store' });
+    if (!r.ok) return null;
+    const m = await r.json();
+    return m && m.testo ? m : null;
+  } catch (err) { return null; }
+}
+/** Fra i due messaggi vince il piu' recente. */
+const piuRecente = (a, b) => {
+  if (!a) return b;
+  if (!b) return a;
+  return (Date.parse(b.quando) || 0) > (Date.parse(a.quando) || 0) ? b : a;
+};
+
 self.addEventListener('push', e => {
   e.waitUntil((async () => {
     let n = { titolo: 'Martesana Volley', testo: 'Ci sono novità.', tag: 'volley' };
-    try {
-      const r = await fetch('notifica.json?t=' + Date.now(), { cache: 'no-store' });
-      if (r.ok) n = { ...n, ...(await r.json()) };
-    } catch (err) { /* senza rete mostro il messaggio generico */ }
+    // due fonti: quella pubblicata da GitHub e quella scritta dalla sentinella
+    const [dalSito, dalServizio] = await Promise.all([
+      messaggio('notifica.json?t=' + Date.now()),
+      messaggio(SERVIZIO + '/messaggio?t=' + Date.now()),
+    ]);
+    const scelto = piuRecente(dalSito, dalServizio);
+    if (scelto) n = { ...n, ...scelto };
     await self.registration.showNotification(n.titolo, {
       body: n.testo,
       icon: 'icon-180.png',

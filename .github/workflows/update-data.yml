@@ -93,3 +93,28 @@ jobs:
           # nessuno iscritto non e' un errore
           grep -q '"iscritti":0' /tmp/risposta.txt && exit 0
           exit 1
+
+      # La sentinella su Cloudflare si aspetta un battito a ogni giro: se
+      # smette di arrivare, se ne accorge lei e avvisa il telefono.
+      - name: Battito alla sentinella
+        if: always()
+        env:
+          SERVIZIO: ${{ secrets.SERVIZIO_PUSH }}
+          SEGRETO: ${{ secrets.SEGRETO_PUSH }}
+        run: |
+          if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then exit 0; fi
+          curl -s -m 20 -X POST "$SERVIZIO/battito" \
+            -H "x-segreto: $SEGRETO" -H 'content-type: application/json' \
+            -d "{\"esito\":\"${{ job.status }}\",\"chi\":\"dati\"}" || true
+
+      - name: Se qualcosa e' andato storto, dillo subito
+        if: failure()
+        env:
+          SERVIZIO: ${{ secrets.SERVIZIO_PUSH }}
+          SEGRETO: ${{ secrets.SEGRETO_PUSH }}
+        run: |
+          if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then exit 0; fi
+          curl -s -m 20 -X POST "$SERVIZIO/messaggio" \
+            -H "x-segreto: $SEGRETO" -H 'content-type: application/json' \
+            -d '{"titolo":"Aggiornamento non riuscito","testo":"Il controllo dei risultati e fallito. I dati potrebbero non essere aggiornati."}' || true
+          curl -s -m 30 -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO" || true

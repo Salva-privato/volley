@@ -1,5 +1,9 @@
 /**
  * Piccolo servizio per le notifiche, da mettere su Cloudflare Workers.
+ * Fa anche da sentinella: GitHub gli manda un "battito" a ogni giro e, se
+ * il battito si ferma, il servizio se ne accorge da solo e avvisa. Sta
+ * apposta fuori da GitHub: un guardiano che vive nella stessa casa di cio'
+ * che sorveglia non serve a niente.
  * Tiene l'elenco di chi si e' iscritto (in uno spazio KV chiamato ISCRITTI)
  * e, quando l'automazione di GitHub glielo chiede, manda a tutti una
  * "spinta" senza contenuto: sara' l'app sul telefono a leggere il
@@ -53,7 +57,61 @@ async function spingi(iscritto, env) {
   return r.status;
 }
 
+/** Manda la spinta a tutti gli iscritti, togliendo quelli spariti. */
+async function avvisaTutti(env) {
+  // gli iscritti hanno per chiave il loro indirizzo; le voci di servizio
+  // della sentinella cominciano con "meta:" e qui non c'entrano
+  const chiavi = (await env.ISCRITTI.list()).keys.filter(k => k.name.startsWith('http'));
+  let inviate = 0, tolti = 0;
+  for (const k of chiavi) {
+    const iscritto = JSON.parse(await env.ISCRITTI.get(k.name));
+    let stato = 0;
+    try { stato = await spingi(iscritto, env); } catch (e) { stato = 0; }
+    if (stato === 404 || stato === 410) { await env.ISCRITTI.delete(k.name); tolti++; }
+    else if (stato >= 200 && stato < 300) inviate++;
+  }
+  return { inviate, tolti, iscritti: chiavi.length };
+}
+
+const leggi = async (env, chiave) => {
+  try { return JSON.parse(await env.ISCRITTI.get('meta:' + chiave) || 'null'); } catch (e) { return null; }
+};
+const scrivi = (env, chiave, valore) => env.ISCRITTI.put('meta:' + chiave, JSON.stringify(valore));
+
+const SILENZIO_SOSPETTO = 6 * 60 * 60e3;    // sei ore senza battito = qualcosa non va
+const UN_ALLARME_AL_GIORNO = 24 * 60 * 60e3;
+
+/** Il controllo programmato: il battito c'e' ancora? */
+async function sentinella(env) {
+  const battito = await leggi(env, 'battito');
+  const adesso = Date.now();
+  const fermo = !battito ? null : adesso - Date.parse(battito.quando);
+  if (battito && fermo < SILENZIO_SOSPETTO) return { stato: 'tutto bene', fermo };
+
+  const ultimo = await leggi(env, 'ultimo-allarme');
+  if (ultimo && adesso - Date.parse(ultimo.quando) < UN_ALLARME_AL_GIORNO)
+    return { stato: 'gia avvisato', fermo };
+
+  const ore = battito ? Math.round(fermo / 36e5) : null;
+  await scrivi(env, 'messaggio', {
+    titolo: 'Aggiornamenti fermi',
+    testo: ore === null
+      ? "L'aggiornamento automatico non da' sue notizie."
+      : `L'aggiornamento automatico e' fermo da circa ${ore} ore.`,
+    tag: `sentinella-${new Date(adesso).toISOString().slice(0, 13)}`,
+    quando: new Date(adesso).toISOString(),
+  });
+  await scrivi(env, 'ultimo-allarme', { quando: new Date(adesso).toISOString() });
+  const esito = await avvisaTutti(env);
+  return { stato: 'avvisato', fermo, ...esito };
+}
+
 export default {
+  /** Cloudflare lo chiama agli orari impostati in "Trigger cron". */
+  async scheduled(evento, env, ctx) {
+    ctx.waitUntil(sentinella(env));
+  },
+
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -74,19 +132,51 @@ export default {
       return risposta({ ok: true });
     }
 
+    // il telefono legge qui il messaggio scritto dalla sentinella
+    if (url.pathname === '/messaggio' && req.method === 'GET')
+      return risposta(await leggi(env, 'messaggio') || {});
+
+    // GitHub dice "sono vivo" a ogni giro
+    if (url.pathname === '/battito' && req.method === 'POST') {
+      if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+      const corpo = await req.json().catch(() => ({}));
+      await scrivi(env, 'battito', {
+        quando: corpo.quando || new Date().toISOString(),
+        esito: corpo.esito || 'ok',
+        chi: corpo.chi || 'github',
+      });
+      return risposta({ ok: true });
+    }
+
+    // GitHub detta un messaggio (per esempio: aggiornamento fallito)
+    if (url.pathname === '/messaggio' && req.method === 'POST') {
+      if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+      const corpo = await req.json().catch(() => ({}));
+      if (!corpo.testo) return risposta({ errore: 'manca il testo' }, 400);
+      await scrivi(env, 'messaggio', {
+        titolo: corpo.titolo || 'Martesana Volley',
+        testo: corpo.testo,
+        tag: corpo.tag || `avviso-${new Date().toISOString().slice(0, 13)}`,
+        quando: new Date().toISOString(),
+      });
+      return risposta({ ok: true });
+    }
+
+    // lo stato della sentinella, per poterla controllare
+    if (url.pathname === '/stato' && req.method === 'GET')
+      return risposta({ battito: await leggi(env, 'battito'),
+                        ultimoAllarme: await leggi(env, 'ultimo-allarme') });
+
+    // il controllo si puo' anche forzare a mano
+    if (url.pathname === '/controlla' && req.method === 'POST') {
+      if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+      return risposta(await sentinella(env));
+    }
+
     // GitHub chiede di avvisare tutti
     if (url.pathname === '/avvisa' && req.method === 'POST') {
       if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
-      const elenco = await env.ISCRITTI.list();
-      let inviate = 0, tolti = 0;
-      for (const k of elenco.keys) {
-        const iscritto = JSON.parse(await env.ISCRITTI.get(k.name));
-        let stato = 0;
-        try { stato = await spingi(iscritto, env); } catch (e) { stato = 0; }
-        if (stato === 404 || stato === 410) { await env.ISCRITTI.delete(k.name); tolti++; }
-        else if (stato >= 200 && stato < 300) inviate++;
-      }
-      return risposta({ inviate, tolti, iscritti: elenco.keys.length });
+      return risposta(await avvisaTutti(env));
     }
 
     return risposta({ errore: 'non trovato' }, 404);
