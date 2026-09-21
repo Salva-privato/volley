@@ -167,7 +167,7 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .numeri{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .numeri div{background:var(--surface-2);border-radius:9px;padding:9px 11px}
 .numeri .t{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.numeri .v{font-size:15px;font-weight:700;margin-top:2px}
+.numeri .v{font-size:14px;font-weight:700;margin-top:3px;line-height:1.35}
 .numeri .v small{font-size:11px;font-weight:600;color:var(--muted)}
 .graf{width:100%;height:auto;margin-top:8px;overflow:visible}
 .g-linea{stroke:var(--line);stroke-width:1}
@@ -638,6 +638,9 @@ function statistiche(c, squadra){
   return st;
 }
 
+/** "3 vinte", "1 vinta": il numero con la sua parola. */
+const coppia=(n,uno,tanti)=>`${n} <small>${n===1?uno:tanti}</small>`;
+
 /** La classifica ricostruita giornata per giornata, per vedere la salita
  *  e la discesa. Prima di mostrarla la verifico: rifaccio i conti su tutte
  *  le partite giocate e li confronto con la classifica ufficiale della
@@ -750,12 +753,12 @@ function schedaHTML(ci, squadra){
       <div class="forma">${st.esiti.slice(-6).map(v=>`<span class="e ${v?'v':'s'}">${v?'V':'S'}</span>`).join('')}
         ${st.striscia>1?`<span class="str">${st.striscia} ${st.ultimoEsito?'vittorie':'sconfitte'} di fila</span>`:''}</div>
       <div class="numeri">
-        <div><div class="t">In casa</div><div class="v">${st.casa[0]}-${st.casa[1]} <small>V-S</small></div></div>
-        <div><div class="t">In trasferta</div><div class="v">${st.fuori[0]}-${st.fuori[1]} <small>V-S</small></div></div>
-        <div><div class="t">Set</div><div class="v">${st.setF}-${st.setS}</div></div>
+        <div><div class="t">Partite in casa</div><div class="v">${coppia(st.casa[0],'vinta','vinte')} · ${coppia(st.casa[1],'persa','perse')}</div></div>
+        <div><div class="t">Partite in trasferta</div><div class="v">${coppia(st.fuori[0],'vinta','vinte')} · ${coppia(st.fuori[1],'persa','perse')}</div></div>
+        <div><div class="t">Set</div><div class="v">${coppia(st.setF,'vinto','vinti')} · ${coppia(st.setS,'perso','persi')}</div></div>
         ${st.mediaF!==null
-          ? `<div><div class="t">Punti per set</div><div class="v">${st.mediaF.toFixed(1)}-${st.mediaS.toFixed(1)}</div></div>`
-          : `<div><div class="t">Partite</div><div class="v">${st.gioc}</div></div>`}
+          ? `<div><div class="t">Punti per set</div><div class="v">${st.mediaF.toFixed(1)} <small>fatti</small> · ${st.mediaS.toFixed(1)} <small>subiti</small></div></div>`
+          : `<div><div class="t">Partite giocate</div><div class="v">${st.gioc}</div></div>`}
       </div>`;
     const and=andamento(c);
     const serie=and?.storia.map(x=>({giornata:x.giornata, pos:x.posizioni.get(norm(squadra))}))
