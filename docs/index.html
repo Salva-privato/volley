@@ -171,6 +171,8 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .numeri .v small{font-size:11px;font-weight:600;color:var(--muted)}
 .graf{width:100%;height:auto;margin-top:8px;overflow:visible}
 .g-linea{stroke:var(--line);stroke-width:1}
+.g-linea.tenue{opacity:.45}
+.g-asse{text-anchor:end}
 .g-tratto{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .g-punto{fill:var(--accent)} .g-punto.ultimo{fill:var(--gold-fill)}
 .g-num{fill:var(--muted);font-size:9px;text-anchor:middle;font-weight:600}
@@ -680,20 +682,24 @@ function andamento(c){
 /** Il grafico della posizione: piu' in alto vuol dire piu' avanti. */
 function graficoHTML(serie, squadre){
   if(serie.length<2) return '';
-  const L=300, A=110, ml=20, mr=8, mt=10, mb=18;
+  const L=300, A=16*squadre+28, ml=18, mr=8, mt=10, mb=18;
   const x=i=>ml+(serie.length===1?0:i*(L-ml-mr)/(serie.length-1));
   const y=p=>mt+(p-1)*(A-mt-mb)/Math.max(1,squadre-1);
   const punti=serie.map((s,i)=>`${x(i).toFixed(1)},${y(s.pos).toFixed(1)}`).join(' ');
+  const posti=[...Array(squadre)].map((_,i)=>i+1);
   return `<svg class="graf" viewBox="0 0 ${L} ${A}" role="img" aria-label="posizione in classifica">
-    <line x1="${ml}" y1="${y(1)}" x2="${L-mr}" y2="${y(1)}" class="g-linea"/>
-    <line x1="${ml}" y1="${y(squadre)}" x2="${L-mr}" y2="${y(squadre)}" class="g-linea"/>
-    <text x="${ml-6}" y="${y(1)+3}" class="g-num">1</text>
-    <text x="${ml-6}" y="${y(squadre)+3}" class="g-num">${squadre}</text>
+    ${posti.map(p=>`<line x1="${ml}" y1="${y(p)}" x2="${L-mr}" y2="${y(p)}"
+        class="g-linea${p===1||p===squadre?'':' tenue'}"/>`).join('')}
+    ${posti.map(p=>`<text x="${ml-5}" y="${y(p)+3}" class="g-num g-asse">${p}</text>`).join('')}
     <polyline points="${punti}" class="g-tratto"/>
     ${serie.map((s,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(s.pos).toFixed(1)}" r="${i===serie.length-1?3.6:2.4}"
         class="g-punto${i===serie.length-1?' ultimo':''}"/>`).join('')}
-    ${serie.map((s,i)=> i===0||i===serie.length-1||serie.length<=6
-        ? `<text x="${x(i).toFixed(1)}" y="${A-5}" class="g-num g-sotto">${s.giornata}</text>` : '').join('')}
+    ${serie.map((s,i)=>{
+        // con tante giornate scrivo un numero sì e uno no, per non accavallarli
+        const passo = serie.length<=14 ? 1 : Math.ceil(serie.length/12);
+        const mostra = i===0 || i===serie.length-1 || i%passo===0;
+        return mostra ? `<text x="${x(i).toFixed(1)}" y="${A-5}" class="g-num g-sotto">${s.giornata}</text>` : '';
+      }).join('')}
   </svg>`;
 }
 
