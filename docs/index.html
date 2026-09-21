@@ -101,6 +101,17 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .hero .cd.vinta{background:var(--win)} .hero .cd.persa{background:var(--loss)}
 .vs .sep.ris{font-size:20px;color:var(--text);letter-spacing:-.02em}
 .parz{text-align:center;font-size:11px;color:var(--muted);margin:-6px 0 12px;letter-spacing:.02em}
+/* chi affrontiamo, nella scheda della prossima partita */
+.avv{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;width:100%;
+  background:none;border:0;font:inherit;font-size:11.5px;color:var(--muted);
+  margin:-4px 0 12px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.avv b{color:var(--text);font-weight:700}
+.avv:focus:not(:focus-visible),.tlink:focus:not(:focus-visible){outline:none}
+.avv .mini{display:flex;gap:3px}
+.avv .mini .e{width:15px;height:15px;border-radius:4px;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted)}
+.avv .mini .e.v{background:var(--win);color:#fff}
+.avv .mini .e.s{background:var(--loss);color:#fff}
 .vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin:4px 0 14px}
 .vs .t{font-size:15px;font-weight:600;line-height:1.25;text-align:center}
 .vs .t.us{color:var(--accent-text)}
@@ -184,6 +195,20 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .finto a{color:#fff;margin-left:auto;font-weight:700}
 #prova{display:inline-block;margin-top:8px;font-size:11px;color:var(--muted);text-decoration:none;
   border-bottom:1px dotted var(--line)}
+/* --- com'e' andata l'ultima giornata --- */
+.riep{padding:12px 14px;margin-bottom:12px}
+.riep .rh{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.riep .rn{font-size:14px;line-height:1.4;margin-top:6px}
+.riep .rn b{font-weight:700}
+.riep .ra{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:6px}
+.riep .ra b{color:var(--text);font-weight:600}
+.riep .rm{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:8px;
+  border-top:1px solid var(--line);padding-top:8px}
+.riep .rm b{color:var(--text);font-weight:600}
+.mov{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;
+  vertical-align:1px;background:var(--surface-2);color:var(--muted)}
+.mov.su{background:var(--accent-soft);color:var(--win)}
+.mov.giu{background:var(--warn-soft);color:var(--loss)}
 /* --- risultati di tutto il girone --- */
 .gm{padding:11px 0;border-bottom:1px solid var(--line)}
 .gm:last-child{border-bottom:0}
@@ -424,6 +449,24 @@ function tlink(ci,t,classe){
   return `<button type="button" class="tlink ${classe||''}" onclick="apriSquadra(${ci},${i})">${esc(nome(t))}</button>`;
 }
 
+/** Chi affrontiamo: posizione, punti e ultimi esiti, in una riga sola.
+ *  Compare solo prima della partita e solo se l'avversaria ha gia' giocato:
+ *  a inizio stagione non c'e' niente da dire e non si scrive niente. */
+function avversariaHTML(m){
+  if(played(m)||iniziata(m)) return '';
+  const ci=m.champIdx, c=DATA.championships[ci];
+  const avv=m.home_us?m.away:m.home;
+  const st=statistiche(c,avv);
+  if(!st.gioc) return '';
+  const cl=c.standings.find(s=>norm(s.team)===norm(avv));
+  const voci=[];
+  if(cl){ voci.push(`<b>${esc(cl.pos)}ª</b> in classifica`); voci.push(`${esc(cl.points)} punti`); }
+  else voci.push(`${st.vinte} vinte su ${st.gioc}`);
+  const ultimi=st.esiti.slice(-3).map(v=>`<span class="e ${v?'v':'s'}">${v?'V':'S'}</span>`).join('');
+  return `<button type="button" class="avv" onclick="apriSquadra(${ci},${indiceSquadra(ci,avv)})">
+    <span>${voci.join(' · ')}</span><span class="mini">${ultimi}</span></button>`;
+}
+
 function matchHTML(m){
   const cd=countdown(m);
   const [nostri,loro]=(()=>{
@@ -447,6 +490,7 @@ function matchHTML(m){
       ${tlink(m.champIdx,m.away,'t '+(m.home_us?'':'us'))}
     </div>
     ${finita&&parzialiTesto(m,false)?`<div class="parz">${esc(parzialiTesto(m,false))}</div>`:''}
+    ${avversariaHTML(m)}
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
       ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
     </div></div>`;
@@ -580,6 +624,61 @@ function gmHTML(m){
     ${parzialiTesto(m,false)?`<div class="pz">${esc(parzialiTesto(m,false))}</div>`:''}
   </div>`;
 }
+/** L'ultima giornata conclusa; se nessuna lo e', l'ultima con un risultato. */
+function ultimaGiornata(c){
+  const gs=giornateDi(c).filter(g=>g.matches.some(played));
+  if(!gs.length) return null;
+  return [...gs].reverse().find(g=>g.finita) || gs[gs.length-1];
+}
+
+/** Com'e' andata l'ultima giornata: la nostra partita, le altre, i movimenti
+ *  in classifica. I movimenti si mostrano solo se la classifica ricostruita
+ *  coincide con quella ufficiale, la stessa prova che regge il grafico. */
+function riepilogoHTML(c){
+  const g=ultimaGiornata(c);
+  if(!g) return '';
+  const giocate=g.matches.filter(played);
+  if(!giocate.length) return '';
+
+  const punteggio=m=>{ const [a,b]=numeri(m.sets); return `${a}-${b}`; };
+  const nostra=giocate.find(m=>m.mine);
+  const altre=giocate.filter(m=>!m.mine);
+
+  // i movimenti rispetto alla giornata precedente
+  const and=andamento(c);
+  let mosse=null;
+  if(and?.attendibile){
+    const i=and.storia.findIndex(x=>x.giornata===g.n);
+    if(i>0){
+      const ora=and.storia[i].posizioni, prima=and.storia[i-1].posizioni;
+      const salti=[...ora.entries()].map(([k,p])=>({k, p, d:(prima.get(k)??p)-p}));
+      const su=salti.filter(x=>x.d>0).sort((a,b)=>b.d-a.d)[0];
+      const giu=salti.filter(x=>x.d<0).sort((a,b)=>a.d-b.d)[0];
+      const nome2=k=>nome(squadreDi(c).find(t=>norm(t)===k)||'');
+      const noi=[...ora.keys()].find(k=>isUs(DATA,k));
+      mosse={
+        noi: noi ? {prima:prima.get(noi), ora:ora.get(noi)} : null,
+        su: su && su.d>0 ? {chi:nome2(su.k), prima:prima.get(su.k), ora:su.p} : null,
+        giu: giu && giu.d<0 ? {chi:nome2(giu.k), prima:prima.get(giu.k), ora:giu.p} : null,
+      };
+    }
+  }
+  const freccia=(da,a)=>da===a?'' : ` <span class="mov ${a<da?'su':'giu'}">${da}ª → ${a}ª</span>`;
+
+  return `<div class="card riep">
+    <div class="rh">Giornata ${g.n} · ${esc(periodo(g))}${g.finita?'':' · in corso'}</div>
+    ${nostra?`<div class="rn">${esc(nome(nostra.home))} <b>${punteggio(nostra)}</b> ${esc(nome(nostra.away))}
+        ${mosse?.noi?freccia(mosse.noi.prima,mosse.noi.ora):''}</div>`:''}
+    ${altre.length?`<div class="ra">${altre.map(m=>
+        `${esc(nome(m.home))} <b>${punteggio(m)}</b> ${esc(nome(m.away))}`).join(' · ')}</div>`:''}
+    ${mosse&&(mosse.su||mosse.giu)?`<div class="rm">
+        ${mosse.su?`Sale <b>${esc(mosse.su.chi)}</b> (${mosse.su.prima}ª → ${mosse.su.ora}ª)`:''}
+        ${mosse.su&&mosse.giu?' · ':''}
+        ${mosse.giu?`Scende <b>${esc(mosse.giu.chi)}</b> (${mosse.giu.prima}ª → ${mosse.giu.ora}ª)`:''}
+      </div>`:''}
+  </div>`;
+}
+
 function gironeHTML(c){
   const gs=giornateDi(c);
   if(!gs.length) return '<p class="empty">Nessuna partita.</p>';
@@ -844,6 +943,7 @@ function render(){
   }
   h+=`<div class="tabs" role="tablist">`+DATA.championships.map((x,i)=>
       `<button role="tab" aria-selected="${i===state.champ}" onclick="pick(${i})">${esc(x.label.replace(' Femminile',''))}</button>`).join('')+`</div>`;
+  h+=riepilogoHTML(c);
   h+=`<div class="seg">
       <button aria-selected="${state.view==='cal'}" onclick="setView('cal')">Calendario</button>
       <button aria-selected="${state.view==='gir'}" onclick="setView('gir')">Risultati</button>
