@@ -88,3 +88,13 @@ finche' c'e' solo il tuo telefono. Altrimenti si passa `{"endpoint":"..."}`.
 Il contrassegno sopravvive a una nuova iscrizione dallo stesso telefono, ma
 non a una reinstallazione dell'app (cambia l'indirizzo): in quel caso va
 rifatto.
+
+## Difese
+
+- L'iscrizione accetta **solo** indirizzi dei veri servizi push (Apple, Google,
+  Mozilla, Microsoft) e si ferma a 300 iscritti: nessuno puo' riempire l'elenco
+  di indirizzi inventati. Chi e' gia' iscritto passa comunque.
+- La disiscrizione controlla l'indirizzo allo stesso modo.
+- `GET /stato` vuole la parola d'ordine (prima era pubblico) e dice anche
+  quanti iscritti ci sono, cosi' non serve piu' chiamare `/avvisa` per contarli.
+- Tutti i comandi che scrivono o inviano restano protetti dalla parola d'ordine.

@@ -18,6 +18,17 @@
 
 const b64 = d => btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const testo = s => new TextEncoder().encode(s);
+// Solo i veri servizi push dei telefoni: cosi' nessuno puo' riempire
+// l'elenco di indirizzi inventati.
+const SERVIZI_VERI = [
+  /^https:\/\/[a-z0-9.-]+\.push\.apple\.com\//i,
+  /^https:\/\/fcm\.googleapis\.com\//i,
+  /^https:\/\/updates[0-9.-]*\.push\.services\.mozilla\.com\//i,
+  /^https:\/\/[a-z0-9.-]+\.notify\.windows\.com\//i,
+];
+const indirizzoValido = e => typeof e === 'string' && e.length < 600 && SERVIZI_VERI.some(r => r.test(e));
+const MASSIMO_ISCRITTI = 300;   // una squadra di genitori, non un servizio pubblico
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'content-type,x-segreto',
@@ -141,16 +152,19 @@ export default {
     // un telefono si iscrive (o si cancella)
     if (url.pathname === '/iscritti' && req.method === 'POST') {
       const sub = await req.json().catch(() => null);
-      if (!sub?.endpoint) return risposta({ errore: 'iscrizione non valida' }, 400);
+      if (!indirizzoValido(sub?.endpoint)) return risposta({ errore: 'iscrizione non valida' }, 400);
       // se quel telefono era gia' segnato come "di servizio" resta tale
       const vecchio = JSON.parse(await env.ISCRITTI.get(sub.endpoint) || 'null');
+      if (!vecchio && (await iscritti(env, false)).length >= MASSIMO_ISCRITTI)
+        return risposta({ errore: 'troppi iscritti' }, 429);
       await env.ISCRITTI.put(sub.endpoint, JSON.stringify({
         endpoint: sub.endpoint, dal: vecchio?.dal || new Date().toISOString(), admin: !!vecchio?.admin }));
       return risposta({ ok: true });
     }
     if (url.pathname === '/iscritti' && req.method === 'DELETE') {
       const sub = await req.json().catch(() => null);
-      if (sub?.endpoint) await env.ISCRITTI.delete(sub.endpoint);
+      if (!indirizzoValido(sub?.endpoint)) return risposta({ errore: 'indirizzo non valido' }, 400);
+      await env.ISCRITTI.delete(sub.endpoint);
       return risposta({ ok: true });
     }
 
@@ -197,9 +211,12 @@ export default {
     }
 
     // lo stato della sentinella, per poterla controllare
-    if (url.pathname === '/stato' && req.method === 'GET')
+    if (url.pathname === '/stato' && req.method === 'GET') {
+      if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
       return risposta({ battito: await leggi(env, 'battito'),
-                        ultimoAllarme: await leggi(env, 'ultimo-allarme') });
+                        ultimoAllarme: await leggi(env, 'ultimo-allarme'),
+                        iscritti: (await iscritti(env, false)).length });
+    }
 
     // il controllo si puo' anche forzare a mano
     if (url.pathname === '/controlla' && req.method === 'POST') {
