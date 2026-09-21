@@ -70,3 +70,21 @@ e manda la notifica, al massimo una al giorno.
 Indirizzi aggiunti: `POST /battito`, `POST /messaggio`, `GET /messaggio`,
 `GET /stato` (per guardare), `POST /controlla` (per forzare il controllo).
 Tutti quelli che scrivono vogliono la parola d'ordine.
+
+## Avvisi di servizio solo a chi tiene in piedi l'app
+
+Gli avvisi della sentinella e i guasti dell'automazione non interessano i
+genitori: vanno solo ai telefoni segnati come "di servizio".
+
+Si segna un telefono cosi' (serve la parola d'ordine):
+
+```
+curl -X POST "$SERVIZIO/amministratore" -H "x-segreto: $SEGRETO" \
+  -H 'content-type: application/json' -d '{"tutti":true}'
+```
+
+Con `{"tutti":true}` segna tutti quelli iscritti in quel momento - comodo
+finche' c'e' solo il tuo telefono. Altrimenti si passa `{"endpoint":"..."}`.
+Il contrassegno sopravvive a una nuova iscrizione dallo stesso telefono, ma
+non a una reinstallazione dell'app (cambia l'indirizzo): in quel caso va
+rifatto.

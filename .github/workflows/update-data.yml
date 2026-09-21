@@ -116,5 +116,5 @@ jobs:
           if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then exit 0; fi
           curl -s -m 20 -X POST "$SERVIZIO/messaggio" \
             -H "x-segreto: $SEGRETO" -H 'content-type: application/json' \
-            -d '{"titolo":"Aggiornamento non riuscito","testo":"Il controllo dei risultati e fallito. I dati potrebbero non essere aggiornati."}' || true
-          curl -s -m 30 -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO" || true
+            -d '{"admin":true,"titolo":"Aggiornamento non riuscito","testo":"Il controllo dei risultati e fallito. I dati potrebbero non essere aggiornati."}' || true
+          curl -s -m 60 -X POST "$SERVIZIO/avvisa?admin=1" -H "x-segreto: $SEGRETO" || true

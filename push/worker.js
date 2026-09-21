@@ -57,20 +57,39 @@ async function spingi(iscritto, env) {
   return r.status;
 }
 
-/** Manda la spinta a tutti gli iscritti, togliendo quelli spariti. */
-async function avvisaTutti(env) {
-  // gli iscritti hanno per chiave il loro indirizzo; le voci di servizio
-  // della sentinella cominciano con "meta:" e qui non c'entrano
+const attendi = ms => new Promise(r => setTimeout(r, ms));
+
+/** Gli iscritti, tutti o solo gli amministratori.
+ *  Le voci di servizio cominciano con "meta:" e qui non c'entrano. */
+async function iscritti(env, soloAdmin) {
   const chiavi = (await env.ISCRITTI.list()).keys.filter(k => k.name.startsWith('http'));
-  let inviate = 0, tolti = 0;
+  const fuori = [];
   for (const k of chiavi) {
-    const iscritto = JSON.parse(await env.ISCRITTI.get(k.name));
-    let stato = 0;
-    try { stato = await spingi(iscritto, env); } catch (e) { stato = 0; }
-    if (stato === 404 || stato === 410) { await env.ISCRITTI.delete(k.name); tolti++; }
-    else if (stato >= 200 && stato < 300) inviate++;
+    const i = JSON.parse(await env.ISCRITTI.get(k.name) || 'null');
+    if (!i) continue;
+    if (!soloAdmin || i.admin) fuori.push(i);
   }
-  return { inviate, tolti, iscritti: chiavi.length };
+  return fuori;
+}
+
+/** Manda la spinta, togliendo gli iscritti spariti. Ogni tanto la prima
+ *  consegna viene rifiutata: riprova, come fa l'automazione su GitHub. */
+async function avvisaTutti(env, soloAdmin) {
+  const destinatari = await iscritti(env, soloAdmin);
+  let inviate = 0, tolti = 0, tentativi = 0;
+  const restano = new Set(destinatari.map(i => i.endpoint));
+  for (let giro = 0; giro < 3 && restano.size; giro++) {
+    if (giro) await attendi(8000);
+    tentativi = giro + 1;
+    for (const endpoint of [...restano]) {
+      const iscritto = destinatari.find(i => i.endpoint === endpoint);
+      let stato = 0;
+      try { stato = await spingi(iscritto, env); } catch (e) { stato = 0; }
+      if (stato >= 200 && stato < 300) { inviate++; restano.delete(endpoint); }
+      else if (stato === 404 || stato === 410) { await env.ISCRITTI.delete(endpoint); tolti++; restano.delete(endpoint); }
+    }
+  }
+  return { inviate, tolti, tentativi, destinatari: destinatari.length, soloAdmin: !!soloAdmin };
 }
 
 const leggi = async (env, chiave) => {
@@ -93,7 +112,7 @@ async function sentinella(env) {
     return { stato: 'gia avvisato', fermo };
 
   const ore = battito ? Math.round(fermo / 36e5) : null;
-  await scrivi(env, 'messaggio', {
+  await scrivi(env, 'messaggio-admin', {
     titolo: 'Aggiornamenti fermi',
     testo: ore === null
       ? "L'aggiornamento automatico non da' sue notizie."
@@ -102,7 +121,7 @@ async function sentinella(env) {
     quando: new Date(adesso).toISOString(),
   });
   await scrivi(env, 'ultimo-allarme', { quando: new Date(adesso).toISOString() });
-  const esito = await avvisaTutti(env);
+  const esito = await avvisaTutti(env, true);   // solo a chi tiene in piedi l'app
   return { stato: 'avvisato', fermo, ...esito };
 }
 
@@ -123,7 +142,10 @@ export default {
     if (url.pathname === '/iscritti' && req.method === 'POST') {
       const sub = await req.json().catch(() => null);
       if (!sub?.endpoint) return risposta({ errore: 'iscrizione non valida' }, 400);
-      await env.ISCRITTI.put(sub.endpoint, JSON.stringify({ endpoint: sub.endpoint, dal: new Date().toISOString() }));
+      // se quel telefono era gia' segnato come "di servizio" resta tale
+      const vecchio = JSON.parse(await env.ISCRITTI.get(sub.endpoint) || 'null');
+      await env.ISCRITTI.put(sub.endpoint, JSON.stringify({
+        endpoint: sub.endpoint, dal: vecchio?.dal || new Date().toISOString(), admin: !!vecchio?.admin }));
       return risposta({ ok: true });
     }
     if (url.pathname === '/iscritti' && req.method === 'DELETE') {
@@ -132,9 +154,21 @@ export default {
       return risposta({ ok: true });
     }
 
-    // il telefono legge qui il messaggio scritto dalla sentinella
-    if (url.pathname === '/messaggio' && req.method === 'GET')
-      return risposta(await leggi(env, 'messaggio') || {});
+    // Il telefono legge qui il messaggio. Chi e' amministratore riceve anche
+    // gli avvisi di servizio: si riconosce dal proprio indirizzo di iscrizione.
+    if (url.pathname === '/messaggio' && req.method === 'GET') {
+      const pubblico = await leggi(env, 'messaggio');
+      const mio = url.searchParams.get('e');
+      if (mio) {
+        const i = JSON.parse(await env.ISCRITTI.get(mio) || 'null');
+        if (i?.admin) {
+          const riservato = await leggi(env, 'messaggio-admin');
+          const q = m => Date.parse(m?.quando || 0) || 0;
+          return risposta((q(riservato) >= q(pubblico) ? riservato : pubblico) || {});   // a parita' vince l'avviso di servizio
+        }
+      }
+      return risposta(pubblico || {});
+    }
 
     // GitHub dice "sono vivo" a ogni giro
     if (url.pathname === '/battito' && req.method === 'POST') {
@@ -153,7 +187,7 @@ export default {
       if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
       const corpo = await req.json().catch(() => ({}));
       if (!corpo.testo) return risposta({ errore: 'manca il testo' }, 400);
-      await scrivi(env, 'messaggio', {
+      await scrivi(env, corpo.admin ? 'messaggio-admin' : 'messaggio', {
         titolo: corpo.titolo || 'Martesana Volley',
         testo: corpo.testo,
         tag: corpo.tag || `avviso-${new Date().toISOString().slice(0, 13)}`,
@@ -176,7 +210,22 @@ export default {
     // GitHub chiede di avvisare tutti
     if (url.pathname === '/avvisa' && req.method === 'POST') {
       if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
-      return risposta(await avvisaTutti(env));
+      return risposta(await avvisaTutti(env, url.searchParams.get('admin') === '1'));
+    }
+
+    // Segna quali telefoni sono "di servizio": solo loro ricevono gli avvisi
+    // sull'automazione. Con {"tutti":true} segna quelli iscritti ora.
+    if (url.pathname === '/amministratore' && req.method === 'POST') {
+      if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+      const corpo = await req.json().catch(() => ({}));
+      const elenco = corpo.tutti
+        ? (await iscritti(env, false)).map(i => i.endpoint)
+        : [corpo.endpoint].filter(Boolean);
+      for (const endpoint of elenco) {
+        const i = JSON.parse(await env.ISCRITTI.get(endpoint) || 'null');
+        if (i) await env.ISCRITTI.put(endpoint, JSON.stringify({ ...i, admin: corpo.admin !== false }));
+      }
+      return risposta({ segnati: elenco.length });
     }
 
     return risposta({ errore: 'non trovato' }, 404);
