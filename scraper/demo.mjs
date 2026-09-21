@@ -65,6 +65,25 @@ for (const c of dati.championships) {
     m.partials = m.partialsLines.join(' ');
   }
 
+  // Le giornate simulate devono stare nel PASSATO, altrimenti la prossima
+  // partita risulta gia' giocata e l'anteprima non ha senso: sposto tutto
+  // indietro di un numero intero di settimane, cosi' restano gli stessi
+  // giorni della settimana.
+  const giocate = c.matches.filter(m => m.date && (m.giornata || 99) <= GIORNATE);
+  if (giocate.length) {
+    const ultima = giocate.map(m => Date.parse(m.date)).sort((a, b) => b - a)[0];
+    const bersaglio = Date.now() - 4 * 864e5;              // l'ultima giornata quattro giorni fa
+    const settimane = Math.round((bersaglio - ultima) / (7 * 864e5));
+    if (settimane) for (const m of c.matches) {
+      if (!m.date) continue;
+      const d = new Date(Date.parse(m.date) + settimane * 7 * 864e5);
+      m.date = d.toISOString().slice(0, 10);
+      if (m.dateRaw) m.dateRaw = m.dateRaw.replace(/^\d{2}\/\d{2}\/\d{4}/,
+        `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`);
+    }
+    console.log(`   date spostate di ${settimane} settimane: le giornate giocate stanno nel passato`);
+  }
+
   // classifica rifatta come fa la FIPAV
   const tab = new Map();
   const tocca = t => { const k = norm(t);
