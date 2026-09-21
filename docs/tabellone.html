@@ -115,6 +115,7 @@ function disegna(p){
              || (p.quando && Date.now() - Date.parse(p.quando) > SCADUTO);
   if (vuoto){ el('tab').hidden = true; el('tab').classList.remove('viva'); return; }
 
+
   const set = Array.isArray(p.set) ? p.set : [];
   const vinti = [0, 0];
   for (const s of set){ if (s[0] > s[1]) vinti[0]++; else if (s[1] > s[0]) vinti[1]++; }
@@ -135,7 +136,19 @@ function disegna(p){
   el('parziali').hidden = !righe.length;
 
   el('tab').hidden = false;
-  requestAnimationFrame(() => el('tab').classList.add('viva'));
+  requestAnimationFrame(() => { el('tab').classList.add('viva'); misura(); });
+}
+
+/* Dentro l'app il riquadro e' incastonato nella scheda: se restasse alto
+   a misura fissa lascerebbe sotto una striscia vuota. Qui si dice a chi
+   ci ospita quanto spazio serve davvero. */
+let ultimaAltezza = 0;
+function misura(){
+  if (MODO !== 'app' || !parent || parent === window) return;
+  const h = Math.ceil(el('tab').getBoundingClientRect().height + 2);
+  if (!h || h === ultimaAltezza) return;
+  ultimaAltezza = h;
+  try { parent.postMessage({ tabellone: { altezza: h } }, '*'); } catch (e) {}
 }
 
 async function chiedi(){

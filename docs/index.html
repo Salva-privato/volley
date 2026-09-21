@@ -291,8 +291,8 @@ td.pt{font-weight:700;color:var(--gold)}
 .dir .fuori{font-size:11px;color:var(--muted);text-decoration:none;margin-left:auto}
 .rivedi{display:inline-block;font-size:12px;font-weight:600;text-decoration:none;
   color:var(--accent-text);background:var(--accent-soft);border-radius:9px;padding:7px 11px;margin:10px 0 2px}
-.dir .solotab{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface-2)}
-.dir .solotab iframe{position:static;height:92px;width:100%;border:0}
+.dir .solotab{overflow:hidden}
+.dir .solotab iframe{position:static;height:92px;width:100%;border:0;transition:height .2s ease}
 #regia{display:inline-block;margin-top:6px;font-size:11px;color:var(--muted);text-decoration:none;opacity:.55}
 /* ### FINE DIRETTA ### */
 footer{margin-top:28px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7}
@@ -1214,6 +1214,14 @@ async function leggiRegistrazioni(){
   if(!SERVIZIO_PUSH||DEMO) return;
   try{ REGISTRAZIONI=await fetch(SERVIZIO_PUSH+'/registrazioni').then(r=>r.json()); }catch(e){}
 }
+
+/* il tabellone dentro l'app dice quanto e' alto: cosi' sotto non resta
+   una striscia vuota, che a schermo si vedeva eccome */
+window.addEventListener('message', e => {
+  const h = e.data && e.data.tabellone && e.data.tabellone.altezza;
+  if (!h || h > 400) return;
+  document.querySelectorAll('.dir .solotab iframe').forEach(f => { f.style.height = h + 'px'; });
+});
 
 (function avviaDiretta(){
   if(DEMO) return;

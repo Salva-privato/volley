@@ -50,6 +50,7 @@
   .azioni{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
   .azioni button{padding:14px}
   .fine{grid-column:1/-1;background:var(--gold);color:#221602;border-color:transparent}
+  .via{grid-column:1/-1;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:10px}
   .stato{font-size:12px;color:var(--muted);text-align:center;margin:10px 0;min-height:1.3em}
   .stato.male{color:#f08072}
   .parziali{font-size:13px;color:var(--muted);text-align:center;margin-top:10px;letter-spacing:.06em}
@@ -99,6 +100,7 @@
     <button id="annulla">Annulla ultimo</button>
     <button id="chiudiSet">Set finito</button>
     <button class="fine" id="chiudiPartita">Partita finita</button>
+    <button class="via" id="togli">Togli il punteggio dall'app</button>
   </div>
 
   <div class="card" id="delega" style="margin-top:16px">
@@ -259,6 +261,20 @@ el('annulla').addEventListener('click', () => {
   const prima = passi.pop();
   if (!prima) return;
   stato = prima; mostra(); manda();
+});
+
+/* "Partita finita" segna il risultato come definitivo; questo invece fa
+   sparire del tutto il tabellone dall'app e dal video. */
+el('togli').addEventListener('click', async () => {
+  if (!confirm('Tolgo il punteggio dall\'app e dal video?')) return;
+  try {
+    const r = await fetch(indirizzo('/punteggio'), { method: 'DELETE', headers: intestazione() });
+    if (!r.ok) return avviso('non ha funzionato (' + r.status + ')', true);
+    stato = null; passi = [];
+    el('parziali').textContent = '';
+    avviso('tolto: il tabellone e\' sparito');
+    scegli(Number(el('partita').value) || 0);
+  } catch (e) { avviso('nessuna rete', true); }
 });
 
 el('partita').addEventListener('change', e => scegli(Number(e.target.value)));
