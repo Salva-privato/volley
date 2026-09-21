@@ -666,7 +666,7 @@ function riepilogoHTML(c){
   const freccia=(da,a)=>da===a?'' : ` <span class="mov ${a<da?'su':'giu'}">${da}ª → ${a}ª</span>`;
 
   return `<div class="card riep">
-    <div class="rh">Giornata ${g.n} · ${esc(periodo(g))}${g.finita?'':' · in corso'}</div>
+    <div class="rh">Riepilogo giornata ${g.n} · ${esc(periodo(g))}${g.finita?'':' · in corso'}</div>
     ${nostra?`<div class="rn">${esc(nome(nostra.home))} <b>${punteggio(nostra)}</b> ${esc(nome(nostra.away))}
         ${mosse?.noi?freccia(mosse.noi.prima,mosse.noi.ora):''}</div>`:''}
     ${altre.length?`<div class="ra">${altre.map(m=>
@@ -941,9 +941,9 @@ function render(){
   }else{
     h+=`<h2>Prossime partite</h2><div class="card"><p class="empty">Nessuna partita in programma.</p></div>`;
   }
+  h+=riepilogoHTML(c);
   h+=`<div class="tabs" role="tablist">`+DATA.championships.map((x,i)=>
       `<button role="tab" aria-selected="${i===state.champ}" onclick="pick(${i})">${esc(x.label.replace(' Femminile',''))}</button>`).join('')+`</div>`;
-  h+=riepilogoHTML(c);
   h+=`<div class="seg">
       <button aria-selected="${state.view==='cal'}" onclick="setView('cal')">Calendario</button>
       <button aria-selected="${state.view==='gir'}" onclick="setView('gir')">Risultati</button>
