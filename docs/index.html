@@ -757,7 +757,7 @@ function schedaHTML(ci, squadra){
         <div><div class="t">Partite in trasferta</div><div class="v">${coppia(st.fuori[0],'vinta','vinte')} · ${coppia(st.fuori[1],'persa','perse')}</div></div>
         <div><div class="t">Set</div><div class="v">${coppia(st.setF,'vinto','vinti')} · ${coppia(st.setS,'perso','persi')}</div></div>
         ${st.mediaF!==null
-          ? `<div><div class="t">Punti per set</div><div class="v">${st.mediaF.toFixed(1)} <small>fatti</small> · ${st.mediaS.toFixed(1)} <small>subiti</small></div></div>`
+          ? `<div><div class="t">Media punti per set</div><div class="v">${st.mediaF.toFixed(1)} <small>fatti</small> · ${st.mediaS.toFixed(1)} <small>subiti</small></div></div>`
           : `<div><div class="t">Partite giocate</div><div class="v">${st.gioc}</div></div>`}
       </div>`;
     const and=andamento(c);
