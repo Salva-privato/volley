@@ -1,0 +1,45 @@
+# Serve solo per provare le notifiche: si avvia a mano da GitHub
+# (Actions -> Prova notifica -> Run workflow) e manda una notifica
+# di prova a tutti i telefoni iscritti.
+name: Prova notifica
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scrivi il messaggio di prova
+        run: |
+          cat > docs/notifica.json <<FINE
+          {
+           "titolo": "Martesana Volley",
+           "testo": "Prova riuscita: le notifiche funzionano.",
+           "tag": "prova-$(date -u +%s)",
+           "quando": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          FINE
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/notifica.json
+          git commit -m "Notifica di prova"
+          git push
+
+      - name: Suona il campanello
+        env:
+          SERVIZIO: ${{ secrets.SERVIZIO_PUSH }}
+          SEGRETO: ${{ secrets.SEGRETO_PUSH }}
+        run: |
+          if [ -z "$SERVIZIO" ] || [ -z "$SEGRETO" ]; then
+            echo "Mancano i due segreti SERVIZIO_PUSH e SEGRETO_PUSH"; exit 1; fi
+          echo "aspetto che il sito sia ripubblicato..."
+          sleep 75
+          codice=$(curl -s -o /tmp/r.txt -w '%{http_code}' -X POST "$SERVIZIO/avvisa" -H "x-segreto: $SEGRETO")
+          echo "risposta $codice: $(cat /tmp/r.txt)"
+          [ "$codice" = "200" ]
