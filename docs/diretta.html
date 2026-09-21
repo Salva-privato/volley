@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vai in diretta · Martesana Volley</title>
+<link rel="apple-touch-icon" href="icona-180.png">
+<meta name="theme-color" content="#1d4f50">
+<!--
+  Prepara Moblin e lo apre gia' configurato. Si arriva qui in due modi:
+   - con la parola d'ordine (chi cura l'app)
+   - con un invito a tempo:  diretta.html?t=GETTONE
+  La chiave del canale non sta in questa pagina: la consegna il servizio,
+  e solo a chi ha diritto.
+-->
+<style>
+  :root{ --bg:#0b1a19; --surface:#12302f; --surface-2:#1a3d3b; --text:#e7efed;
+         --muted:#8fa5a2; --line:#23403d; --accent:#1d4f50; --gold:#c9922f; }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{background:var(--bg);color:var(--text);font-size:16px;line-height:1.55;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:env(safe-area-inset-top) 14px calc(24px + env(safe-area-inset-bottom));
+    -webkit-tap-highlight-color:transparent}
+  h1{font-size:19px;margin:18px 0 4px}
+  h2{font-size:13px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:22px 0 8px}
+  p{margin:8px 0;color:var(--muted);font-size:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  input{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:10px;padding:11px 12px;-webkit-appearance:none}
+  button,a.tasto{display:block;width:100%;text-align:center;text-decoration:none;font:inherit;
+    font-weight:700;color:var(--text);background:var(--surface-2);border:1px solid var(--line);
+    border-radius:12px;padding:13px;margin-top:10px;cursor:pointer}
+  a.vai{background:var(--accent);border-color:transparent;font-size:18px;padding:20px}
+  .passi{counter-reset:p;list-style:none;padding:0;margin:0}
+  .passi li{counter-increment:p;position:relative;padding:0 0 12px 34px;font-size:14px;color:var(--muted)}
+  .passi li::before{content:counter(p);position:absolute;left:0;top:0;width:23px;height:23px;
+    border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  .passi b{color:var(--text)}
+  code{background:var(--surface-2);border-radius:6px;padding:2px 6px;font-size:12px;
+    word-break:break-all;display:inline-block;color:#cfe3e0}
+  .nota{font-size:12px;color:var(--muted);opacity:.85}
+  .male{color:#f08072}
+  .nascosto{display:none}
+</style>
+</head>
+<body>
+
+<div id="entra" class="card">
+  <h1 style="margin-top:0">Vai in diretta</h1>
+  <p>Serve la parola d'ordine.</p>
+  <input id="parola" type="password" placeholder="parola d'ordine" autocomplete="current-password">
+  <button id="entraOk" style="background:var(--accent);border-color:transparent">Entra</button>
+  <p id="nota" class="male"></p>
+</div>
+
+<div id="tutto" class="nascosto">
+  <h1>Vai in diretta</h1>
+  <p id="chi"></p>
+
+  <a class="tasto vai" id="apri" href="#">Apri Moblin già pronto</a>
+  <p class="nota">Moblin chiederà conferma prima di prendere la configurazione.
+    Non può farlo mentre sta già trasmettendo: se sei in onda, ferma prima.</p>
+
+  <h2>La prima volta, solo la prima</h2>
+  <div class="card">
+    <ol class="passi">
+      <li>Installa <b>Moblin</b> dall'App Store e aprila una volta.</li>
+      <li>Torna qui e premi il tasto qui sopra: la trasmissione verso il canale
+          viene impostata da sola.</li>
+      <li>In Moblin: <b>Scenes</b> → la scena → <b>Widgets</b> → <b>＋</b> →
+          <b>Browser</b>, e incolla questo indirizzo:
+          <br><code id="indirizzoTabellone"></code>
+          <button id="copia">Copia l'indirizzo del tabellone</button></li>
+      <li>Metti il riquadro in alto a sinistra e la larghezza attorno al
+          <b>33%</b>. Da qui in poi non si tocca più.</li>
+    </ol>
+  </div>
+
+  <h2>Ogni partita</h2>
+  <div class="card">
+    <ol class="passi">
+      <li>Telefono sul treppiede, in orizzontale, attaccato alla corrente.</li>
+      <li>Apri Moblin e premi il tasto rosso.</li>
+      <li>Qualcuno apre la <a href="regia.html" style="color:#74c4b8">regia</a>
+          e batte i punti: compaiono nel video e nell'app.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+const SERVIZIO = 'https://volley-notifiche.n8ns-piazzolla.workers.dev';
+const GETTONE = new URLSearchParams(location.search).get('t') || '';
+const CHIAVE_PAROLA = 'regiaParola';
+const INGRESSO_YOUTUBE = 'rtmp://a.rtmp.youtube.com/live2/';
+
+const el = id => document.getElementById(id);
+const base = location.href.split('?')[0].replace(/diretta\.html$/, '');
+const TABELLONE = base + 'tabellone.html?modo=video';
+
+/** Il collegamento che configura Moblin. Il formato e' quello che Moblin
+ *  si aspetta: schema "moblin", nessun percorso, e tutta la configurazione
+ *  come testo JSON nella parte dopo il punto interrogativo. */
+function collegamento(chiave){
+  const conf = {
+    streams: [{
+      name: 'Martesana Volley',
+      url: INGRESSO_YOUTUBE + chiave,
+      selected: true,
+      backgroundStreaming: true,      // continua anche a schermo bloccato
+      video: {
+        resolution: '1920x1080',
+        fps: 30,
+        bitrate: 4500000,
+        // YouTube in RTMP non accetta HEVC, che e' il codec predefinito di
+        // Moblin: senza questa riga la diretta partirebbe e non si vedrebbe
+        codec: 'H.264/AVC',
+      },
+      audio: { bitrate: 128000 },
+    }],
+  };
+  return 'moblin://?' + encodeURIComponent(JSON.stringify(conf));
+}
+
+async function prepara(intestazione){
+  const via = SERVIZIO + '/config' + (GETTONE ? '?t=' + encodeURIComponent(GETTONE) : '');
+  const r = await fetch(via, { headers: intestazione });
+  if (!r.ok) return false;
+  const cfg = await r.json();
+  if (!cfg.chiave) {
+    el('nota').textContent = 'Il servizio non ha ancora la chiave del canale YouTube.';
+    return false;
+  }
+  el('apri').href = collegamento(cfg.chiave);
+  el('chi').textContent = cfg.casa
+    ? cfg.casa + ' – ' + cfg.ospiti
+    : 'Trasmissione sul canale della Martesana.';
+  el('indirizzoTabellone').textContent = TABELLONE;
+  el('entra').classList.add('nascosto');
+  el('tutto').classList.remove('nascosto');
+  return true;
+}
+
+el('copia').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(TABELLONE); el('copia').textContent = 'Copiato ✓'; }
+  catch (e) { prompt('Copia questo indirizzo:', TABELLONE); }
+});
+
+el('entraOk').addEventListener('click', async () => {
+  const p = el('parola').value.trim();
+  if (await prepara({ 'x-segreto': p })) { try { localStorage.setItem(CHIAVE_PAROLA, p); } catch (e) {} }
+  else if (!el('nota').textContent) el('nota').textContent = 'Parola d\'ordine sbagliata.';
+});
+el('parola').addEventListener('keydown', e => { if (e.key === 'Enter') el('entraOk').click(); });
+
+(async () => {
+  if (GETTONE) return void prepara({});
+  let salvata = '';
+  try { salvata = localStorage.getItem(CHIAVE_PAROLA) || ''; } catch (e) {}
+  if (salvata) await prepara({ 'x-segreto': salvata });
+})();
+</script>
+</body>
+</html>

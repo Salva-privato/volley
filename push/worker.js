@@ -14,6 +14,11 @@
  *   VAPID_PRIVATA   chiave privata in formato JWK  -> segreta
  *   SEGRETO         parola d'ordine che usa GitHub -> segreta
  *   CONTATTO        "mailto:tuo@indirizzo" (lo chiedono i servizi push)
+ *
+ * Solo per la diretta (si possono lasciare vuote):
+ *   CHIAVE_TRASMISSIONE  la chiave di trasmissione del canale YouTube -> segreta
+ *   CHIAVE_YOUTUBE       la chiave per interrogare le API di Google   -> segreta
+ *   CANALE_YOUTUBE       il codice del canale (UC...), non e' un segreto
  */
 
 const b64 = d => btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -32,7 +37,7 @@ const MASSIMO_ISCRITTI = 300;   // una squadra di genitori, non un servizio pubb
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'content-type,x-segreto',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
 };
 const risposta = (dati, stato = 200) =>
   new Response(JSON.stringify(dati), { status: stato, headers: { 'content-type': 'application/json', ...CORS } });
@@ -108,6 +113,240 @@ const leggi = async (env, chiave) => {
 };
 const scrivi = (env, chiave, valore) => env.ISCRITTI.put('meta:' + chiave, JSON.stringify(valore));
 
+// ###########################################################################
+// ### INIZIO DIRETTA - punteggio dal vivo, inviti, riconoscimento YouTube ###
+// ### Per togliere la diretta: cancellare da qui fino a "FINE DIRETTA",   ###
+// ### piu' la riga segnata "aggancio diretta" dentro fetch(). Nient'altro.###
+// ###########################################################################
+
+/** Chi puo' comandare: o ha la parola d'ordine, o ha un invito valido.
+ *  L'invito serve per delegare una partita senza consegnare il segreto. */
+async function permesso(req, env, ruolo) {
+  if (req.headers.get('x-segreto') === env.SEGRETO) return { ok: true, chi: 'admin' };
+  const gettone = new URL(req.url).searchParams.get('t');
+  if (!gettone) return { ok: false };
+  const invito = await leggi(env, 'invito:' + gettone);
+  if (!invito) return { ok: false };
+  if (Date.parse(invito.scade) < Date.now()) return { ok: false };
+  if (ruolo && invito.ruolo !== ruolo) return { ok: false };
+  return { ok: true, chi: 'invito', invito };
+}
+
+// Il tabellone chiede il punteggio ogni paio di secondi, e lo chiedono in
+// tanti insieme. Senza questa cache ogni spettatore sarebbe una lettura del
+// magazzino: con due ore di partita si sfonderebbe il piano gratuito. Cosi'
+// invece la risposta la serve la rete di Cloudflare, e il magazzino lo si
+// legge una volta ogni due secondi in tutto.
+const CHIAVE_CACHE = 'https://volley.invalid/punteggio';
+const RESPIRO = 2;   // secondi
+
+async function punteggioInCache(env) {
+  const cache = caches.default;
+  const pronta = await cache.match(CHIAVE_CACHE);
+  if (pronta) return pronta;
+  const dati = await leggi(env, 'punteggio');
+  const fresca = new Response(JSON.stringify(dati || {}), {
+    headers: { 'content-type': 'application/json', 'Cache-Control': `public, max-age=${RESPIRO}`, ...CORS },
+  });
+  await cache.put(CHIAVE_CACHE, fresca.clone());
+  return fresca;
+}
+
+/** Il punteggio arriva sempre intero, mai a pezzi: cosi' due tocchi vicini
+ *  non possono scambiarsi di posto e lasciare un risultato impossibile. */
+function ripulisciPunteggio(corpo) {
+  const numero = n => Math.max(0, Math.min(199, Math.round(Number(n) || 0)));
+  const coppia = c => Array.isArray(c) && c.length === 2 ? [numero(c[0]), numero(c[1])] : null;
+  const set = (Array.isArray(corpo.set) ? corpo.set : []).map(coppia).filter(Boolean).slice(0, 5);
+  return {
+    gara: String(corpo.gara || '').slice(0, 20),
+    casa: String(corpo.casa || '').slice(0, 60),
+    ospiti: String(corpo.ospiti || '').slice(0, 60),
+    set,
+    punti: coppia(corpo.punti) || [0, 0],
+    finita: !!corpo.finita,
+    quando: new Date().toISOString(),
+  };
+}
+
+const UN_GIORNO = 24 * 60 * 60e3;
+
+// --- riconoscere da soli quando si va in onda ------------------------------
+const SITO = 'https://salva-privato.github.io/volley/';
+const YT = 'https://www.googleapis.com/youtube/v3/';
+const PRIMA = 45 * 60e3;          // si comincia a guardare mezz'ora abbondante prima
+const DOPO = 4 * 60 * 60e3;       // e si smette quattro ore dopo il fischio d'inizio
+const OGNI_RICERCA = 5 * 60e3;    // cercare costa: non piu' di una volta ogni cinque minuti
+const MASSIMO_RICERCHE = 60;      // ...e mai piu' di sessanta in un giorno
+
+/** L'ora della partita e' scritta all'italiana. A fine ottobre l'Italia
+ *  torna all'ora solare: se il fuso lo scrivessimo a mano, da novembre
+ *  guarderemmo il canale con un'ora di ritardo. */
+function istanteRoma(data, ora) {
+  const comeFosseUtc = Date.parse(`${data}T${String(ora || '00:00').replace('.', ':')}:00Z`);
+  if (!comeFosseUtc) return 0;
+  const scritto = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Rome', timeZoneName: 'longOffset' })
+    .formatToParts(comeFosseUtc).find(p => p.type === 'timeZoneName')?.value || 'GMT+01:00';
+  const m = /GMT([+-])(\d\d):(\d\d)/.exec(scritto);
+  const minuti = m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) : 60;
+  return comeFosseUtc - minuti * 60e3;
+}
+
+/** Le nostre partite, prese dal sito e tenute da parte per qualche ora. */
+async function nostrePartite(env) {
+  const salvato = await leggi(env, 'calendario');
+  if (salvato && Date.now() - Date.parse(salvato.quando) < 6 * 36e5) return salvato.partite;
+  try {
+    const dati = await (await fetch(SITO + 'data.json')).json();
+    const partite = [];
+    for (const c of dati.championships || [])
+      for (const m of c.matches || [])
+        if (m.mine && m.date) partite.push({ gara: m.gara, inizio: istanteRoma(m.date, m.time) });
+    await scrivi(env, 'calendario', { quando: new Date().toISOString(), partite });
+    return partite;
+  } catch (e) { return salvato?.partite || []; }
+}
+
+/** Siamo nell'orario di una partita? Fuori da li' non si chiede niente a
+ *  Google: il piano gratuito non e' infinito e va speso dove serve. */
+async function orarioDaPartita(env) {
+  const adesso = Date.now();
+  for (const p of await nostrePartite(env)) {
+    if (p.inizio && adesso > p.inizio - PRIMA && adesso < p.inizio + DOPO) return p;
+  }
+  return null;
+}
+
+const googleDice = async (via) => {
+  const r = await fetch(YT + via);
+  if (!r.ok) throw new Error('youtube ' + r.status);
+  return r.json();
+};
+
+/** Il controllo del canale. Cercare costa cento gettoni, controllare un
+ *  video gia' noto ne costa uno: quindi si cerca solo finche' non si trova,
+ *  poi si tiene d'occhio quel video e basta. */
+async function guardaCanale(env) {
+  if (!env.CHIAVE_YOUTUBE || !env.CANALE_YOUTUBE) return { stato: 'non configurato' };
+  const chiavi = `key=${env.CHIAVE_YOUTUBE}`;
+  const prima = await leggi(env, 'diretta');
+  const adesso = Date.now();
+
+  // 1) se sapevamo di un video in onda, basta chiedere se lo e' ancora
+  if (prima?.video && !prima.finita) {
+    let ancora = false;
+    try {
+      const d = await googleDice(`videos?part=snippet&id=${prima.video}&${chiavi}`);
+      ancora = d.items?.[0]?.snippet?.liveBroadcastContent === 'live';
+    } catch (e) { return { stato: 'google muto' }; }
+    if (ancora) return { stato: 'in onda', video: prima.video };
+    // finita: il video diventa la registrazione di quella partita
+    await scrivi(env, 'diretta', { ...prima, finita: true, fino: new Date(adesso).toISOString() });
+    const archivio = (await leggi(env, 'registrazioni')) || {};
+    archivio[new Date(adesso).toISOString().slice(0, 10)] = prima.video;
+    await scrivi(env, 'registrazioni', archivio);
+    return { stato: 'finita', video: prima.video };
+  }
+
+  // 2) altrimenti si cerca, ma solo negli orari delle partite e con misura
+  const partita = await orarioDaPartita(env);
+  if (!partita) return { stato: 'fuori orario' };
+  const conto = (await leggi(env, 'ricerche')) || { giorno: '', fatte: 0, ultima: 0 };
+  const oggi = new Date(adesso).toISOString().slice(0, 10);
+  if (conto.giorno !== oggi) { conto.giorno = oggi; conto.fatte = 0; }
+  if (conto.fatte >= MASSIMO_RICERCHE) return { stato: 'basta cercare per oggi' };
+  if (adesso - (conto.ultima || 0) < OGNI_RICERCA) return { stato: 'cercato da poco' };
+
+  let video = null;
+  try {
+    const d = await googleDice(
+      `search?part=snippet&channelId=${env.CANALE_YOUTUBE}&eventType=live&type=video&maxResults=1&${chiavi}`);
+    video = d.items?.[0]?.id?.videoId || null;
+  } catch (e) { return { stato: 'google muto' }; }
+  conto.fatte++; conto.ultima = adesso;
+  await scrivi(env, 'ricerche', conto);
+  if (!video) return { stato: 'non ancora in onda', cercate: conto.fatte };
+
+  // trovata: si avvisano tutti, una volta sola
+  await scrivi(env, 'diretta', { video, gara: partita.gara, dal: new Date(adesso).toISOString(), finita: false });
+  await scrivi(env, 'messaggio', {
+    titolo: 'Siamo in diretta',
+    testo: 'La partita e\' cominciata: tocca per vederla.',
+    tag: 'diretta-' + video,
+    quando: new Date(adesso).toISOString(),
+  });
+  const esito = await avvisaTutti(env, false);
+  return { stato: 'appena cominciata', video, ...esito };
+}
+
+/** Tutte le rotte della diretta. Torna null se l'indirizzo non e' suo,
+ *  cosi' il resto del servizio continua come se questo pezzo non esistesse. */
+async function rottaDiretta(req, env, url) {
+  const via = url.pathname;
+
+  // --- il punteggio ---------------------------------------------------
+  if (via === '/punteggio' && req.method === 'GET') return punteggioInCache(env);
+
+  if (via === '/punteggio' && (req.method === 'POST' || req.method === 'DELETE')) {
+    if (!(await permesso(req, env, 'punti')).ok) return risposta({ errore: 'no' }, 401);
+    if (req.method === 'DELETE') await env.ISCRITTI.delete('meta:punteggio');
+    else {
+      const corpo = await req.json().catch(() => null);
+      if (!corpo) return risposta({ errore: 'manca il punteggio' }, 400);
+      await scrivi(env, 'punteggio', ripulisciPunteggio(corpo));
+    }
+    await caches.default.delete(CHIAVE_CACHE);   // il tabellone deve vederlo subito
+    return risposta({ ok: true });
+  }
+
+  // --- gli inviti a tempo ----------------------------------------------
+  if (via === '/invito' && req.method === 'POST') {
+    if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+    const corpo = await req.json().catch(() => ({}));
+    const ruolo = corpo.ruolo === 'trasmetti' ? 'trasmetti' : 'punti';
+    const ore = Math.max(1, Math.min(24, Number(corpo.ore) || 12));
+    const gettone = b64(crypto.getRandomValues(new Uint8Array(18)));
+    const invito = {
+      ruolo, gettone,
+      gara: String(corpo.gara || '').slice(0, 20),
+      casa: String(corpo.casa || '').slice(0, 60),
+      ospiti: String(corpo.ospiti || '').slice(0, 60),
+      scade: new Date(Date.now() + ore * 36e5).toISOString(),
+    };
+    // scade da solo anche nel magazzino: nessun invito dimenticato in giro
+    await env.ISCRITTI.put('meta:invito:' + gettone, JSON.stringify(invito),
+      { expirationTtl: Math.round(ore * 3600) + 60 });
+    return risposta(invito);
+  }
+
+  // Chi ha l'invito ritira qui la sua configurazione. La chiave del canale
+  // esce solo per il ruolo "trasmetti", e solo finche' l'invito e' vivo.
+  if (via === '/config' && req.method === 'GET') {
+    const p = await permesso(req, env, null);
+    if (!p.ok) return risposta({ errore: 'invito scaduto o non valido' }, 401);
+    const invito = p.invito || { ruolo: 'admin', gara: url.searchParams.get('gara') || '' };
+    const fuori = { ruolo: invito.ruolo, gara: invito.gara, casa: invito.casa, ospiti: invito.ospiti };
+    if (invito.ruolo !== 'punti') fuori.chiave = env.CHIAVE_TRASMISSIONE || '';
+    return risposta(fuori);
+  }
+
+  // --- siamo in onda? ---------------------------------------------------
+  if (via === '/diretta' && req.method === 'GET') return risposta(await leggi(env, 'diretta') || {});
+  if (via === '/registrazioni' && req.method === 'GET') return risposta(await leggi(env, 'registrazioni') || {});
+
+  // il controllo del canale si puo' forzare a mano, per provarlo
+  if (via === '/guarda' && req.method === 'POST') {
+    if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+    return risposta(await guardaCanale(env));
+  }
+
+  return null;
+}
+
+// ###########################################################################
+// ### FINE DIRETTA                                                        ###
+// ###########################################################################
+
 const SILENZIO_SOSPETTO = 6 * 60 * 60e3;    // sei ore senza battito = qualcosa non va
 const UN_ALLARME_AL_GIORNO = 24 * 60 * 60e3;
 
@@ -140,11 +379,15 @@ export default {
   /** Cloudflare lo chiama agli orari impostati in "Trigger cron". */
   async scheduled(evento, env, ctx) {
     ctx.waitUntil(sentinella(env));
+    ctx.waitUntil(guardaCanale(env));   // aggancio diretta
   },
 
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+    const diretta = await rottaDiretta(req, env, url);   // aggancio diretta
+    if (diretta) return diretta;
 
     // l'app chiede la chiave pubblica per potersi iscrivere
     if (url.pathname === '/chiave') return risposta({ chiave: env.VAPID_PUBBLICA });

@@ -98,3 +98,81 @@ rifatto.
 - `GET /stato` vuole la parola d'ordine (prima era pubblico) e dice anche
   quanti iscritti ci sono, cosi' non serve piu' chiamare `/avvisa` per contarli.
 - Tutti i comandi che scrivono o inviano restano protetti dalla parola d'ordine.
+
+---
+
+# La diretta e il punteggio dal vivo
+
+Tutto questo capitolo si puo' togliere senza toccare le notifiche: nel worker
+sta fra i marcatori `INIZIO DIRETTA` e `FINE DIRETTA` piu' due righe segnate
+`aggancio diretta`; nell'app sono le pagine `tabellone.html`, `regia.html`,
+`diretta.html` e, dentro `index.html`, i blocchi con gli stessi marcatori.
+
+## Come sta insieme
+
+```
+regia.html  →  /punteggio  →  tabellone.html  →  dentro il video (Moblin)
+                                             →  dentro l'app (sopra il player)
+
+Moblin  →  RTMP  →  canale YouTube  →  il servizio se ne accorge da solo
+                                       →  notifica "Siamo in diretta"
+                                       →  il video appare nell'app
+                                       →  a fine partita resta la registrazione
+```
+
+Il punteggio **non entra dentro il video** per magia: dentro il video ci entra
+perche' Moblin disegna `tabellone.html` sopra l'immagine. Chi guarda su YouTube
+vede il tabellone solo se Moblin e' configurato con quel riquadro.
+
+## Da fare una volta sola
+
+1. **Canale YouTube** della Martesana; attivare la diretta (la prima volta
+   Google fa aspettare 24 ore).
+2. Tre variabili nel worker:
+   - `CHIAVE_TRASMISSIONE` (segreta) - la chiave di trasmissione di YouTube
+   - `CHIAVE_YOUTUBE` (segreta) - una chiave API dalla console di Google,
+     con la "YouTube Data API v3" attiva
+   - `CANALE_YOUTUBE` - il codice del canale, quello che comincia per `UC`
+3. Cron del worker: aggiungere `*/2 * * * *` accanto a quello che c'e' gia'.
+4. In Moblin, una volta: **Scenes → Widgets → ＋ → Browser**, indirizzo
+   `https://salva-privato.github.io/volley/tabellone.html?modo=video`,
+   riquadro in alto a sinistra, larghezza attorno al 33%.
+
+La trasmissione (chiave, codec, risoluzione) **non** si configura a mano: la
+consegna la pagina `diretta.html` con un collegamento `moblin://`.
+
+## Ogni partita
+
+Apri `diretta.html` → **Apri Moblin gia' pronto** → tasto rosso.
+Qualcuno apre `regia.html` e batte i punti.
+
+## Inviti
+
+Quando filma o segna qualcun altro, la regia genera un collegamento a tempo
+(`POST /invito`, ruolo `punti` o `trasmetti`, scadenza a ore). Chi lo riceve
+non installa l'app e non conosce la parola d'ordine. Il gettone scade da solo
+anche nel magazzino.
+
+Attenzione: la chiave del canale, una volta entrata in Moblin, resta su quel
+telefono. Per toglierla davvero si rigenera la chiave su YouTube.
+
+## Quanto costa a Google e a Cloudflare
+
+- Cercare una diretta costa **100 gettoni** su 10.000 al giorno: si cerca solo
+  negli orari delle partite, al massimo ogni 5 minuti e non piu' di 60 volte
+  al giorno. Quando la diretta e' trovata si passa a un controllo da **1**
+  gettone.
+- Il punteggio lo leggono tutti gli spettatori ogni secondo e mezzo: la
+  risposta e' tenuta in cache sulla rete di Cloudflare per 2 secondi, quindi
+  il magazzino viene letto una volta ogni 2 secondi in tutto, non una volta
+  per spettatore.
+
+## Comandi
+
+```
+curl "$SERVIZIO/punteggio"                     # aperto a tutti
+curl "$SERVIZIO/diretta"                       # siamo in onda?
+curl "$SERVIZIO/registrazioni"                 # le partite gia' trasmesse
+curl -X POST "$SERVIZIO/guarda" -H "x-segreto: $SEGRETO"   # forza il controllo
+curl -X DELETE "$SERVIZIO/punteggio" -H "x-segreto: $SEGRETO"  # azzera
+```

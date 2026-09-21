@@ -67,6 +67,23 @@ va sempre a fondo per intercettare rinvii, cambi di campo e campionati nuovi.
 Una gara senza risultato viene cercata fino a **12 giorni** dopo; oltre si
 presume annullata o non omologata e si smette di insistere.
 
+## La diretta
+
+Le partite si trasmettono sul canale YouTube della Martesana con **Moblin**
+(app gratuita e open source: il browser dell'iPhone non sa parlare RTMP e non
+sa stampare il tabellone dentro il video). Moblin disegna sopra l'immagine la
+nostra pagina `docs/tabellone.html`, cosi' il punteggio si vede **anche su
+YouTube**, non solo nell'app.
+
+Il punteggio lo batte chi vuole da `docs/regia.html`, anche da casa, anche da
+un telefono diverso da quello che filma. Il servizio su Cloudflare si accorge
+da solo quando il canale va in onda: manda la notifica, fa comparire il video
+nell'app e, a partita finita, tiene la registrazione agganciata alla partita.
+
+Istruzioni per intero in `push/ISTRUZIONI.md`. Tutta la diretta sta fra i
+marcatori `INIZIO DIRETTA` / `FINE DIRETTA`: si puo' togliere senza toccare
+il resto.
+
 ## Note
 
 - I campi risultato restano vuoti finché il campionato non inizia (17/10/2026).

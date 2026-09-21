@@ -271,6 +271,30 @@ tr.us td:first-child{border-radius:7px 0 0 7px}
 tr.us td:last-child{border-radius:0 7px 7px 0}
 td.pt{font-weight:700;color:var(--gold)}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:22px 0}
+/* ### INIZIO DIRETTA ### togliendo questo blocco l'app torna com'era */
+.dir{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px;margin:0 0 18px}
+.dir .chi{font-size:14px;font-weight:700;margin:0 0 8px}
+.dir .telaio{position:relative;width:100%;aspect-ratio:16/9;background:#000;
+  border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.dir iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+/* il tabellone sta sopra il video, ma i tocchi lo attraversano e
+   arrivano ai comandi di YouTube */
+.dir iframe.sopra{pointer-events:none;background:transparent}
+.dir .riga{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.dir .onda{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#b3261e;
+  border-radius:20px;padding:3px 9px}
+.dir .onda i{width:6px;height:6px;border-radius:50%;background:#fff;
+  animation:pulsa 1.6s ease-in-out infinite;font-style:normal}
+@keyframes pulsa{0%,100%{opacity:1}50%{opacity:.25}}
+.dir .fuori{font-size:11px;color:var(--muted);text-decoration:none;margin-left:auto}
+.rivedi{display:inline-block;font-size:12px;font-weight:600;text-decoration:none;
+  color:var(--accent-text);background:var(--accent-soft);border-radius:9px;padding:7px 11px;margin:10px 0 2px}
+.dir .solotab{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.dir .solotab iframe{position:static;height:92px;width:100%;border:0}
+#regia{display:inline-block;margin-top:6px;font-size:11px;color:var(--muted);text-decoration:none;opacity:.55}
+/* ### FINE DIRETTA ### */
 footer{margin-top:28px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7}
 footer a{color:var(--muted)}
 </style>
@@ -286,6 +310,7 @@ footer a{color:var(--muted)}
     Dati da <a href="https://www.sol.milano.federvolley.it/" target="_blank" rel="noopener">FIPAV Milano</a><br>
     <span id="foot"></span><br>
     <a id="prova" href="?demo=1">vedi l'app con dati di prova</a>
+    <!-- ### INIZIO DIRETTA ### --><br><a id="regia" href="regia.html">regia</a><!-- ### FINE DIRETTA ### -->
   </footer>
 </div>
 <script>
@@ -491,6 +516,7 @@ function matchHTML(m){
     </div>
     ${finita&&parzialiTesto(m,false)?`<div class="parz">${esc(parzialiTesto(m,false))}</div>`:''}
     ${avversariaHTML(m)}
+    ${rivediHTML(m)}<!-- ### aggancio diretta ### -->
     <div class="venue"><b>${esc(m.venue||'Campo da definire')}</b><span class="addr">${esc(m.address||'')}</span>
       ${maps?`<br><a class="btn" href="${maps}" target="_blank" rel="noopener">Apri nel navigatore</a>`:''}
     </div></div>`;
@@ -930,6 +956,7 @@ function render(){
   const slides=[...appena,...prossime];
   let h=DEMO?`<div class="finto">Dati di prova, non veri <a href="?demo=0">esci</a></div>`:'';
   h+=daLeggere().map(avvisoSpostamentoHTML).join('');
+  h+=direttaHTML();   // ### aggancio diretta ###
   if(slides.length){
     h+=`<h2>Prossime partite</h2>
         <div class="track" id="track">${slides.map(slideHTML).join('')}</div>`;
@@ -1111,6 +1138,92 @@ addEventListener('scroll', aggiornaBarra, {passive:true});
 aggiornaBarra();
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+/* ### INIZIO DIRETTA ###########################################################
+   La diretta su YouTube e il tabellone del punteggio. Tutto quello che serve
+   sta qui dentro: togliendo questo blocco, il blocco di stile con lo stesso
+   nome e la riga "aggancio diretta" dentro matchHTML, l'app torna com'era.
+   Le pagine tabellone.html, regia.html e diretta.html sono a parte.
+   ########################################################################### */
+let DIRETTA=null, REGISTRAZIONI={}, PUNTEGGIO=null;
+
+/* Il video e' incorporato da youtube-nocookie: YouTube non segue chi guarda
+   finche' non parte il filmato. */
+const VIDEO_YT=v=>`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v)}?rel=0&playsinline=1&modestbranding=1`;
+
+function inOnda(m){
+  if(!DIRETTA||!DIRETTA.video||DIRETTA.finita) return false;
+  return DIRETTA.gara ? String(DIRETTA.gara)===String(m.gara) : iniziata(m);
+}
+/* c'e' qualcuno che sta battendo i punti di questa partita? */
+function punteggioVivo(m){
+  if(!PUNTEGGIO||!PUNTEGGIO.casa||!PUNTEGGIO.quando) return false;
+  if(PUNTEGGIO.gara&&String(PUNTEGGIO.gara)!==String(m.gara)) return false;
+  return Date.now()-Date.parse(PUNTEGGIO.quando) < 30*60e3;
+}
+
+/* La diretta sta in una scheda sua, in cima alla pagina: mentre si gioca
+   e' la cosa piu' importante che c'e'. Dentro la scheda della partita
+   finirebbe nella giostra delle prossime, e quella e' fatta di riquadri
+   alti uguali: il video allungherebbe anche quelli vuoti. */
+function partitaInCorso(){
+  const chi = (DIRETTA&&!DIRETTA.finita&&DIRETTA.gara) || (PUNTEGGIO&&PUNTEGGIO.gara);
+  if(!chi) return null;
+  return ourMatches().find(m=>String(m.gara)===String(chi)) || null;
+}
+
+function direttaHTML(){
+  const m=partitaInCorso();
+  const viva=DIRETTA&&DIRETTA.video&&!DIRETTA.finita;
+  const punti=m?punteggioVivo(m):false;
+  if(!viva&&!punti) return '';
+  const tabellone=`<iframe class="sopra" src="tabellone.html?modo=app&gara=${encodeURIComponent(m?m.gara:'')}" title="Punteggio" scrolling="no"></iframe>`;
+  const titolo=m?`${esc(m.home)} – ${esc(m.away)}`:'';
+  return `<div class="dir">
+    <div class="riga"><span class="onda"><i></i>${viva?'in diretta':'punteggio dal vivo'}</span>
+      ${viva?`<a class="fuori" href="https://www.youtube.com/watch?v=${encodeURIComponent(DIRETTA.video)}" target="_blank" rel="noopener">apri su YouTube</a>`:''}</div>
+    ${titolo?`<div class="chi">${titolo}</div>`:''}
+    ${viva?`<div class="telaio">
+      <iframe src="${VIDEO_YT(DIRETTA.video)}" title="Diretta" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      ${tabellone}</div>`
+     :`<div class="solotab">${tabellone}</div>`}
+    </div>`;
+}
+
+/* Nella scheda della partita resta solo il richiamo alla registrazione:
+   una riga, che non altezza nessuna giostra. */
+function rivediHTML(m){
+  const v=REGISTRAZIONI[m.date];
+  return v?`<a class="rivedi" href="https://www.youtube.com/watch?v=${encodeURIComponent(v)}" target="_blank" rel="noopener">▸ Rivedi la partita</a>`:'';
+}
+
+/* Si chiede al servizio come stanno le cose. Poco e di rado: durante una
+   partita ogni minuto, il resto del tempo quasi mai. */
+async function guardaSeSiamoInOnda(){
+  if(!SERVIZIO_PUSH||DEMO) return;
+  try{
+    const [d,p]=await Promise.all([
+      fetch(SERVIZIO_PUSH+'/diretta').then(r=>r.json()).catch(()=>null),
+      fetch(SERVIZIO_PUSH+'/punteggio').then(r=>r.json()).catch(()=>null),
+    ]);
+    const cambiato=JSON.stringify([DIRETTA,PUNTEGGIO])!==JSON.stringify([d,p]);
+    DIRETTA=d; PUNTEGGIO=p;
+    if(cambiato&&DATA) render();
+  }catch(e){}
+}
+async function leggiRegistrazioni(){
+  if(!SERVIZIO_PUSH||DEMO) return;
+  try{ REGISTRAZIONI=await fetch(SERVIZIO_PUSH+'/registrazioni').then(r=>r.json()); }catch(e){}
+}
+
+(function avviaDiretta(){
+  if(DEMO) return;
+  leggiRegistrazioni().then(()=>{ if(DATA) render(); });
+  guardaSeSiamoInOnda();
+  setInterval(()=>{ if(!document.hidden) guardaSeSiamoInOnda(); }, 60000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) guardaSeSiamoInOnda(); });
+})();
+/* ### FINE DIRETTA ######################################################## */
+
 </script>
 </body>
 </html>
