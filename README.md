@@ -8,6 +8,8 @@ un'applicazione Blazor Server: il contenuto non è nell'HTML ma viaggia su
 WebSocket, quindi va letto con un browser headless (Playwright). Per questo lo
 scraper gira su GitHub Actions e non dentro l'app.
 
+Quello che resta da fare sta in `DA-FARE.md`.
+
 ## Come funziona
 
 ```
