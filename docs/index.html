@@ -158,6 +158,30 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .sr .p.att{font-weight:600;font-size:11px;color:var(--muted);text-transform:uppercase}
 .sr.mia{background:var(--accent-soft);margin:0 -12px;padding:8px 12px;border-radius:8px;border-bottom:0}
 .sr.mia + .sr.mia{margin-top:4px}
+/* --- come sta andando --- */
+.forma{display:flex;gap:4px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.forma .e{width:20px;height:20px;border-radius:5px;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted)}
+.forma .e.v{background:var(--win);color:#fff} .forma .e.s{background:var(--loss);color:#fff}
+.forma .str{font-size:12px;font-weight:600;color:var(--muted);margin-left:5px}
+.numeri{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.numeri div{background:var(--surface-2);border-radius:9px;padding:9px 11px}
+.numeri .t{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.numeri .v{font-size:15px;font-weight:700;margin-top:2px}
+.numeri .v small{font-size:11px;font-weight:600;color:var(--muted)}
+.graf{width:100%;height:auto;margin-top:8px;overflow:visible}
+.g-linea{stroke:var(--line);stroke-width:1}
+.g-tratto{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.g-punto{fill:var(--accent)} .g-punto.ultimo{fill:var(--gold-fill)}
+.g-num{fill:var(--muted);font-size:9px;text-anchor:middle;font-weight:600}
+.g-sotto{fill:var(--muted)}
+.nota{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45}
+/* --- avviso dei dati di prova --- */
+.finto{display:flex;align-items:center;gap:8px;background:var(--gold-fill);color:#fff;
+  font-size:12px;font-weight:600;padding:8px 12px;border-radius:9px;margin-bottom:10px}
+.finto a{color:#fff;margin-left:auto;font-weight:700}
+#prova{display:inline-block;margin-top:8px;font-size:11px;color:var(--muted);text-decoration:none;
+  border-bottom:1px dotted var(--line)}
 /* --- risultati di tutto il girone --- */
 .gm{padding:11px 0;border-bottom:1px solid var(--line)}
 .gm:last-child{border-bottom:0}
@@ -233,7 +257,8 @@ footer a{color:var(--muted)}
   <main id="app"><p class="empty">Caricamento…</p></main>
   <footer>
     Dati da <a href="https://www.sol.milano.federvolley.it/" target="_blank" rel="noopener">FIPAV Milano</a><br>
-    <span id="foot"></span>
+    <span id="foot"></span><br>
+    <a id="prova" href="?demo=1">vedi l'app con dati di prova</a>
   </footer>
 </div>
 <script>
@@ -570,6 +595,108 @@ function gironeHTML(c){
     ${g.matches.map(gmHTML).join('')}`;
 }
 
+/* ============ come sta andando una squadra ============ */
+
+/** I punti di una partita secondo il regolamento italiano:
+ *  3 a chi vince 3-0 o 3-1, 2-1 se si arriva al quinto set. */
+function puntiPartita(a, b){
+  if(a===3&&b<=1) return [3,0];
+  if(a===3&&b===2) return [2,1];
+  if(b===3&&a<=1) return [0,3];
+  if(b===3&&a===2) return [1,2];
+  return [0,0];
+}
+
+/** Numeri di una squadra: forma, casa e fuori, set e punti per set. */
+function statistiche(c, squadra){
+  const st={gioc:0,vinte:0,perse:0,casa:[0,0],fuori:[0,0],setF:0,setS:0,
+            puntiF:0,puntiS:0,setGiocati:0,esiti:[],punti:0};
+  const sue=c.matches.filter(m=>(norm(m.home)===norm(squadra)||norm(m.away)===norm(squadra))&&played(m))
+                     .sort((x,y)=>{const a=when(x),b=when(y); if(!a&&!b)return 0; if(!a)return 1; if(!b)return -1; return a-b;});
+  for(const m of sue){
+    const casa=norm(m.home)===norm(squadra);
+    const [h,o]=numeri(m.sets), suoi=casa?h:o, loro=casa?o:h;
+    if(suoi===undefined||loro===undefined) continue;
+    st.gioc++; st.setF+=suoi; st.setS+=loro;
+    const vinta=suoi>loro;
+    st[vinta?'vinte':'perse']++;
+    st[casa?'casa':'fuori'][vinta?0:1]++;
+    st.esiti.push(vinta);
+    st.punti+=puntiPartita(h,o)[casa?0:1];
+    for(const [pc,po] of parziali(m)){
+      st.puntiF+=casa?pc:po; st.puntiS+=casa?po:pc; st.setGiocati++;
+    }
+  }
+  // la striscia: quante di fila con lo stesso esito, dall'ultima all'indietro
+  st.striscia=0;
+  for(let i=st.esiti.length-1;i>=0&&st.esiti[i]===st.esiti.at(-1);i--) st.striscia++;
+  st.ultimoEsito=st.esiti.at(-1);
+  st.mediaF=st.setGiocati?st.puntiF/st.setGiocati:null;
+  st.mediaS=st.setGiocati?st.puntiS/st.setGiocati:null;
+  return st;
+}
+
+/** La classifica ricostruita giornata per giornata, per vedere la salita
+ *  e la discesa. Prima di mostrarla la verifico: rifaccio i conti su tutte
+ *  le partite giocate e li confronto con la classifica ufficiale della
+ *  FIPAV. Se non coincidono non mostro niente, per non dire bugie. */
+function andamento(c){
+  const giornate=[...new Set(c.matches.filter(played).map(m=>m.giornata||0))].sort((a,b)=>a-b);
+  if(!giornate.length) return null;
+  const conto=new Map();   // squadra -> {punti, setF, setS, puntiF, puntiS}
+  const tocca=t=>{ const k=norm(t);
+    if(!conto.has(k)) conto.set(k,{nome:t,punti:0,setF:0,setS:0,puntiF:0,puntiS:0});
+    return conto.get(k); };
+  for(const m of c.matches){ tocca(m.home); tocca(m.away); }
+
+  const ordina=()=>[...conto.values()].sort((x,y)=>
+      y.punti-x.punti ||
+      (y.setF/Math.max(1,y.setS))-(x.setF/Math.max(1,x.setS)) ||
+      (y.puntiF/Math.max(1,y.puntiS))-(x.puntiF/Math.max(1,x.puntiS)) ||
+      x.nome.localeCompare(y.nome,'it'));
+
+  const storia=[];   // [{giornata, posizioni: Map(squadra->posto)}]
+  for(const g of giornate){
+    for(const m of c.matches.filter(m=>played(m)&&(m.giornata||0)===g)){
+      const [h,o]=numeri(m.sets); if(h===undefined||o===undefined) continue;
+      const [ph,po]=puntiPartita(h,o);
+      const A=tocca(m.home), B=tocca(m.away);
+      A.punti+=ph; B.punti+=po;
+      A.setF+=h; A.setS+=o; B.setF+=o; B.setS+=h;
+      for(const [pc,pv] of parziali(m)){ A.puntiF+=pc; A.puntiS+=pv; B.puntiF+=pv; B.puntiS+=pc; }
+    }
+    const fila=ordina();
+    storia.push({giornata:g, posizioni:new Map(fila.map((x,i)=>[norm(x.nome), i+1]))});
+  }
+
+  // la prova del nove: l'ordine e i punti devono combaciare con la FIPAV
+  const mio=ordina();
+  const suo=[...c.standings].sort((a,b)=>numeri(a.pos)[0]-numeri(b.pos)[0]);
+  const attendibile = suo.length===mio.length && suo.every((s,i)=>
+        norm(s.team)===norm(mio[i].nome) && numeri(s.points)[0]===mio[i].punti);
+  return {storia, squadre:conto.size, attendibile};
+}
+
+/** Il grafico della posizione: piu' in alto vuol dire piu' avanti. */
+function graficoHTML(serie, squadre){
+  if(serie.length<2) return '';
+  const L=300, A=110, ml=20, mr=8, mt=10, mb=18;
+  const x=i=>ml+(serie.length===1?0:i*(L-ml-mr)/(serie.length-1));
+  const y=p=>mt+(p-1)*(A-mt-mb)/Math.max(1,squadre-1);
+  const punti=serie.map((s,i)=>`${x(i).toFixed(1)},${y(s.pos).toFixed(1)}`).join(' ');
+  return `<svg class="graf" viewBox="0 0 ${L} ${A}" role="img" aria-label="posizione in classifica">
+    <line x1="${ml}" y1="${y(1)}" x2="${L-mr}" y2="${y(1)}" class="g-linea"/>
+    <line x1="${ml}" y1="${y(squadre)}" x2="${L-mr}" y2="${y(squadre)}" class="g-linea"/>
+    <text x="${ml-6}" y="${y(1)+3}" class="g-num">1</text>
+    <text x="${ml-6}" y="${y(squadre)+3}" class="g-num">${squadre}</text>
+    <polyline points="${punti}" class="g-tratto"/>
+    ${serie.map((s,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(s.pos).toFixed(1)}" r="${i===serie.length-1?3.6:2.4}"
+        class="g-punto${i===serie.length-1?' ultimo':''}"/>`).join('')}
+    ${serie.map((s,i)=> i===0||i===serie.length-1||serie.length<=6
+        ? `<text x="${x(i).toFixed(1)}" y="${A-5}" class="g-num g-sotto">${s.giornata}</text>` : '').join('')}
+  </svg>`;
+}
+
 /* ============ scheda di una squadra ============ */
 
 /** Una riga della scheda: com'e' finita (o quando si gioca) per quella squadra. */
@@ -611,6 +738,25 @@ function schedaHTML(ci, squadra){
       <div class="d"><b>${esc(cl.points)} punti</b> in ${esc(cl.played)} partite<br>
       ${esc(cl.won)} vinte · ${esc(cl.lost)} perse · set ${esc(cl.setsWon)}-${esc(cl.setsLost)}</div></div>`;
 
+  const st=statistiche(c,squadra);
+  if(st.gioc){
+    h+=`<h4>Come sta andando</h4>
+      <div class="forma">${st.esiti.slice(-6).map(v=>`<span class="e ${v?'v':'s'}">${v?'V':'S'}</span>`).join('')}
+        ${st.striscia>1?`<span class="str">${st.striscia} ${st.ultimoEsito?'vittorie':'sconfitte'} di fila</span>`:''}</div>
+      <div class="numeri">
+        <div><div class="t">In casa</div><div class="v">${st.casa[0]}-${st.casa[1]} <small>V-S</small></div></div>
+        <div><div class="t">In trasferta</div><div class="v">${st.fuori[0]}-${st.fuori[1]} <small>V-S</small></div></div>
+        <div><div class="t">Set</div><div class="v">${st.setF}-${st.setS}</div></div>
+        ${st.mediaF!==null
+          ? `<div><div class="t">Punti per set</div><div class="v">${st.mediaF.toFixed(1)}-${st.mediaS.toFixed(1)}</div></div>`
+          : `<div><div class="t">Partite</div><div class="v">${st.gioc}</div></div>`}
+      </div>`;
+    const and=andamento(c);
+    const serie=and?.storia.map(x=>({giornata:x.giornata, pos:x.posizioni.get(norm(squadra))}))
+                   .filter(x=>x.pos) || [];
+    if(and?.attendibile && serie.length>1)
+      h+=`<h4>Posizione, giornata per giornata</h4>${graficoHTML(serie, and.squadre)}`;
+  }
   if(fatte.length) h+=`<h4>Ultime partite</h4>${fatte.map(m=>srHTML(m,squadra)).join('')}`;
   if(prossime.length) h+=`<h4>Prossimi impegni</h4>${prossime.map(m=>srHTML(m,squadra)).join('')}`;
   if(!noi) h+= scontri.length
@@ -674,7 +820,8 @@ function render(){
   const appena=ms.filter(iniziata);
   const prossime=settimanaCorrente(ms.filter(m=>!iniziata(m)));
   const slides=[...appena,...prossime];
-  let h=daLeggere().map(avvisoSpostamentoHTML).join('');
+  let h=DEMO?`<div class="finto">Dati di prova, non veri <a href="?demo=0">esci</a></div>`:'';
+  h+=daLeggere().map(avvisoSpostamentoHTML).join('');
   if(slides.length){
     h+=`<h2>Prossime partite</h2>
         <div class="track" id="track">${slides.map(slideHTML).join('')}</div>`;
@@ -739,7 +886,16 @@ window.segnaVisto=segnaVisto;
 window.apriSquadra=apriSquadra;
 window.chiudiSquadra=chiudiSquadra;
 
-fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+// modalita' di prova: ?demo=1 accende dati inventati, ?demo=0 li spegne
+const pagina=new URLSearchParams(location.search);
+if(pagina.has('demo')){
+  try{ pagina.get('demo')==='0' ? localStorage.removeItem('demo') : localStorage.setItem('demo','1'); }catch(e){}
+  history.replaceState(null,'',location.pathname);
+}
+const DEMO=(()=>{ try{ return localStorage.getItem('demo')==='1'; }catch(e){ return false; } })();
+if(DEMO){ const l=$('#prova'); if(l){ l.href='?demo=0'; l.textContent='torna ai dati veri'; } }
+
+fetch((DEMO?'demo.json':'data.json')+'?t='+Date.now()).then(r=>r.json()).then(d=>{
   DATA=d;
   const u=new Date(d.updatedAt);
   $('#upd').textContent='agg. '+u.getDate()+' '+MESI[u.getMonth()]+', '+
