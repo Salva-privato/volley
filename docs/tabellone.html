@@ -51,6 +51,10 @@
   .riga.noi .punti{color:#ffd77a}
   .parziali{background:#0b1f1ecc; color:#bcd3d0; font-size:.72rem; font-weight:600;
             padding:.28rem .9rem; letter-spacing:.04em}
+  /* a partita chiusa: la riga di chi ha vinto porta un segno d'oro e i
+     parziali dicono che quello e' il risultato definitivo */
+  .riga.vince{box-shadow:inset .22rem 0 0 #ffd77a}
+  .parziali b{color:#ffd77a; letter-spacing:.08em; margin-right:.5rem}
   .sponsor{margin-top:.6rem; display:none; align-items:center; gap:.5rem;
            background:#0b1f1ecc; color:#e9f2f0; border-radius:.5rem;
            padding:.3rem .7rem; font-size:.66rem; letter-spacing:.06em;
@@ -92,8 +96,11 @@ const GARA = opzioni.get('gara') || '';
 const MODO = ['app', 'solo'].includes(opzioni.get('modo')) ? opzioni.get('modo') : 'video';
 // nome della nostra squadra: serve solo a decidere quale riga si colora di casa
 const NOSTRA = (opzioni.get('noi') || 'MARTESANA').toUpperCase();
-// se il punteggio non si muove da mezz'ora vuol dire che nessuno sta segnando
+// se il punteggio non si muove da mezz'ora vuol dire che nessuno sta segnando;
+// un risultato finale invece resta su: chi non era in palestra apre l'app a
+// cena e vuole vedere com'e' andata
 const SCADUTO = 30 * 60e3;
+const SCADUTO_FINALE = 2 * 60 * 60e3;
 
 if (MODO !== 'video') {
   for (const e of [document.body, document.documentElement]){
@@ -127,8 +134,9 @@ function scriviNome(dove, nome){
 
 function disegna(p){
   // niente da mostrare: il tabellone sparisce del tutto e il video resta pulito
+  const dura = p && p.finita ? SCADUTO_FINALE : SCADUTO;
   const vuoto = !p || !p.casa || (GARA && p.gara && p.gara !== GARA)
-             || (p.quando && Date.now() - Date.parse(p.quando) > SCADUTO);
+             || (p.quando && Date.now() - Date.parse(p.quando) > dura);
   if (vuoto){ el('tab').hidden = true; el('tab').classList.remove('viva'); return; }
 
 
@@ -144,12 +152,13 @@ function disegna(p){
   // a partita finita il numero grande e' quello dei set, non del set in corso
   el('punti1').textContent = p.finita ? vinti[0] : punti[0];
   el('punti2').textContent = p.finita ? vinti[1] : punti[1];
-  el('riga1').className = 'riga ' + (nostra(p.casa) ? 'noi' : 'loro');
-  el('riga2').className = 'riga ' + (nostra(p.ospiti) ? 'noi' : 'loro');
+  const vinta = p.finita && vinti[0] !== vinti[1] ? (vinti[0] > vinti[1] ? 0 : 1) : -1;
+  el('riga1').className = 'riga ' + (nostra(p.casa) ? 'noi' : 'loro') + (vinta === 0 ? ' vince' : '');
+  el('riga2').className = 'riga ' + (nostra(p.ospiti) ? 'noi' : 'loro') + (vinta === 1 ? ' vince' : '');
 
   const righe = set.map(s => s[0] + '-' + s[1]);
-  el('parziali').textContent = righe.join('   ');
-  el('parziali').hidden = !righe.length;
+  el('parziali').innerHTML = (p.finita ? '<b>FINALE</b>' : '') + esc(righe.join('   '));
+  el('parziali').hidden = !righe.length && !p.finita;
 
   el('tab').hidden = false;
   requestAnimationFrame(() => { el('tab').classList.add('viva'); misura(); });

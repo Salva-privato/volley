@@ -57,6 +57,8 @@
   .invito{font-size:12px;color:var(--muted);line-height:1.5}
   .invito button{width:100%;margin-top:8px;font-size:14px;padding:10px}
   .nascosto{display:none}
+  #inizio{width:100%;margin-top:10px;background:var(--accent);border-color:transparent}
+  #inizio.fatto{background:none;color:var(--muted);font-weight:600;font-size:14px}
   /* Aggiunta all'app sulla schermata di casa, la regia si apre nella stessa
      finestra e senza i tasti del browser: senza questo collegamento, per
      tornare all'app bisognerebbe chiudere tutto e riaprire. Resta appiccicato
@@ -85,6 +87,7 @@
   <h1>Che partita</h1>
   <div class="card">
     <select id="partita"></select>
+    <button id="inizio">Partita iniziata</button>
   </div>
 
   <div class="campo">
@@ -154,6 +157,8 @@ const esc = t => String(t == null ? '' : t);
 let parola = '';
 let partite = [];
 let stato = null;          // { gara, casa, ospiti, set, punti, finita }
+let avviata = false;       // il tabellone e' gia' comparso sull'app?
+let dalServizio = null;    // l'ultimo punteggio che il servizio conosce
 let passi = [];            // per "annulla ultimo"
 let inVolo = null, daMandare = false;
 
@@ -195,10 +200,17 @@ async function caricaPartite(){
 function scegli(i){
   const m = partite[i];
   if (!m) return;
-  // se il servizio ha gia' un punteggio per questa partita si riprende quello
   if (stato && stato.gara === m.gara) return mostra();
-  stato = { gara: m.gara, casa: m.home, ospiti: m.away, set: [], punti: [0, 0], finita: false };
   passi = [];
+  // se il servizio ha gia' il punteggio di questa partita si riprende quello:
+  // girando la tendina avanti e indietro non si azzera una partita in corso
+  if (dalServizio && dalServizio.gara === m.gara) {
+    stato = JSON.parse(JSON.stringify(dalServizio));
+    avviata = true;
+    return mostra();
+  }
+  stato = { gara: m.gara, casa: m.home, ospiti: m.away, set: [], punti: [0, 0], finita: false };
+  avviata = false;
   mostra();
 }
 
@@ -225,6 +237,8 @@ function mostra(){
   el('parziali').textContent = stato.set.map(s => s[0] + '-' + s[1]).join('   ');
   el('annulla').disabled = !passi.length;
   el('chiudiPartita').textContent = stato.finita ? 'Partita finita ✓' : 'Partita finita';
+  el('inizio').textContent = avviata ? 'Il tabellone è sull\'app ✓' : 'Partita iniziata';
+  el('inizio').className = avviata ? 'fatto' : '';
 }
 
 // --- invio ----------------------------------------------------------------
@@ -233,11 +247,13 @@ function segna(azione){
   passi.push(JSON.parse(JSON.stringify(stato)));
   if (passi.length > 60) passi.shift();
   azione();
+  avviata = true;            // il primo punto vale da solo come "si comincia"
   mostra();
   manda();
 }
 
 async function manda(){
+  if (stato) dalServizio = JSON.parse(JSON.stringify(stato));
   daMandare = true;
   if (inVolo) return;                     // i tocchi rapidi si accorpano
   while (daMandare) {
@@ -273,6 +289,17 @@ document.querySelectorAll('[data-chi]').forEach(b => b.addEventListener('click',
   segna(() => { stato.punti[chi] = Math.max(0, stato.punti[chi] + quanto); });
 }));
 
+/* Prima si aspettava il primo punto per far comparire il tabellone sull'app:
+   chi guardava da casa non sapeva se la partita fosse cominciata o se nessuno
+   stesse segnando. Questo tasto manda il punteggio com'e', zero a zero. */
+el('inizio').addEventListener('click', () => {
+  if (!stato || avviata) return;
+  avviata = true;
+  mostra();
+  manda();
+  avviso('il tabellone è comparso sull\'app');
+});
+
 el('chiudiSet').addEventListener('click', () => {
   if (!stato || stato.set.length >= 5) return;
   segna(() => { stato.set.push([stato.punti[0], stato.punti[1]]); stato.punti = [0, 0]; });
@@ -301,7 +328,7 @@ el('togli').addEventListener('click', async () => {
   try {
     const r = await fetch(indirizzo('/punteggio'), { method: 'DELETE', headers: intestazione() });
     if (!r.ok) return avviso('non ha funzionato (' + r.status + ')', true);
-    stato = null; passi = [];
+    stato = null; passi = []; avviata = false; dalServizio = null;
     el('parziali').textContent = '';
     avviso('tolto: il tabellone e\' sparito');
     scegli(Number(el('partita').value) || 0);
@@ -345,6 +372,8 @@ async function avvia(){
     if (p && p.casa) {
       stato = { gara: p.gara, casa: p.casa, ospiti: p.ospiti, set: p.set || [],
                 punti: p.punti || [0, 0], finita: !!p.finita };
+      dalServizio = JSON.parse(JSON.stringify(stato));
+      avviata = true;
       const i = partite.findIndex(m => m.gara === p.gara);
       if (i >= 0) el('partita').value = i;
       mostra();

@@ -287,6 +287,10 @@ td.pt{font-weight:700;color:var(--gold)}
   border-radius:20px;padding:3px 9px}
 .dir .onda i{width:6px;height:6px;border-radius:50%;background:#fff;
   animation:pulsa 1.6s ease-in-out infinite;font-style:normal}
+/* a partita chiusa l'etichetta smette di pulsare: non si sta piu' giocando */
+.dir .onda.ferma{background:var(--accent)}
+.dir .onda.ferma i{display:none}
+.dir .vinta{font-size:13px;font-weight:700;color:var(--accent-text);margin:-2px 0 8px}
 @keyframes pulsa{0%,100%{opacity:1}50%{opacity:.25}}
 .dir .fuori{font-size:11px;color:var(--muted);text-decoration:none;margin-left:auto}
 .dir .fuori+.fuori{margin-left:0}
@@ -1160,7 +1164,19 @@ function inOnda(m){
 function punteggioVivo(m){
   if(!PUNTEGGIO||!PUNTEGGIO.casa||!PUNTEGGIO.quando) return false;
   if(PUNTEGGIO.gara&&String(PUNTEGGIO.gara)!==String(m.gara)) return false;
-  return Date.now()-Date.parse(PUNTEGGIO.quando) < 30*60e3;
+  // mezz'ora dall'ultimo punto; ma il risultato finale resta su due ore,
+  // per chi apre l'app a cena e vuole sapere com'e' andata
+  return Date.now()-Date.parse(PUNTEGGIO.quando) < (PUNTEGGIO.finita?2*60*60e3:30*60e3);
+}
+
+/* Chi ha vinto, a partita chiusa: "Ha vinto MARTESANA VOLLEY 3-1". */
+function chiHaVinto(){
+  if(!PUNTEGGIO||!PUNTEGGIO.finita) return '';
+  const set=Array.isArray(PUNTEGGIO.set)?PUNTEGGIO.set:[];
+  let a=0,b=0;
+  for(const s of set){ if(s[0]>s[1]) a++; else if(s[1]>s[0]) b++; }
+  if(a===b) return '';
+  return `Ha vinto ${esc(a>b?PUNTEGGIO.casa:PUNTEGGIO.ospiti)} ${Math.max(a,b)}-${Math.min(a,b)}`;
 }
 
 /* La diretta sta in una scheda sua, in cima alla pagina: mentre si gioca
@@ -1193,11 +1209,14 @@ function direttaHTML(){
      scheda si prende tutta la larghezza, e allora i numeri possono crescere */
   const tabellone=`<iframe class="sopra" src="tabellone.html?modo=${viva?'app':'solo'}&gara=${encodeURIComponent(m?m.gara:'')}" title="Punteggio" scrolling="no"></iframe>`;
   const titolo=m?`${esc(m.home)} – ${esc(m.away)}`:'';
+  const finita=!viva&&punti&&PUNTEGGIO&&PUNTEGGIO.finita;
+  const vinta=finita?chiHaVinto():'';
   return `<div class="dir">
-    <div class="riga"><span class="onda"><i></i>${viva?'in diretta':'punteggio dal vivo'}</span>
+    <div class="riga"><span class="onda${finita?' ferma':''}"><i></i>${viva?'in diretta':finita?'risultato finale':'punteggio dal vivo'}</span>
       ${viva?`<a class="fuori" href="https://www.youtube.com/watch?v=${encodeURIComponent(DIRETTA.video)}" target="_blank" rel="noopener">apri su YouTube</a>`:''}
       ${chiSegna()?`<a class="fuori allaregia" href="regia.html">regia ›</a>`:''}</div>
     ${titolo?`<div class="chi">${titolo}</div>`:''}
+    ${vinta?`<div class="vinta">${vinta}</div>`:''}
     ${viva?`<div class="telaio">
       <iframe src="${VIDEO_YT(DIRETTA.video)}" title="Diretta" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
       ${tabellone}</div>`
