@@ -764,6 +764,11 @@ function brindisi(testo){
   const d=document.createElement('div'); d.className='brindisi'; d.textContent=testo;
   document.body.appendChild(d); setTimeout(()=>d.remove(),3800);
 }
+// aprendo l'app il pallino rosso sull'icona si spegne
+const spegniPallino=()=>{ try{ navigator.clearAppBadge?.(); }catch(e){} };
+spegniPallino();
+addEventListener('visibilitychange',()=>{ if(!document.hidden) spegniPallino(); });
+
 const campana=$('#campana');
 const pushPossibile = SERVIZIO_PUSH && 'serviceWorker' in navigator &&
                       'PushManager' in window && 'Notification' in window;

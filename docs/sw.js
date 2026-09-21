@@ -1,5 +1,5 @@
 // Cache "network first" sui dati: online mostra i dati freschi, offline l'ultima copia.
-const CACHE = 'volley-v2';
+const CACHE = 'volley-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
@@ -37,12 +37,18 @@ self.addEventListener('push', e => {
       renotify: true,
       data: { url: './' },
     });
+    // il pallino rosso sull'icona: tante quante sono le notifiche non lette
+    try {
+      const aperte = await self.registration.getNotifications();
+      await self.navigator.setAppBadge?.(aperte.length || 1);
+    } catch (err) { /* non tutti i telefoni lo permettono */ }
   })());
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil((async () => {
+    try { await self.navigator.clearAppBadge?.(); } catch (err) {}
     const aperte = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const c of aperte) if ('focus' in c) return c.focus();
     if (self.clients.openWindow) return self.clients.openWindow(e.notification.data?.url || './');
