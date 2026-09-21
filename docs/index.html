@@ -666,7 +666,7 @@ function riepilogoHTML(c){
   const freccia=(da,a)=>da===a?'' : ` <span class="mov ${a<da?'su':'giu'}">${da}ª → ${a}ª</span>`;
 
   return `<div class="card riep">
-    <div class="rh">Riepilogo giornata ${g.n} · ${esc(periodo(g))}${g.finita?'':' · in corso'}</div>
+    <div class="rh">Riepilogo ${esc(c.label.replace(' Femminile',''))} · giornata ${g.n} · ${esc(periodo(g))}${g.finita?'':' · in corso'}</div>
     ${nostra?`<div class="rn">${esc(nome(nostra.home))} <b>${punteggio(nostra)}</b> ${esc(nome(nostra.away))}
         ${mosse?.noi?freccia(mosse.noi.prima,mosse.noi.ora):''}</div>`:''}
     ${altre.length?`<div class="ra">${altre.map(m=>
