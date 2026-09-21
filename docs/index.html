@@ -765,7 +765,10 @@ function brindisi(testo){
   document.body.appendChild(d); setTimeout(()=>d.remove(),3800);
 }
 // aprendo l'app il pallino rosso sull'icona si spegne
-const spegniPallino=()=>{ try{ navigator.clearAppBadge?.(); }catch(e){} };
+const spegniPallino=()=>{
+  try{ navigator.clearAppBadge?.(); }catch(e){}
+  navigator.serviceWorker?.ready.then(r=>r.active?.postMessage('azzera')).catch(()=>{});
+};
 spegniPallino();
 addEventListener('visibilitychange',()=>{ if(!document.hidden) spegniPallino(); });
 

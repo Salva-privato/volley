@@ -1,13 +1,32 @@
 // Cache "network first" sui dati: online mostra i dati freschi, offline l'ultima copia.
-const CACHE = 'volley-v3';
+const CACHE = 'volley-v4';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
+const CONTO = 'volley-conto';   // quante notifiche non hai ancora guardato
+
+async function leggiConto() {
+  try {
+    const c = await caches.open(CONTO);
+    const r = await c.match('conto');
+    return r ? (Number(await r.text()) || 0) : 0;
+  } catch (e) { return 0; }
+}
+async function scriviConto(n) {
+  try { (await caches.open(CONTO)).put('conto', new Response(String(n))); } catch (e) {}
+}
+async function pallino(n) {
+  try { await self.navigator.setAppBadge?.(n); } catch (e) {}
+}
+async function azzera() {
+  await scriviConto(0);
+  try { await self.navigator.clearAppBadge?.(); } catch (e) {}
+}
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks =>
-    Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+    Promise.all(ks.filter(k => k !== CACHE && k !== CONTO).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
@@ -37,18 +56,20 @@ self.addEventListener('push', e => {
       renotify: true,
       data: { url: './' },
     });
-    // il pallino rosso sull'icona: tante quante sono le notifiche non lette
-    try {
-      const aperte = await self.registration.getNotifications();
-      await self.navigator.setAppBadge?.(aperte.length || 1);
-    } catch (err) { /* non tutti i telefoni lo permettono */ }
+    const conto = await leggiConto() + 1;
+    await scriviConto(conto);
+    await pallino(conto);
   })());
+});
+
+self.addEventListener('message', e => {
+  if (e.data === 'azzera') e.waitUntil(azzera());
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil((async () => {
-    try { await self.navigator.clearAppBadge?.(); } catch (err) {}
+    await azzera();
     const aperte = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const c of aperte) if ('focus' in c) return c.focus();
     if (self.clients.openWindow) return self.clients.openWindow(e.notification.data?.url || './');
