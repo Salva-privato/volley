@@ -128,6 +128,11 @@ vede il tabellone solo se Moblin e' configurato con quel riquadro.
 
 1. **Canale YouTube** della Martesana; attivare la diretta (la prima volta
    Google fa aspettare 24 ore).
+
+   Gia' fatto: **Martesana Volley Genitori**, `@MartesanaVolleyGenitori`,
+   codice canale `UCPfD8euVksy_zOQf6m57MDw` (creato il 21/09/2026; diretta
+   attiva dal 22/09/2026 ore 15:35). Studio del canale:
+   `studio.youtube.com/channel/UCPfD8euVksy_zOQf6m57MDw`.
 2. Tre variabili nel worker:
    - `CHIAVE_TRASMISSIONE` (segreta) - la chiave di trasmissione di YouTube
    - `CHIAVE_YOUTUBE` (segreta) - una chiave API dalla console di Google,
