@@ -1,20 +1,18 @@
 # Da fare
 
-Aggiornato il 21 settembre 2026. Prima partita vera: **venerdì 16 ottobre**,
+Aggiornato il 22 settembre 2026. Prima partita vera: **venerdì 16 ottobre**,
 Geas Volley – Martesana, Under 19, ore 21:00 a Sesto San Giovanni.
 
-## Domani, 22 settembre dopo le 15:35
+## 22 settembre — fatto
 
-La diretta su YouTube si sblocca (l'attivazione è stata chiesta il 21/09 alle
-15:35 e YouTube fa aspettare 24 ore). Manca **solo la chiave di trasmissione**:
-tutto il resto della configurazione è già dentro Cloudflare e verificato.
+- [x] Chiave di trasmissione presa da YouTube e messa in `CHIAVE_TRASMISSIONE`
+      su Cloudflare: `diretta.html` mostra il tasto verde, quindi il servizio
+      la consegna.
+- [x] `push/worker.js` ripubblicato (registrazioni a elenco). Trigger cron
+      verificati: `*/2 * * * *` per il canale, 12:30 e 20:30 UTC per il battito.
 
-- [ ] **Prendere la chiave di trasmissione.** `studio.youtube.com/channel/UCPfD8euVksy_zOQf6m57MDw`
-      → Crea → Trasmetti dal vivo → *Impostazioni di streaming*. È un segreto
-      vero: non passa dalla chat e non finisce su GitHub.
-- [ ] **Metterla nel worker.** Cloudflare → `volley-notifiche` → Settings →
-      Variables → `CHIAVE_TRASMISSIONE`, spuntare **Encrypt**. Finché non c'è,
-      `diretta.html` dice "il servizio non ha ancora la chiave".
+## Resta da fare sul telefono
+
 - [ ] **Moblin sul telefono che filma**, una volta sola: installarla, aprirla,
       dare i permessi. Poi da `diretta.html` premere "Apri Moblin già pronto"
       (chiave, H.264, 1080p30, trasmissione in sottofondo entrano da sole).
@@ -23,10 +21,16 @@ tutto il resto della configurazione è già dentro Cloudflare e verificato.
       Widgets → ＋ → Browser**, indirizzo
       `https://salva-privato.github.io/volley/tabellone.html?modo=video`,
       in alto a sinistra, larghezza attorno al 33%.
-- [ ] **Prova.** Diretta **"non in elenco"** (le private non si incorporano
-      nell'app, le non in elenco sì). Google non restituisce i video non in
-      elenco, quindi il riconoscimento automatico non scatta: in `diretta.html`
-      usare "È partita: avvisa tutti" e, a fine prova, "Ho finito".
+- [ ] **Anche il telefono di scorta**, con gli stessi due passi. Se quello che
+      filma si scarica a metà partita, l'altro deve poter riprendere subito:
+      configurarlo mentre la partita è in corso non si riesce. Per il telefono
+      di un altro genitore si usa "Invito per trasmettere" dalla regia.
+- [ ] **Prova.** Diretta **pubblica** mentre si gioca — è la strada scelta il
+      22/09 — così il riconoscimento automatico fa tutto da solo e non si
+      incolla nessun link. A prova finita, da YouTube Studio si porta il video
+      su "non in elenco": "Rivedi la partita" continua a funzionare.
+      Il pannello "È partita: avvisa tutti" resta la rete di sicurezza, per le
+      dirette non in elenco o se il riconoscimento non partisse.
 
 Tutto in chiaro in `push/ISTRUZIONI.md`.
 
@@ -53,15 +57,6 @@ Deciso il 22/09: le dirette si fanno **pubbliche mentre si gioca** (cosi' il
 riconoscimento automatico funziona e non si deve incollare nessun link) e si
 portano a **"non in elenco" dopo**, a freddo, da YouTube Studio. Il tasto
 "Rivedi la partita" nell'app continua a funzionare lo stesso.
-
-## Da ripubblicare su Cloudflare
-
-- [ ] **`push/worker.js` è cambiato il 22/09** (le registrazioni di una
-      giornata diventano un elenco invece dell'ultimo video, per le dirette
-      spezzate in due quando il telefono che filma si scarica). Finché non lo
-      si incolla nel worker e si preme Deploy, il servizio gira ancora col
-      codice di prima: l'app è già pronta a leggere tutti e due i formati,
-      quindi nel frattempo non si rompe niente.
 
 ## Cose rimaste vuote
 
