@@ -31,6 +31,24 @@ Geas Volley – Martesana, Under 19, ore 21:00 a Sesto San Giovanni.
 
 Tutto in chiaro in `push/ISTRUZIONI.md`.
 
+## Imparato alla prova del 22 settembre
+
+- **Ogni diretta nasce non incorporabile.** Va spuntato *Consenti
+  incorporamento* sul singolo video (Studio → il video → Mostra altro), se no
+  nell'app compare "video non disponibile". Nelle *Impostazioni predefinite
+  video* quella casella **non c'è**: non si può fare una volta per tutte.
+  Scritto dentro `docs/diretta.html`, fra le cose di ogni partita.
+- **Il widget Browser di Moblin nasce 500×500**: va messo a 1920×1080.
+- **Gli identificativi di YouTube non si ricopiano a mano**: `I` maiuscola e
+  `l` minuscola sono identiche a schermo, e un carattere sbagliato dà lo stesso
+  "video non disponibile" senza dire perché.
+- [ ] **Il servizio potrebbe accorgersene.** Quando si incolla un collegamento
+      in "È partita", accetta qualunque cosa somigli a un identificativo senza
+      chiedere a Google se quel video esiste. Potrebbe rispondere "non trovo
+      quel video" invece di accettare in silenzio. Attenzione: per i video non
+      in elenco Google non risponde comunque, quindi dev'essere un avviso, non
+      un rifiuto.
+
 ## Le tre cose lasciate aperte, in ordine di quanto pesano
 
 - [ ] **Nessuno viene avvisato quando si comincia a segnare.** La spinta sul
