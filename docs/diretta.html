@@ -41,6 +41,16 @@
   code{background:var(--surface-2);border-radius:6px;padding:2px 6px;font-size:12px;
     word-break:break-all;display:inline-block;color:#cfe3e0}
   .nota{font-size:12px;color:var(--muted);opacity:.85}
+  /* La rete di sicurezza sta chiusa: serve di rado, e aperta si prendeva la
+     pagina come se fosse il modo normale di andare in onda. */
+  details.card{padding:0}
+  details.card summary{cursor:pointer;padding:15px;font-size:14px;font-weight:700;
+    list-style:none;display:flex;align-items:center;justify-content:space-between}
+  details.card summary::-webkit-details-marker{display:none}
+  details.card summary::after{content:'＋';color:var(--muted);font-weight:400}
+  details.card[open] summary::after{content:'−'}
+  details.card .dentro{padding:0 15px 15px}
+  details.card .dentro p:first-child{margin-top:0}
   .male{color:#f08072}
   .nascosto{display:none}
   /* Aperta dall'app sulla schermata di casa, questa pagina non ha i tasti del
@@ -75,17 +85,6 @@
   <p class="nota">Moblin chiederà conferma prima di prendere la configurazione.
     Non può farlo mentre sta già trasmettendo: se sei in onda, ferma prima.</p>
 
-  <h2 id="tSeNonInElenco">Se la diretta è "non in elenco"</h2>
-  <div class="card" id="aMano">
-    <p style="margin-top:0">Google non vede i video nascosti dalle ricerche: il link
-      va consegnato una volta, qui. Con le dirette pubbliche non serve.</p>
-    <input id="link" type="url" inputmode="url" placeholder="incolla il link della diretta"
-           autocapitalize="off" autocorrect="off" spellcheck="false">
-    <button id="accendi" style="background:#b3261e;border-color:transparent">È partita: avvisa tutti</button>
-    <button id="spegni">Ho finito</button>
-    <p id="esito" class="nota"></p>
-  </div>
-
   <h2>La prima volta, solo la prima</h2>
   <div class="card">
     <ol class="passi">
@@ -99,17 +98,53 @@
       <li>Metti il riquadro in alto a sinistra e la larghezza attorno al
           <b>33%</b>. Da qui in poi non si tocca più.</li>
     </ol>
+    <p class="nota">Conviene farlo anche sul telefono di scorta: se quello che
+      filma si scarica a metà partita, configurarlo lì per lì non si riesce.</p>
   </div>
 
   <h2>Ogni partita</h2>
   <div class="card">
     <ol class="passi">
-      <li>Telefono sul treppiede, in orizzontale, attaccato alla corrente.</li>
-      <li>Apri Moblin e premi il tasto rosso.</li>
+      <li>Telefono sul treppiede, in orizzontale, <b>attaccato alla corrente</b>.</li>
+      <li>Apri Moblin e premi il tasto rosso. Da qui in poi non devi fare niente:
+          l'app si accorge da sola che siamo in onda, fa comparire il video e
+          manda l'avviso a tutti. Ci mette qualche minuto.</li>
       <li>Qualcuno apre la <a href="regia.html" style="color:#74c4b8">regia</a>
           e batte i punti: compaiono nel video e nell'app.</li>
+      <li>A partita finita fermi Moblin, e basta così.</li>
     </ol>
+    <p class="nota">Perché funzioni da sé, la diretta su YouTube deve essere
+      <b>pubblica</b> mentre si gioca: i video "non in elenco" Google non li
+      mostra a chi chiede, e l'app non può accorgersene.</p>
   </div>
+
+  <h2>Dopo, con calma</h2>
+  <div class="card">
+    <p style="margin-top:0">A partita finita, da YouTube Studio porta il video
+      su <b>"non in elenco"</b>: sparisce dalle ricerche, dalla pagina del canale
+      e dai consigliati, e resta solo per chi ha il collegamento.</p>
+    <p>Nell'app non cambia niente: il tasto <b>“▸ Rivedi la partita”</b> continua
+      a funzionare, perché punta al video per indirizzo.</p>
+  </div>
+
+  <h2>Se qualcosa non parte</h2>
+  <details class="card">
+    <summary>Il video non compare nell'app</summary>
+    <div class="dentro">
+      <p>Succede se la diretta è "non in elenco" — Google quei video non li
+        restituisce — o se il riconoscimento non è partito. Qui glielo dici tu:
+        incolla il collegamento della diretta e premi il tasto rosso.</p>
+      <input id="link" type="url" inputmode="url" placeholder="incolla il link della diretta"
+             autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button id="accendi" style="background:#b3261e;border-color:transparent">È partita: avvisa tutti</button>
+      <button id="spegni">Ho finito</button>
+      <p id="esito" class="nota"></p>
+      <p class="nota">“Ho finito” chiude la diretta a mano. Di solito non serve:
+        quando fermi Moblin il servizio se ne accorge, e comunque dopo cinque ore
+        chiude da solo.</p>
+    </div>
+  </details>
+
 </div>
 
 <script>
