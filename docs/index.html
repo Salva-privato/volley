@@ -297,6 +297,8 @@ td.pt{font-weight:700;color:var(--gold)}
 .dir .allaregia{font-weight:700;color:var(--accent-text)}
 .rivedi{display:inline-block;font-size:12px;font-weight:600;text-decoration:none;
   color:var(--accent-text);background:var(--accent-soft);border-radius:9px;padding:7px 11px;margin:10px 0 2px}
+/* quando la partita e' spezzata in due i richiami sono affiancati */
+.rivedi+.rivedi{margin-left:6px}
 .dir .solotab{overflow:hidden}
 .dir .solotab iframe{position:static;height:120px;width:100%;border:0;transition:height .2s ease}
 #regia,#vaidiretta{display:inline-block;margin-top:6px;font-size:11px;color:var(--muted);text-decoration:none;opacity:.55}
@@ -1227,10 +1229,18 @@ function direttaHTML(){
 }
 
 /* Nella scheda della partita resta solo il richiamo alla registrazione:
-   una riga, che non altezza nessuna giostra. */
+   una riga, che non alza nessuna giostra. Le registrazioni di una giornata
+   possono essere piu' d'una: se il telefono che filma si scarica e un altro
+   riprende, YouTube apre un video nuovo e la partita resta spezzata in due.
+   Il servizio le tiene tutte in un elenco; le giornate vecchie sono scritte
+   come un video solo e si leggono lo stesso. */
 function rivediHTML(m){
   const v=REGISTRAZIONI[m.date];
-  return v?`<a class="rivedi" href="https://www.youtube.com/watch?v=${encodeURIComponent(v)}" target="_blank" rel="noopener">▸ Rivedi la partita</a>`:'';
+  const pezzi=Array.isArray(v)?v.filter(Boolean):(v?[v]:[]);
+  if(!pezzi.length) return '';
+  const vedi=(id,testo)=>`<a class="rivedi" href="https://www.youtube.com/watch?v=${encodeURIComponent(id)}" target="_blank" rel="noopener">${testo}</a>`;
+  if(pezzi.length===1) return vedi(pezzi[0],'▸ Rivedi la partita');
+  return pezzi.map((id,i)=>vedi(id,`▸ Rivedi · ${i+1}ª parte`)).join('');
 }
 
 /* Si chiede al servizio come stanno le cose. Poco e di rado: durante una

@@ -54,6 +54,15 @@ riconoscimento automatico funziona e non si deve incollare nessun link) e si
 portano a **"non in elenco" dopo**, a freddo, da YouTube Studio. Il tasto
 "Rivedi la partita" nell'app continua a funzionare lo stesso.
 
+## Da ripubblicare su Cloudflare
+
+- [ ] **`push/worker.js` è cambiato il 22/09** (le registrazioni di una
+      giornata diventano un elenco invece dell'ultimo video, per le dirette
+      spezzate in due quando il telefono che filma si scarica). Finché non lo
+      si incolla nel worker e si preme Deploy, il servizio gira ancora col
+      codice di prima: l'app è già pronta a leggere tutti e due i formati,
+      quindi nel frattempo non si rompe niente.
+
 ## Cose rimaste vuote
 
 - [ ] **`docs/sponsor.json` è una lista vuota:** la striscia degli sponsor

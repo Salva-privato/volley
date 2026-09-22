@@ -249,14 +249,26 @@ async function accendi(env, video, gara, aMano) {
   return { stato: 'appena cominciata', video, ...esito };
 }
 
-/** E' finita: il video diventa la registrazione di quella giornata. */
+/** E' finita: il video si aggiunge alle registrazioni di quella giornata.
+ *  Sono piu' d'una quando la diretta si spezza - il telefono che filma si
+ *  scarica e un altro riprende - perche' YouTube, passato il minuto di
+ *  tolleranza, apre un video nuovo. Tenere solo l'ultimo faceva sparire dai
+ *  richiami dell'app la prima meta' della partita.
+ *  Le vecchie giornate sono rimaste scritte come un video solo: si leggono
+ *  lo stesso, e la prima volta che se ne aggiunge uno diventano elenco. */
+const MASSIMO_PEZZI = 6;
+
 async function finisci(env, prima) {
   const adesso = Date.now();
   await scrivi(env, 'diretta', { ...prima, finita: true, fino: new Date(adesso).toISOString() });
   const archivio = (await leggi(env, 'registrazioni')) || {};
-  archivio[new Date(adesso).toISOString().slice(0, 10)] = prima.video;
+  const giorno = new Date(adesso).toISOString().slice(0, 10);
+  const cera = archivio[giorno];
+  const elenco = Array.isArray(cera) ? cera.slice() : (cera ? [cera] : []);
+  if (!elenco.includes(prima.video)) elenco.push(prima.video);
+  archivio[giorno] = elenco.slice(-MASSIMO_PEZZI);
   await scrivi(env, 'registrazioni', archivio);
-  return { stato: 'finita', video: prima.video };
+  return { stato: 'finita', video: prima.video, pezzi: archivio[giorno].length };
 }
 
 /** Il controllo del canale. Cercare costa cento gettoni, controllare un
