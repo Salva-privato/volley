@@ -10,17 +10,14 @@ Geas Volley – Martesana, Under 19, ore 21:00 a Sesto San Giovanni.
       la consegna.
 - [x] `push/worker.js` ripubblicato (registrazioni a elenco). Trigger cron
       verificati: `*/2 * * * *` per il canale, 12:30 e 20:30 UTC per il battito.
+- [x] Moblin configurata sul telefono principale: trasmissione importata
+      (H.264/AVC, 1080p, 30 fps) e widget Browser "Tabellone" su tutte e due le
+      scene. **La misura giusta è 1920×1080**: Moblin propone 500×500 e il
+      tabellone viene un francobollo. Istruzioni corrette dentro
+      `docs/diretta.html`.
 
 ## Resta da fare sul telefono
 
-- [ ] **Moblin sul telefono che filma**, una volta sola: installarla, aprirla,
-      dare i permessi. Poi da `diretta.html` premere "Apri Moblin già pronto"
-      (chiave, H.264, 1080p30, trasmissione in sottofondo entrano da sole).
-- [ ] **Il riquadro del tabellone, a mano.** Il collegamento `moblin://` sa
-      consegnare solo la trasmissione, non i riquadri: in Moblin **Scenes →
-      Widgets → ＋ → Browser**, indirizzo
-      `https://salva-privato.github.io/volley/tabellone.html?modo=video`,
-      in alto a sinistra, larghezza attorno al 33%.
 - [ ] **Anche il telefono di scorta**, con gli stessi due passi. Se quello che
       filma si scarica a metà partita, l'altro deve poter riprendere subito:
       configurarlo mentre la partita è in corso non si riesce. Per il telefono
