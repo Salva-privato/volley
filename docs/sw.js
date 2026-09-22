@@ -1,5 +1,5 @@
 // Cache "network first" sui dati: online mostra i dati freschi, offline l'ultima copia.
-const CACHE = 'volley-v7';
+const CACHE = 'volley-v8';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 const CONTO = 'volley-conto';   // quante notifiche non hai ancora guardato
 
@@ -40,6 +40,12 @@ function dallaRete(req){
 }
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  /* Roba d'altri - il riquadro di YouTube, il servizio su Cloudflare - la
+     gestisca il browser: a noi non serve da nessuna parte, e tenersela in
+     casa fa danni. Il 22/09 il riquadro della diretta ha continuato a dire
+     "video non disponibile" per un quarto d'ora dopo che YouTube aveva
+     riaperto l'incorporamento: era la vecchia risposta, conservata qui. */
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     dallaRete(e.request)
       .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
