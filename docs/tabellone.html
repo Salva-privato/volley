@@ -96,10 +96,12 @@ const GARA = opzioni.get('gara') || '';
 const MODO = ['app', 'solo'].includes(opzioni.get('modo')) ? opzioni.get('modo') : 'video';
 // nome della nostra squadra: serve solo a decidere quale riga si colora di casa
 const NOSTRA = (opzioni.get('noi') || 'MARTESANA').toUpperCase();
-// se il punteggio non si muove da mezz'ora vuol dire che nessuno sta segnando;
-// un risultato finale invece resta su: chi non era in palestra apre l'app a
-// cena e vuole vedere com'e' andata
-const SCADUTO = 30 * 60e3;
+// Se il punteggio non si muove piu' vuol dire che nessuno sta segnando. Ma il
+// conto riparte a ogni punto, e mezz'ora era stretta: un infortunio, l'attesa
+// prima del set decisivo o il telefono posato facevano sparire il tabellone a
+// partita ancora in corso. Un risultato finale invece resta su: chi non era in
+// palestra apre l'app a cena e vuole vedere com'e' andata.
+const SCADUTO = 90 * 60e3;
 const SCADUTO_FINALE = 2 * 60 * 60e3;
 
 if (MODO !== 'video') {

@@ -44,10 +44,15 @@ Tutto in chiaro in `push/ISTRUZIONI.md`.
       guarda da casa vede i punti arrivare a scatti. Si può stringere a dieci
       o quindici secondi mentre c'è una partita in corso, e lasciare tutto
       com'è il resto del tempo.
-- [ ] **Il tabellone in corso sparisce dopo mezz'ora senza punti.** Il
-      risultato finale ora dura due ore, ma una partita che si ferma —
-      infortunio, attesa fra un set e l'altro, il telefono posato — dopo
-      trenta minuti sparisce dall'app e dal video, e torna al punto dopo.
+- [x] ~~**Il tabellone in corso sparisce dopo mezz'ora senza punti.**~~ Fatto
+      il 22/09: l'attesa senza punti passa da trenta a **novanta minuti**, il
+      risultato finale resta due ore. Il conto riparte a ogni punto, quindi la
+      durata della partita non c'entra: conta solo la pausa piu' lunga.
+
+Deciso il 22/09: le dirette si fanno **pubbliche mentre si gioca** (cosi' il
+riconoscimento automatico funziona e non si deve incollare nessun link) e si
+portano a **"non in elenco" dopo**, a freddo, da YouTube Studio. Il tasto
+"Rivedi la partita" nell'app continua a funzionare lo stesso.
 
 ## Cose rimaste vuote
 

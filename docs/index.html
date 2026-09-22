@@ -1165,9 +1165,10 @@ function inOnda(m){
 function punteggioVivo(m){
   if(!PUNTEGGIO||!PUNTEGGIO.casa||!PUNTEGGIO.quando) return false;
   if(PUNTEGGIO.gara&&String(PUNTEGGIO.gara)!==String(m.gara)) return false;
-  // mezz'ora dall'ultimo punto; ma il risultato finale resta su due ore,
-  // per chi apre l'app a cena e vuole sapere com'e' andata
-  return Date.now()-Date.parse(PUNTEGGIO.quando) < (PUNTEGGIO.finita?2*60*60e3:30*60e3);
+  // un'ora e mezza dall'ultimo punto, che regge un infortunio o una lunga
+  // attesa fra i set; il risultato finale resta su due ore, per chi apre
+  // l'app a cena e vuole sapere com'e' andata
+  return Date.now()-Date.parse(PUNTEGGIO.quando) < (PUNTEGGIO.finita?2*60*60e3:90*60e3);
 }
 
 /* Chi ha vinto, a partita chiusa: "Ha vinto MARTESANA VOLLEY 3-1". */
