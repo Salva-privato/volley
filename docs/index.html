@@ -84,6 +84,7 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
   padding:12px 12px 12px 13px;margin-bottom:10px}
 .avviso .c{flex:1;min-width:0}
 .avviso .t{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn)}
+.avviso .t span{font-weight:600;opacity:.75}
 .avviso .q{font-size:13px;font-weight:600;margin-top:3px;line-height:1.35}
 .avviso .v{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
 .avviso .v del{text-decoration:line-through;opacity:.75}
@@ -939,15 +940,21 @@ const quando=x=>{
   const d=new Date(`${x.date}T${x.time||'00:00'}:00`);
   return `${GIORNI[d.getDay()].slice(0,3)} ${d.getDate()} ${MESI[d.getMonth()]}`+(x.time?` · ${x.time}`:'');
 };
+/* "Under 17 Femminile" -> "Under 17": i campionati seguiti sono tutti
+   femminili, e la riga del titolo e' corta. */
+const campionatoCorto=s=>String(s||'').replace(/\s*(femminile|maschile)\s*$/i,'').trim();
+
 function avvisoSpostamentoHTML(a){
   const soloCampo=a.cosa.length===1&&a.cosa[0]==='campo';
   const titolo=soloCampo?'Cambio campo':a.cosa.includes('data')?'Partita spostata':'Cambio orario';
+  // di quale squadra si parla: seguendo due campionati, senza non si capisce
+  const dove=a.champ?` <span>· ${esc(campionatoCorto(a.champ))}</span>`:'';
   const righe=[];
   if(!soloCampo) righe.push(`<del>${esc(quando(a.prima))}</del> → <b>${esc(quando(a.dopo))}</b>`);
   if(a.cosa.includes('campo'))
     righe.push(`campo: <del>${esc(a.prima.venue||'—')}</del> → <b>${esc(a.dopo.venue||'da definire')}</b>`);
   return `<div class="avviso"><div class="c">
-      <div class="t">${titolo}</div>
+      <div class="t">${titolo}${dove}</div>
       <div class="q">${esc(nome(a.home))} – ${esc(nome(a.away))}</div>
       <div class="v">${righe.join('<br>')}</div>
     </div>

@@ -84,6 +84,10 @@ export function risultatiNuovi(vecchio, nuovo) {
   return usciti;
 }
 
+/** "Under 17 Femminile" -> "Under 17": nella notifica lo spazio e' poco e il
+ *  genere non distingue niente, i campionati seguiti sono tutti femminili. */
+const campionato = s => String(s || '').replace(/\s*(femminile|maschile)\s*$/i, '').trim();
+
 /** Il messaggio da mostrare sul telefono, o null se non c'e' niente da dire. */
 export function messaggio(vecchio, nuovo, avvisi, adesso = new Date()) {
   const risultati = risultatiNuovi(vecchio, nuovo);
@@ -92,10 +96,13 @@ export function messaggio(vecchio, nuovo, avvisi, adesso = new Date()) {
 
   for (const r of risultati)
     righe.push(`${r.nostri > r.loro ? 'Vinta' : 'Persa'} ${r.nostri}-${r.loro} con ${breve(r.avversaria)}`);
-  for (const a of appena)
+  // il campionato davanti: chi segue due squadre deve sapere di quale si parla
+  for (const a of appena) {
+    const chi = a.champ ? `${campionato(a.champ)}, ` : '';
     righe.push(a.cosa.length === 1 && a.cosa[0] === 'campo'
-      ? `Cambio campo: ora si gioca a ${a.dopo.venue || 'campo da definire'}`
-      : `Spostata la partita con ${breve(nostra(nuovo, a.home) ? a.away : a.home)}: ${quando(a.dopo)}`);
+      ? `${chi}cambio campo: ora si gioca a ${a.dopo.venue || 'campo da definire'}`
+      : `${chi}spostata la partita con ${breve(nostra(nuovo, a.home) ? a.away : a.home)}: ${quando(a.dopo)}`);
+  }
 
   if (!righe.length) return null;
   const titolo = risultati.length
