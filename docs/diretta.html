@@ -243,6 +243,13 @@ el('parola').addEventListener('keydown', e => { if (e.key === 'Enter') el('entra
   try { salvata = localStorage.getItem(CHIAVE_PAROLA) || ''; } catch (e) {}
   if (salvata) await prepara({ 'x-segreto': salvata });
 })();
+
+/* Il guardiano lo installava solo l'app. Chi apriva questa pagina da sola -
+   con un invito, o scrivendo l'indirizzo - restava senza, e si teneva per
+   dieci minuti la copia vecchia che GitHub dice al browser di tenersi buona.
+   Registrandolo anche qui, dalla seconda visita in poi la pagina e' sempre
+   quella appena pubblicata. */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>
