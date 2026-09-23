@@ -562,11 +562,21 @@ function nextHTML(m){
    con una precisazione fra parentesi o un "angolo" che il navigatore non sa
    digerire: si tolgono. */
 function indirizzoMappa(m){
-  const pulito=String(m.address||'').replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
-  if(!pulito) return null;
+  const grezzo=String(m.address||'').trim();
+  if(!grezzo) return null;
+  const traParentesi=(grezzo.match(/\(([^)]*)\)/g)||[]).join(' ');
+  const pulito=grezzo.replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
   const pezzi=pulito.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
-  const via=(pezzi.pop()||'').split(/\bangolo\b/i)[0].replace(/[,\s]+$/,'').trim();
+  let via=(pezzi.pop()||'').split(/\bangolo\b/i)[0].replace(/[,\s]+$/,'').trim();
   const comune=pezzi.shift()||'';
+  /* Il civico a volte e' scritto dentro la parentesi - "via Fiorani (di
+     fronte al civico 93)" - e buttando via la parentesi si perdeva. Senza
+     numero il navigatore punta in mezzo alla via, che su una via lunga vuol
+     dire scendere dall'auto nel posto sbagliato. */
+  if(!/\d/.test(via)){
+    const n=traParentesi.match(/\d+/);
+    if(n) via+=' '+n[0];
+  }
   return [via, comune].filter(Boolean).join(', ') || null;
 }
 
