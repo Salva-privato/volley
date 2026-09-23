@@ -33,11 +33,21 @@ Tutto in chiaro in `push/ISTRUZIONI.md`.
 
 ## Imparato alla prova del 22 settembre
 
-- **Ogni diretta nasce non incorporabile.** Va spuntato *Consenti
-  incorporamento* sul singolo video (Studio → il video → Mostra altro), se no
-  nell'app compare "video non disponibile". Nelle *Impostazioni predefinite
-  video* quella casella **non c'è**: non si può fare una volta per tutte.
-  Scritto dentro `docs/diretta.html`, fra le cose di ogni partita.
+- **Ogni diretta nasce non incorporabile, e nasce non in elenco.** Provato il
+  23/09 con due dirette di fila: il modello della chiave predefinita passa il
+  titolo ma **non** l'incorporamento, e la privacy "non in elenco" applicata a
+  fine streaming resta nel modello e la eredita la diretta dopo. Una diretta
+  non in elenco **il riconoscimento automatico non la vede**.
+  Tutte e due si sistemano **a diretta gia' partita**, dalla cabina di regia →
+  *Modifica* (Privacy: Pubblico + Mostra altro → Consenti incorporamento), e
+  l'effetto e' immediato: verificato dall'esterno in pochi secondi. Scritto
+  dentro `docs/diretta.html` come "la sosta di un minuto".
+- [ ] **La via definitiva: far sistemare tutto al servizio.** Con le credenziali
+      del canale su Cloudflare (OAuth, non la semplice chiave API), quando il
+      servizio si accorge che siamo in onda puo' mettere lui il video pubblico e
+      incorporabile, e vedrebbe anche le dirette non in elenco. Mezz'ora di
+      configurazione, toglie l'unico gesto manuale rimasto. Da decidere prima
+      del 16 ottobre.
 - **Il widget Browser di Moblin nasce 500×500**: va messo a 1920×1080.
 - **Gli identificativi di YouTube non si ricopiano a mano**: `I` maiuscola e
   `l` minuscola sono identiche a schermo, e un carattere sbagliato dà lo stesso
