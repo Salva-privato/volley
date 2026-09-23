@@ -16,6 +16,26 @@ Geas Volley – Martesana, Under 19, ore 21:00 a Sesto San Giovanni.
       tabellone viene un francobollo. Istruzioni corrette dentro
       `docs/diretta.html`.
 
+## 23 settembre — la prova generale
+
+Moblin → regia → diretta, tutta la catena in una volta sola, con le verifiche
+fatte dall'esterno:
+
+- [x] Moblin in onda a 3 Mbps, tabellone dentro il video.
+- [x] Punteggio dalla regia: stessi numeri nell'app e dentro il video.
+- [x] **Il riconoscimento automatico funziona.** Provato col comando nuovo
+      "Controlla adesso se ci vede": il servizio ha trovato la diretta da solo
+      (`aMano: false`) e ha scritto il messaggio "Siamo in diretta". Era
+      l'ultimo pezzo mai visto lavorare. Il 16 ottobre non c'e' nessun link da
+      incollare: si preme il tasto rosso e basta.
+- Il ritardo del punteggio su YouTube e' la latenza della diretta, non nostra:
+  il tabellone viaggia dentro l'immagine, quindi resta sincronizzato con
+  l'azione. Conseguenza: chi guarda app e video insieme vede il punteggio
+  prima dell'azione.
+- Quando YouTube resta appeso su "Preparazione dello stream in corso" dopo
+  tante accensioni ravvicinate: fermare Moblin, chiuderla, chiudere la scheda
+  di Studio, aspettare un minuto e ricominciare.
+
 ## Resta da fare sul telefono
 
 - [ ] **Anche il telefono di scorta**, con gli stessi due passi. Se quello che
