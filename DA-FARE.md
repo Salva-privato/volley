@@ -33,15 +33,22 @@ Tutto in chiaro in `push/ISTRUZIONI.md`.
 
 ## Imparato alla prova del 22 settembre
 
-- **Ogni diretta nasce non incorporabile, e nasce non in elenco.** Provato il
-  23/09 con due dirette di fila: il modello della chiave predefinita passa il
-  titolo ma **non** l'incorporamento, e la privacy "non in elenco" applicata a
-  fine streaming resta nel modello e la eredita la diretta dopo. Una diretta
-  non in elenco **il riconoscimento automatico non la vede**.
-  Tutte e due si sistemano **a diretta gia' partita**, dalla cabina di regia →
-  *Modifica* (Privacy: Pubblico + Mostra altro → Consenti incorporamento), e
-  l'effetto e' immediato: verificato dall'esterno in pochi secondi. Scritto
-  dentro `docs/diretta.html` come "la sosta di un minuto".
+- **La privacy: risolta.** Spegnendo *"Imposta la riproduzione della
+  trasmissione dal vivo come non in elenco al termine dello streaming"* (cabina
+  di regia → Impostazioni dello stream → Impostazioni aggiuntive) ogni diretta
+  nasce **pubblica**, e il riconoscimento automatico la vede. Era quella
+  l'eredita' avvelenata: la privacy "non in elenco" applicata a fine streaming
+  restava nel modello e se la prendeva la diretta dopo. Il prezzo: le
+  registrazioni restano pubbliche finche' non le si nasconde a mano.
+- **L'incorporamento: non si puo' rendere permanente.** Provate il 23/09 tutte
+  e tre le strade, misurate dall'esterno, tutte con lo stesso esito `false`:
+  (1) spunta nel modello della chiave predefinita; (2) spunta sulla diretta
+  precedente; (3) **evento pianificato** con la spunta messa alla creazione -
+  Moblin ci si aggancia davvero (il titolo dell'evento arriva), ma andando in
+  onda YouTube azzera comunque l'incorporamento.
+  **L'unico momento in cui la spunta tiene e' a diretta gia' viva**, e li'
+  l'effetto e' immediato (verificato: da `false` a `true` in pochi secondi).
+  Scritto dentro `docs/diretta.html` come "la sosta di un minuto".
 - [ ] **La via definitiva: far sistemare tutto al servizio.** Con le credenziali
       del canale su Cloudflare (OAuth, non la semplice chiave API), quando il
       servizio si accorge che siamo in onda puo' mettere lui il video pubblico e
