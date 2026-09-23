@@ -69,9 +69,15 @@ Tutto in chiaro in `push/ISTRUZIONI.md`.
       durata della partita non c'entra: conta solo la pausa piu' lunga.
 
 Deciso il 22/09: le dirette si fanno **pubbliche mentre si gioca** (cosi' il
-riconoscimento automatico funziona e non si deve incollare nessun link) e si
-portano a **"non in elenco" dopo**, a freddo, da YouTube Studio. Il tasto
-"Rivedi la partita" nell'app continua a funzionare lo stesso.
+riconoscimento automatico funziona e non si deve incollare nessun link) e
+diventano **"non in elenco"** appena si ferma Moblin. Il passaggio non e' a
+mano: lo fa YouTube, con l'interruttore *"Imposta la riproduzione della
+trasmissione dal vivo come non in elenco al termine dello streaming"*, nella
+cabina di regia sotto **Impostazioni dello stream → Impostazioni aggiuntive**.
+Il tasto "Rivedi la partita" nell'app continua a funzionare lo stesso.
+
+Nella stessa schermata **non esistono** avvio e arresto automatico: con la
+chiave predefinita YouTube parte e si ferma da solo col segnale di Moblin.
 
 ## Cose rimaste vuote
 
