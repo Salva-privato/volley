@@ -249,6 +249,10 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .row.us{background:var(--accent-soft);margin:0 -14px;padding:11px 14px;border-radius:8px;border-bottom:0}
 .row .gd{min-width:42px;text-align:center;font-size:10px;color:var(--muted);line-height:1.3}
 .row .gd b{display:block;font-size:15px;color:var(--text)}
+/* il giorno della settimana sopra la data: dice al volo se si gioca di
+   sabato o in mezzo alla settimana, che e' la prima cosa che si guarda */
+.row .gd i{display:block;font-style:normal;font-size:9px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;opacity:.7;margin-bottom:1px}
 .row .tm{flex:1;min-width:0;font-size:13px;line-height:1.35}
 .row .tm .u{font-weight:700}
 .row .sc{font-size:15px;font-weight:700;min-width:40px;text-align:right}
@@ -582,7 +586,7 @@ function rigaHTML(m){
     sc=`<div class="sc ${vinta?'w':'l'}">${a}-${b}${parzialiTesto(m,false)?`<small>${esc(parzialiTesto(m,false))}</small>`:''}</div>`;
   }
   return `<div class="row">
-    <div class="gd">${d?`<b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
+    <div class="gd">${d?`<i>${GIORNI[d.getDay()].slice(0,3)}</i><b>${d.getDate()} ${MESI[d.getMonth()]}</b>${m.time||''}`
                      :'<span class="tbd">da<br>destinarsi</span>'}</div>
     <div class="tm">${us_home?`${tlink(state.champ,m.home,'u')} – ${tlink(state.champ,opp)}`
                        :`${tlink(state.champ,opp,'u')} – ${tlink(state.champ,m.away)}`}
