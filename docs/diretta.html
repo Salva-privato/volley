@@ -158,12 +158,19 @@
   <details class="card">
     <summary>Il video non compare nell'app</summary>
     <div class="dentro">
-      <p>Succede se la diretta è "non in elenco" — Google quei video non li
-        restituisce — o se il riconoscimento non è partito. Qui glielo dici tu:
-        incolla il collegamento della diretta e premi il tasto rosso.</p>
+      <p>Di solito il servizio se ne accorge da solo, ma <b>solo negli orari
+        delle partite</b>: da 45 minuti prima del fischio a 4 ore dopo. Fuori
+        da quella finestra non guarda nemmeno, per non sprecare le richieste
+        che Google concede ogni giorno.</p>
+      <p>Il tasto qui sotto glielo fa fare <b>subito</b>, ed è anche il modo di
+        capire cosa sta succedendo invece di tirare a indovinare.</p>
       <p><b>Incolla, non riscrivere a mano.</b> Negli indirizzi di YouTube la I
         maiuscola e la l minuscola sono identiche: un carattere sbagliato e il
         riquadro dice "video non disponibile" senza spiegare perché.</p>
+      <button id="guarda" style="background:var(--accent);border-color:transparent">Controlla adesso se ci vede</button>
+      <p id="esitoGuarda" class="nota"></p>
+      <p>Se anche così non ti trova, indicagli tu la diretta: incolla il
+        collegamento e premi il tasto rosso.</p>
       <input id="link" type="url" inputmode="url" placeholder="incolla il link della diretta"
              autocapitalize="off" autocorrect="off" spellcheck="false">
       <button id="accendi" style="background:#b3261e;border-color:transparent">È partita: avvisa tutti</button>
@@ -253,6 +260,36 @@ async function comanda(metodo, corpo){
     : (d.errore || 'non ha funzionato');
   el('esito').className = 'nota' + (r.ok ? '' : ' male');
 }
+/* Le risposte del servizio sono parole sue: qui diventano italiano. */
+const SPIEGA = {
+  'appena cominciata': 'Trovata! La notifica è partita e il video è nell\'app.',
+  'gia in onda':       'Trovata, ed era già segnalata: nell\'app c\'è già.',
+  'in onda':           'Trovata: risulta in onda, nell\'app c\'è già.',
+  'in onda, senza conferma': 'Risulta in onda, ma Google non lo conferma: succede con i video non in elenco.',
+  'non ancora in onda': 'Google non vede nessuna diretta sul canale. Se hai appena premuto il tasto rosso, riprova fra un minuto: YouTube ci mette un po\' a pubblicarla.',
+  'finita':            'Il servizio ha appena chiuso la diretta precedente. Ripremi per cercare quella nuova.',
+  'google muto':       'Google non ha risposto. Riprova fra poco.',
+  'fuori orario':      'Siamo fuori dagli orari delle partite.',
+  'basta cercare per oggi': 'Troppe ricerche per oggi: il servizio si ferma per non sprecare le richieste di Google.',
+  'non configurato':   'Al servizio manca la chiave di Google o il codice del canale.',
+  'cercato da poco':   'Ha cercato da poco: riprova fra qualche minuto.',
+};
+el('guarda').addEventListener('click', async () => {
+  el('esitoGuarda').textContent = 'sto chiedendo al servizio…';
+  el('esitoGuarda').className = 'nota';
+  try {
+    const r = await fetch(viaConGettone('/guarda') + (GETTONE ? '&' : '?') + 'forza=1',
+      { method: 'POST', headers: intestazione });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.errore || r.status);
+    el('esitoGuarda').textContent = SPIEGA[d.stato] || ('risposta: ' + (d.stato || '?'));
+    el('esitoGuarda').className = 'nota' + (String(d.stato || '').startsWith('non ') || d.stato === 'google muto' ? ' male' : '');
+  } catch (e) {
+    el('esitoGuarda').textContent = 'non ha funzionato (' + e.message + ')';
+    el('esitoGuarda').className = 'nota male';
+  }
+});
+
 el('accendi').addEventListener('click', () => {
   const v = el('link').value.trim();
   if (!v) return void (el('esito').textContent = 'Manca il link.');

@@ -274,7 +274,7 @@ async function finisci(env, prima) {
 /** Il controllo del canale. Cercare costa cento gettoni, controllare un
  *  video gia' noto ne costa uno: quindi si cerca solo finche' non si trova,
  *  poi si tiene d'occhio quel video e basta. */
-async function guardaCanale(env) {
+async function guardaCanale(env, forza = false) {
   if (!env.CHIAVE_YOUTUBE || !env.CANALE_YOUTUBE) return { stato: 'non configurato' };
   const chiavi = `key=${env.CHIAVE_YOUTUBE}`;
   const prima = await leggi(env, 'diretta');
@@ -300,14 +300,17 @@ async function guardaCanale(env) {
     return finisci(env, prima);
   }
 
-  // 2) altrimenti si cerca, ma solo negli orari delle partite e con misura
-  const partita = await orarioDaPartita(env);
+  // 2) altrimenti si cerca, ma solo negli orari delle partite e con misura.
+  //    "forza" serve a provare la catena fuori dagli orari, da chi trasmette:
+  //    salta l'orario e l'attesa fra una ricerca e l'altra, ma non il tetto
+  //    giornaliero - quello protegge i gettoni di Google.
+  const partita = forza ? { gara: '' } : await orarioDaPartita(env);
   if (!partita) return { stato: 'fuori orario' };
   const conto = (await leggi(env, 'ricerche')) || { giorno: '', fatte: 0, ultima: 0 };
   const oggi = new Date(adesso).toISOString().slice(0, 10);
   if (conto.giorno !== oggi) { conto.giorno = oggi; conto.fatte = 0; }
   if (conto.fatte >= MASSIMO_RICERCHE) return { stato: 'basta cercare per oggi' };
-  if (adesso - (conto.ultima || 0) < OGNI_RICERCA) return { stato: 'cercato da poco' };
+  if (!forza && adesso - (conto.ultima || 0) < OGNI_RICERCA) return { stato: 'cercato da poco' };
 
   let video = null;
   try {
@@ -376,6 +379,15 @@ async function rottaDiretta(req, env, url) {
 
   // --- siamo in onda? ---------------------------------------------------
   if (via === '/diretta' && req.method === 'GET') return risposta(await leggi(env, 'diretta') || {});
+
+  /* "Guarda adesso": fa fare al servizio, su richiesta, lo stesso controllo
+     che fa da solo negli orari delle partite. Serve a provare la catena senza
+     aspettare la domenica, e il giorno della partita a capire perche' la
+     diretta non compare, invece di incollare il link alla cieca. */
+  if (via === '/guarda' && req.method === 'POST') {
+    if (!(await permesso(req, env, 'trasmetti')).ok) return risposta({ errore: 'no' }, 401);
+    return risposta(await guardaCanale(env, url.searchParams.get('forza') === '1'));
+  }
 
   // A mano: serve quando la diretta e' "non in elenco", perche' il catalogo
   // di Google, interrogato senza credenziali, quei video non li mostra.
