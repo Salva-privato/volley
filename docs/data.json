@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-23T12:47:03.155Z",
+ "updatedAt": "2026-09-23T12:50:23.400Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -238,9 +238,9 @@
     {
      "gara": "70407",
      "giornata": 4,
-     "date": "2026-11-08",
-     "time": "15:15",
-     "dateRaw": "08/11/2026 dom : 15.15",
+     "date": "2026-11-07",
+     "time": "18:15",
+     "dateRaw": "07/11/2026 sab : 18.15",
      "home": "ASPES VOLLEY CUS STATALE MEDNOW",
      "away": "G.S. CAGLIERO ROSSA",
      "sets": null,
