@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-23T12:14:41.795Z",
+ "updatedAt": "2026-09-23T12:35:06.483Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -493,9 +493,9 @@
     {
      "gara": "70424",
      "giornata": 9,
-     "date": "2026-12-12",
-     "time": "19:00",
-     "dateRaw": "12/12/2026 sab : 19.00",
+     "date": "2026-12-13",
+     "time": "11:00",
+     "dateRaw": "13/12/2026 dom : 11.00",
      "home": "AD ASTRA - BELLATRIX",
      "away": "MI3 VOLLEY ROSSA",
      "sets": null,
