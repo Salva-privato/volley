@@ -516,7 +516,8 @@ function matchHTML(m){
   })();
   const finita=nostri!==null, vinta=finita&&nostri>loro;
   const attesa=!finita&&iniziata(m);
-  const maps=m.address?`https://maps.google.com/?q=${encodeURIComponent(m.venue+' '+m.address)}`:null;
+  const ind=indirizzoMappa(m);
+  const maps=ind?`https://maps.google.com/?q=${encodeURIComponent(ind)}`:null;
   return `<div class="match">
     <div class="when"><span class="day">${esc(fmtLong(m))}</span>
       ${finita?`<span class="cd ${vinta?'vinta':'persa'}">${vinta?'Vinta':'Persa'}</span>`
@@ -551,6 +552,22 @@ function nextHTML(m){
     <div class="i"><div class="op">${esc(nome(opp))}</div>
       <div class="sub">${m.home_us?'in casa':'trasferta'}${m.time?' · '+m.time:''} · ${esc(m.champ.replace(' Femminile',''))}</div></div>
   </div>`;
+}
+
+/* L'indirizzo da dare al navigatore. Il nome della palestra NON ci va: i nomi
+   FIPAV sono generici ("Scuola el. Martiri della Liberta'") e ce n'e' uno
+   uguale in ogni comune, cosi' Google puntava alla scuola sbagliata invece
+   che alla via giusta. Conta solo la via, col comune dietro.
+   Gli indirizzi arrivano come "COMUNE - [FRAZIONE -] VIA E NUMERO", a volte
+   con una precisazione fra parentesi o un "angolo" che il navigatore non sa
+   digerire: si tolgono. */
+function indirizzoMappa(m){
+  const pulito=String(m.address||'').replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
+  if(!pulito) return null;
+  const pezzi=pulito.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
+  const via=(pezzi.pop()||'').split(/\bangolo\b/i)[0].replace(/[,\s]+$/,'').trim();
+  const comune=pezzi.shift()||'';
+  return [via, comune].filter(Boolean).join(', ') || null;
 }
 
 /** Le partite della squadra raggruppate per mese, in ordine di data. */
