@@ -320,8 +320,8 @@ footer a{color:var(--muted)}
     Dati da <a href="https://www.sol.milano.federvolley.it/" target="_blank" rel="noopener">FIPAV Milano</a><br>
     <span id="foot"></span><br>
     <a id="prova" href="?demo=1">vedi l'app con dati di prova</a>
-    <!-- ### INIZIO DIRETTA ### --><br><a id="regia" href="regia.html">regia</a>
-    · <a id="vaidiretta" href="diretta.html">vai in diretta</a><!-- ### FINE DIRETTA ### -->
+    <!-- ### INIZIO DIRETTA ### --><span id="comandi" hidden><br><a id="regia" href="regia.html">regia</a>
+    · <a id="vaidiretta" href="diretta.html">vai in diretta</a></span><!-- ### FINE DIRETTA ### -->
   </footer>
 </div>
 <script>
@@ -1198,14 +1198,26 @@ function partitaInCorso(){
 }
 
 /* Chi sta segnando i punti fa avanti e indietro fra la regia e l'app: se e'
-   gia' entrato una volta, il richiamo alla regia gli sta qui sotto mano,
-   senza andarlo a cercare in fondo alla pagina. */
+   gia' entrato una volta, il richiamo alla regia gli sta sotto mano, senza
+   andarlo a cercare in fondo alla pagina. Gli altri non lo vedono nemmeno. */
 function chiSegna(){
   try{
     if(localStorage.getItem('regiaParola')) return true;
     const g=JSON.parse(localStorage.getItem('regiaGettone')||'null');
     return !!(g&&g.t&&Date.now()-g.quando<12*3600e3);
   }catch(e){ return false; }
+}
+
+/* I due richiami in fondo alla pagina - regia e vai in diretta - si mostrano
+   solo a chi li sa usare. Non e' una serratura: quella e' la parola d'ordine,
+   e senza non si combina niente comunque. E' che un tasto che chiede un
+   segreto, a chi il segreto non ce l'ha, e' solo un invito a provarci.
+   Su un telefono nuovo si entra andando dritti a regia.html, oppure
+   aggiungendo ?regia=1 all'indirizzo dell'app. */
+function mostraComandi(){
+  const si = chiSegna() || new URLSearchParams(location.search).has('regia');
+  const c = document.getElementById('comandi');
+  if (c) c.hidden = !si;
 }
 
 function direttaHTML(){
@@ -1272,6 +1284,7 @@ window.addEventListener('message', e => {
 });
 
 (function avviaDiretta(){
+  mostraComandi();
   if(DEMO) return;
   leggiRegistrazioni().then(()=>{ if(DATA) render(); });
   guardaSeSiamoInOnda();
