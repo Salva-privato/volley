@@ -40,7 +40,12 @@ Tutto in chiaro in `push/ISTRUZIONI.md`.
   l'eredita' avvelenata: la privacy "non in elenco" applicata a fine streaming
   restava nel modello e se la prendeva la diretta dopo. Il prezzo: le
   registrazioni restano pubbliche finche' non le si nasconde a mano.
-- **L'incorporamento: non si puo' rendere permanente.** Provate il 23/09 tutte
+- **L'incorporamento: rinunciato.** Deciso il 23/09: la partita non si guarda
+  piu' dentro l'app. Sotto il punteggio c'e' un tasto **"Guarda la diretta su
+  YouTube"** e il tabellone si prende tutta la larghezza. Cosi' non resta
+  nessun gesto da fare durante la partita, e nessuno vede piu' il rettangolo
+  nero con scritto "video non disponibile".
+- **Perche' ci si e' rinunciato: non si puo' rendere permanente.** Provate il 23/09 tutte
   e tre le strade, misurate dall'esterno, tutte con lo stesso esito `false`:
   (1) spunta nel modello della chiave predefinita; (2) spunta sulla diretta
   precedente; (3) **evento pianificato** con la spunta messa alla creazione -
@@ -49,12 +54,14 @@ Tutto in chiaro in `push/ISTRUZIONI.md`.
   **L'unico momento in cui la spunta tiene e' a diretta gia' viva**, e li'
   l'effetto e' immediato (verificato: da `false` a `true` in pochi secondi).
   Scritto dentro `docs/diretta.html` come "la sosta di un minuto".
-- [ ] **La via definitiva: far sistemare tutto al servizio.** Con le credenziali
-      del canale su Cloudflare (OAuth, non la semplice chiave API), quando il
-      servizio si accorge che siamo in onda puo' mettere lui il video pubblico e
-      incorporabile, e vedrebbe anche le dirette non in elenco. Mezz'ora di
-      configurazione, toglie l'unico gesto manuale rimasto. Da decidere prima
-      del 16 ottobre.
+- **Il riquadro del canale (`embed/live_stream?channel=...`) non aggira
+  niente:** provato il 23/09 con una diretta viva, risponde lo stesso
+  "Errore 153" del riquadro del singolo video. Si salva invece il link fisso
+  **`youtube.com/@MartesanaVolleyGenitori/live`**, che punta sempre alla
+  diretta del momento: buono da dare ai genitori una volta per tutte.
+- Le credenziali del canale su Cloudflare (OAuth) resterebbero l'unica strada
+  per fare tutto da soli, ma con la rinuncia all'incorporamento **non servono
+  piu'**: si riaprirebbe il discorso solo per vedere le dirette non in elenco.
 - **Il widget Browser di Moblin nasce 500×500**: va messo a 1920×1080.
 - **Gli identificativi di YouTube non si ricopiano a mano**: `I` maiuscola e
   `l` minuscola sono identiche a schermo, e un carattere sbagliato dà lo stesso

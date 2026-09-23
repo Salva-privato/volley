@@ -276,12 +276,13 @@ td.pt{font-weight:700;color:var(--gold)}
 .dir{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
   padding:12px;margin:0 0 18px}
 .dir .chi{font-size:14px;font-weight:700;margin:0 0 8px}
-.dir .telaio{position:relative;width:100%;aspect-ratio:16/9;background:#000;
-  border-radius:10px;overflow:hidden;border:1px solid var(--line)}
-.dir iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-/* il tabellone sta sopra il video, ma i tocchi lo attraversano e
-   arrivano ai comandi di YouTube */
-.dir iframe.sopra{pointer-events:none;background:transparent}
+/* La partita si guarda su YouTube, non qui dentro: YouTube spegne
+   l'incorporamento a ogni nuova diretta e non c'e' modo di impedirglielo -
+   provate tutte e tre le strade il 23/09/2026. Nell'app resta il punteggio,
+   che e' la cosa che si guarda di continuo, e un tasto per il video. */
+.dir .guarda{display:block;text-align:center;margin-top:10px;background:#b3261e;
+  color:#fff;text-decoration:none;font-size:14px;font-weight:700;
+  padding:12px 15px;border-radius:10px}
 .dir .riga{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .dir .onda{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
   letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#b3261e;
@@ -1162,10 +1163,6 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
    ########################################################################### */
 let DIRETTA=null, REGISTRAZIONI={}, PUNTEGGIO=null;
 
-/* Il video e' incorporato da youtube-nocookie: YouTube non segue chi guarda
-   finche' non parte il filmato. */
-const VIDEO_YT=v=>`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v)}?rel=0&playsinline=1&modestbranding=1`;
-
 function inOnda(m){
   if(!DIRETTA||!DIRETTA.video||DIRETTA.finita) return false;
   return DIRETTA.gara ? String(DIRETTA.gara)===String(m.gara) : iniziata(m);
@@ -1216,22 +1213,19 @@ function direttaHTML(){
   const viva=DIRETTA&&DIRETTA.video&&!DIRETTA.finita;
   const punti=m?punteggioVivo(m):false;
   if(!viva&&!punti) return '';
-  /* sopra il video il tabellone e' un francobollo in un angolo; da solo nella
-     scheda si prende tutta la larghezza, e allora i numeri possono crescere */
-  const tabellone=`<iframe class="sopra" src="tabellone.html?modo=${viva?'app':'solo'}&gara=${encodeURIComponent(m?m.gara:'')}" title="Punteggio" scrolling="no"></iframe>`;
+  /* il tabellone si prende tutta la larghezza della scheda: e' l'unica cosa
+     che c'e', e i numeri si devono leggere da lontano */
+  const tabellone=`<iframe class="sopra" src="tabellone.html?modo=solo&gara=${encodeURIComponent(m?m.gara:'')}" title="Punteggio" scrolling="no"></iframe>`;
   const titolo=m?`${esc(m.home)} – ${esc(m.away)}`:'';
   const finita=!viva&&punti&&PUNTEGGIO&&PUNTEGGIO.finita;
   const vinta=finita?chiHaVinto():'';
   return `<div class="dir">
     <div class="riga"><span class="onda${finita?' ferma':''}"><i></i>${viva?'in diretta':finita?'risultato finale':'punteggio dal vivo'}</span>
-      ${viva?`<a class="fuori" href="https://www.youtube.com/watch?v=${encodeURIComponent(DIRETTA.video)}" target="_blank" rel="noopener">apri su YouTube</a>`:''}
       ${chiSegna()?`<a class="fuori allaregia" href="regia.html">regia ›</a>`:''}</div>
     ${titolo?`<div class="chi">${titolo}</div>`:''}
     ${vinta?`<div class="vinta">${vinta}</div>`:''}
-    ${viva?`<div class="telaio">
-      <iframe src="${VIDEO_YT(DIRETTA.video)}" title="Diretta" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-      ${tabellone}</div>`
-     :`<div class="solotab">${tabellone}</div>`}
+    <div class="solotab">${tabellone}</div>
+    ${viva?`<a class="guarda" href="https://www.youtube.com/watch?v=${encodeURIComponent(DIRETTA.video)}" target="_blank" rel="noopener">▸ Guarda la diretta su YouTube</a>`:''}
     </div>`;
 }
 
