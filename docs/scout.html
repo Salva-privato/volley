@@ -1,0 +1,1481 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex,nofollow">
+<title>Scout Martesana</title>
+<style>
+body{margin:0}
+[hidden]{display:none!important}
+:root{
+  --bg:#eef3f1; --surface:#fff; --surface-2:#e0e9e7; --text:#0d1d1c; --muted:#5b706e;
+  --line:#cfdedb; --accent:#1d4f50; --accent-text:#1a4a4b; --accent-soft:#e2edeb;
+  --gold:#8a6614; --gold-fill:#b98a22; --on-accent:#fff;
+  --win:#1a7f4b; --win-soft:#dff1e7; --loss:#a8342a; --loss-soft:#f8e3e0;
+  --court:#d9b77c; --court-line:#fff; --radius:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#07100f; --surface:#102120; --surface-2:#1a2f2d; --text:#e7efed; --muted:#8fa5a2;
+  --line:#23403d; --accent:#256966; --accent-text:#74c4b8; --accent-soft:#15302e;
+  --gold:#deb055; --gold-fill:#c9922f; --on-accent:#fff;
+  --win:#5fd08f; --win-soft:#12301f; --loss:#f08072; --loss-soft:#3a1c17;
+  --court:#6b5530; --court-line:#e9e2d2;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#07100f; --surface:#102120; --surface-2:#1a2f2d; --text:#e7efed; --muted:#8fa5a2;
+  --line:#23403d; --accent:#256966; --accent-text:#74c4b8; --accent-soft:#15302e;
+  --gold:#deb055; --gold-fill:#c9922f; --on-accent:#fff;
+  --win:#5fd08f; --win-soft:#12301f; --loss:#f08072; --loss-soft:#3a1c17;
+  --court:#6b5530; --court-line:#e9e2d2;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.4}
+.wrap{max-width:1800px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:flex;flex-direction:column;gap:14px}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,select:focus-visible{outline:2px solid var(--gold-fill);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* testata */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.top h1{font-size:17px;margin:0;text-wrap:balance}
+.top .sub{color:var(--muted);font-size:12.5px}
+.esempio{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  background:var(--gold-fill);color:#fff;padding:3px 9px;border-radius:5px}
+.top .spazio{flex:1}
+.seg{display:flex;background:var(--surface-2);border-radius:9px;padding:3px}
+.seg button{border:0;background:none;font-size:13px;font-weight:600;padding:7px 14px;border-radius:7px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px #0002}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);gap:14px;align-items:start}
+@media (max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}}
+/* schermo intero: il riquadro del video con i suoi comandi riempie lo schermo, il video resta 16:9 */
+.card.cvideo:fullscreen{background:var(--bg);border:0;border-radius:0;padding:14px 20px;overflow:auto;display:flex;flex-direction:column;justify-content:center}
+.card.cvideo:fullscreen .video{width:min(100%,calc((100vh - 200px) * 16 / 9));margin-inline:auto}
+.card.cvideo:fullscreen .barra,.card.cvideo:fullscreen .strumenti,.card.cvideo:fullscreen .istruzione,
+.card.cvideo:fullscreen .msg{width:min(100%,calc((100vh - 200px) * 16 / 9));margin-inline:auto}
+.card.cvideo:fullscreen .yt{display:none}
+.file-btn{display:flex;gap:6px}
+.file-btn button,.file-btn label{border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-text);
+  border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.file-btn button{background:var(--accent);color:var(--on-accent)}
+.tema{display:flex;background:var(--surface-2);border-radius:9px;padding:3px}
+.tema button{border:0;background:none;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:7px;color:var(--muted)}
+.tema button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px #0002}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* video finto */
+.video{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:10px;overflow:hidden;
+  background:linear-gradient(#2c3b3a 0 38%,var(--court) 38%)}
+.video svg{position:absolute;inset:0;width:100%;height:100%}
+.video .avviso{position:absolute;top:10px;right:10px;font-size:11px;background:#000a;color:#fff;
+  padding:4px 8px;border-radius:6px;max-width:60%}
+.tab{position:absolute;left:10px;bottom:10px;display:flex;border-radius:6px;overflow:hidden;font-size:12.5px;font-weight:700}
+.tab span{padding:5px 9px;background:#0d1d1ce6;color:#fff}
+.tab .p{background:#000;min-width:30px;text-align:center}
+.tab .noi{color:#8fe0d2}.tab .loro{color:#f3a79c}
+.play{position:absolute;inset:0;margin:auto;width:58px;height:58px;border-radius:50%;border:2px solid #fff;
+  background:#0008;color:#fff;font-size:20px;display:grid;place-items:center}
+.barra{display:flex;align-items:center;gap:10px;margin-top:10px}
+.barra input{flex:1;accent-color:var(--accent)}
+.barra .tempo{font-size:12.5px;color:var(--muted);min-width:86px;text-align:right}
+.barra{flex-wrap:wrap}
+.barra input[type=range]{min-width:140px}
+.barra button,.barra .apri{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer}
+.barra .playb{min-width:84px;background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.barra .apri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.video video{position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain}
+.video.trascina{outline:3px dashed var(--gold-fill);outline-offset:-6px}
+.video.con-video .play{opacity:0;transition:opacity .15s}
+.video.con-video.ferma .play,.video.con-video .play:focus-visible{opacity:1}
+.msg{margin-top:10px;font-size:12.5px;color:var(--accent-text);background:var(--accent-soft);border-radius:8px;padding:8px 10px}
+.msg.errore{color:var(--loss);background:var(--loss-soft)}
+.chip.gioc{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 10px;min-width:58px}
+.chip.gioc small{font-size:11px;font-weight:500;opacity:.8;max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.az.con-img{grid-template-columns:72px 42px 1fr auto}
+.az img{width:72px;aspect-ratio:16/9;object-fit:cover;border-radius:5px;background:var(--surface-2);display:block}
+.imp{display:flex;flex-direction:column;gap:12px}
+.imp h2{font-size:13px;margin:6px 0 0;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.campi{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end}
+.campo{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.campo input{min-width:240px}
+.imp input,.imp select{font:inherit;font-size:14px;color:var(--text);background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.imp input:focus,.imp select:focus{outline:2px solid var(--gold-fill);outline-offset:1px}
+.rosa-scorri{overflow-x:auto}
+.rosa{display:grid;grid-template-columns:78px minmax(160px,1fr) minmax(150px,200px) auto;gap:8px;align-items:center;min-width:470px}
+.rosa .intest{font-size:11.5px;font-weight:600;color:var(--muted)}
+.rosa .togli{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:600}
+.rosa .togli:hover{border-color:var(--loss);color:var(--loss)}
+.rosa input.doppio{border-color:var(--loss)}
+.avvisi{font-size:12.5px;color:var(--loss)}
+.avvisi:empty{display:none}
+.aggiungi{border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600}
+.yt{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.yt input{flex:1;min-width:200px;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);
+  color:var(--text);border-radius:8px;padding:7px 10px}
+.yt button{border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:600}
+#ytBox,#ytBox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#ytBox,.video video{transform-origin:0 0;transition:transform .12s ease-out}
+.video.trascino #ytBox,.video.trascino video{transition:none}
+.zoom-pad{position:absolute;inset:0;cursor:grab;touch-action:none}
+.zoom-pad:active{cursor:grabbing}
+.video canvas.sopra{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;transform-origin:0 0;transition:transform .12s ease-out}
+.video.trascino canvas.sopra{transition:none}
+.video.in-modo .play{display:none}
+.video.in-modo .zoom-pad{cursor:crosshair}
+.istruzione{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;background:var(--gold-fill);color:#fff;
+  font-size:14px;font-weight:600;padding:10px 12px;border-radius:9px}
+.istruzione span{flex:1;min-width:200px}
+.istruzione button{border:1px solid #ffffff88;background:#ffffff22;color:#fff;border-radius:7px;padding:5px 11px;font-size:12.5px;font-weight:700}
+.istruzione button.ok{background:#fff;color:var(--gold);border-color:#fff}
+.video.in-modo{outline:3px solid var(--gold-fill);outline-offset:2px}
+.misura .ris.attesa{color:var(--gold);font-weight:700}
+.misure{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.misure .tit{font-size:11.5px;font-weight:600;color:var(--muted)}
+.misura{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:13px}
+.misura .nome{min-width:128px;font-weight:600}
+.misura .ris{font-weight:700;color:var(--accent-text)}
+.misura .ris.vuota{font-weight:400;color:var(--muted)}
+.misure .aiuto{font-size:12px;color:var(--muted)}
+.strumenti .fatto{border-color:var(--win);color:var(--win)}
+.zoom-pad .info{position:absolute;right:10px;bottom:10px;font-size:11.5px;background:#000b;color:#fff;padding:4px 8px;border-radius:6px;pointer-events:none}
+.strumenti{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.strumenti .gruppo{display:flex;align-items:center;gap:4px}
+.strumenti button{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;min-width:34px}
+.strumenti button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.strumenti .rall{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.strumenti .val{min-width:34px;text-align:center;font-weight:700;color:var(--text)}
+@media (prefers-reduced-motion:reduce){#ytBox,.video video{transition:none}}
+.video.con-yt .play{display:none}
+.video.con-yt .tab{bottom:auto;top:10px;pointer-events:none}
+
+/* inserimento */
+.ins h2,.lista h2,.stat h2{font-size:13px;margin:0;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.passo{display:flex;flex-direction:column;gap:7px}
+.passo+.passo{margin-top:14px}
+.passo .et{font-size:12px;font-weight:600;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 12px;font-weight:600;font-size:13.5px;min-width:46px}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip.vince{border-color:var(--win);color:var(--win)}
+.chip.perde{border-color:var(--loss);color:var(--loss)}
+.chip.vince:hover{background:var(--win-soft)}.chip.perde:hover{background:var(--loss-soft)}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+.stato{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:12.5px;color:var(--muted);
+  border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.stato b{color:var(--text)}
+.stato .spazio{flex:1}
+.stato button{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:600}
+.suggerimento{font-size:12px;color:var(--accent-text);background:var(--accent-soft);border-radius:8px;padding:7px 10px}
+
+/* elenco azioni */
+/* colonna destra: inserimento sempre visibile in alto, elenco che scorre sotto */
+.destra{position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;flex-direction:column;gap:10px;
+  max-height:calc(100vh - 20px);min-width:0}
+.lista{display:flex;flex-direction:column;gap:10px;flex:1;min-height:180px}
+.lista .scorri{flex:1;min-height:0}
+@media (max-width:1000px){.destra{position:static;max-height:none}.lista{min-height:0}}
+/* pannello di inserimento compatto */
+.ins{padding:12px}
+.ins .passo{gap:5px}
+.ins .passo+.passo{margin-top:9px}
+.ins .chips{gap:5px}
+.ins .chip{padding:7px 9px;font-size:13px;min-width:40px;border-radius:8px}
+.ins .chip.gioc{padding:5px 7px;min-width:48px}
+.ins .stato{margin-top:10px;padding-top:9px;gap:6px 10px}
+.ins .stato button{padding:5px 8px;font-size:12px}
+/* il video non supera l'altezza dello schermo: comandi sempre visibili sotto */
+.cvideo:not(:fullscreen) .video{width:min(100%,calc((100vh - 230px) * 16 / 9));margin-inline:auto}
+.filtri{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.filtri button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600}
+.filtri button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.filtri select{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:5px 9px}
+.scorri{overflow-y:auto;margin:0 -14px;padding:0 14px}
+.rally{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--muted);padding:10px 0 4px}
+.rally .ps{background:var(--surface-2);color:var(--text);border-radius:5px;padding:1px 7px}
+.az{display:grid;grid-template-columns:42px 1fr auto;gap:8px;align-items:center;width:100%;text-align:left;
+  border:0;background:none;padding:8px 8px;border-radius:8px;border-bottom:1px solid var(--line)}
+.az:hover{background:var(--surface-2)}
+.az.attiva{background:var(--accent-soft)}
+.az .t{font-size:12px;color:var(--muted)}
+.az .d{font-size:13.5px}
+.az .d .loro{color:var(--muted)}
+.esito{font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--surface-2);white-space:nowrap}
+.esito.vince{background:var(--win-soft);color:var(--win)}
+.esito.perde{background:var(--loss-soft);color:var(--loss)}
+.vuoto{color:var(--muted);font-size:13px;padding:14px 0}
+.riga{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;border-bottom:1px solid var(--line)}
+.riga .az{border-bottom:0}
+.matita{border:0;background:none;padding:8px;border-radius:8px;color:var(--muted);display:grid;place-items:center}
+.matita:hover{background:var(--surface-2);color:var(--text)}
+.matita svg{width:16px;height:16px}
+.matita{position:relative}
+.matita.ha-nota::after{content:'';position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--gold-fill)}
+.nota-az{grid-column:1/-1;margin:-2px 8px 9px 58px;font-size:12.5px;background:var(--surface-2);
+  border-left:3px solid var(--gold-fill);border-radius:6px;padding:6px 9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.riga.con-img .nota-az{margin-left:130px}
+.editor{grid-column:1/-1;display:flex;flex-direction:column;gap:10px;background:var(--surface-2);border-radius:10px;padding:12px;margin:2px 0 10px}
+.editor .righe{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.editor label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted)}
+.editor input,.editor select,.editor textarea{font:inherit;font-size:13.5px;color:var(--text);background:var(--surface);
+  border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+.editor textarea{min-height:64px;resize:vertical}
+.editor .tempo-riga{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.editor .tempo-riga input{width:84px}
+.editor button{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 10px;font-size:12.5px;font-weight:600}
+.editor .azioni-ed{display:flex;flex-wrap:wrap;gap:8px}
+.editor .azioni-ed .spazio{flex:1}
+.editor .salva{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.editor .elimina{color:var(--loss);border-color:var(--loss)}
+.editor .elimina.conferma{background:var(--loss);color:#fff}
+.editor .errore-ed{font-size:12px;color:var(--loss)}
+.editor .errore-ed:empty{display:none}
+
+/* statistiche */
+.stat{display:flex;flex-direction:column;gap:12px}
+.riquadri{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.riq{background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.riq .v{font-size:22px;font-weight:700}
+.riq .l{font-size:12px;color:var(--muted)}
+.tab-scorri{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:760px}
+th,td{padding:7px 8px;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead tr:first-child th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:center;border-bottom:0;padding-bottom:0}
+thead tr:last-child th{font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+tbody td{border-bottom:1px solid var(--line)}
+tbody tr:hover td{background:var(--surface-2)}
+tr.squadra td{font-weight:700;background:var(--accent-soft);border-bottom:0}
+.gr{border-left:1px solid var(--line)}
+.pos{color:var(--win)}.neg{color:var(--loss)}
+.nota{font-size:12.5px;color:var(--muted);max-width:75ch}
+.nota b{color:var(--text)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="titolo">Martesana – Geas Volley</h1>
+      <div class="sub">I dati restano in questo browser: con «Esporta» ne salvi una copia su file.</div>
+    </div>
+    <span class="esempio" id="etEsempio">Dati di esempio</span>
+    <div class="spazio"></div>
+    <div class="seg" role="group" aria-label="Vista">
+      <button id="vIns" aria-pressed="true">Scout</button>
+      <button id="vStat" aria-pressed="false">Statistiche</button>
+      <button id="vImp" aria-pressed="false">Impostazioni</button>
+    </div>
+    <div class="file-btn">
+      <button id="esporta" title="Scarica un file con tutta la partita: azioni, note, misure, disegni, rosa e link del video">Esporta partita</button>
+      <label for="importaFile" title="Apri un file esportato prima, anche da un altro computer">Importa partita</label>
+      <input type="file" id="importaFile" accept=".json,application/json" hidden>
+    </div>
+    <div class="tema" role="group" aria-label="Aspetto" id="tema">
+      <button data-tema="auto" title="Segue l'impostazione del computer">Auto</button>
+      <button data-tema="light">Chiaro</button>
+      <button data-tema="dark">Scuro</button>
+    </div>
+  </header>
+
+  <section id="pIns" class="grid">
+    <div class="col">
+      <div class="card cvideo" id="cardVideo">
+        <div class="video" id="video">
+          <svg viewBox="0 0 160 90" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="var(--court-line)" stroke-width=".5">
+              <path d="M22 88 L138 88 L114 36 L46 36 Z"/>
+              <path d="M34 64 L126 64"/>
+              <path d="M40 48 L120 48"/>
+              <path d="M43 42 L117 42"/>
+            </g>
+            <rect x="40" y="29" width="80" height="6" fill="#0d1d1c" opacity=".55"/>
+            <path d="M40 35 L120 35" stroke="#fff" stroke-width=".4"/>
+          </svg>
+          <video id="vid" playsinline preload="metadata" hidden></video>
+          <div id="ytBox" hidden><div id="ytPlayer"></div></div>
+          <canvas class="sopra" id="sopra" aria-hidden="true"></canvas>
+          <div class="avviso" id="avviso">Campo finto: il tempo scorre davvero. Incolla sotto il link YouTube della partita.</div>
+          <div class="zoom-pad" id="zoomPad" hidden>
+            <span class="info" id="zoomInfo">2×</span>
+          </div>
+          <button class="play" id="play" aria-label="Avvia o ferma il video">▶</button>
+          <div class="tab num"><span class="noi">Martesana</span><span class="p" id="pNoi">0</span><span class="loro" id="tabLoro">Geas</span><span class="p" id="pLoro">0</span><span>Set 1</span></div>
+        </div>
+        <div class="istruzione" id="istruzione" hidden></div>
+        <div class="barra">
+          <button id="playBarra" class="playb" aria-label="Play o pausa (barra spaziatrice)">▶ Play</button>
+          <button id="indietro" aria-label="Indietro 5 secondi">−5 s</button>
+          <input type="range" id="cursore" min="0" max="900" step="1" value="0" aria-label="Posizione nel video">
+          <span class="tempo num" id="tempo">0:00 / 15:00</span>
+          <label class="apri" for="file">Apri un video</label>
+          <input type="file" id="file" accept="video/*" hidden>
+        </div>
+        <div class="strumenti">
+          <span class="gruppo">Zoom
+            <button id="zMeno" aria-label="Riduci lo zoom">−</button>
+            <span class="val num" id="zVal">1×</span>
+            <button id="zPiu" aria-label="Aumenta lo zoom">+</button>
+            <button id="zReset">Normale</button>
+          </span>
+          <span class="gruppo">
+            <button id="schermo" title="Video a tutto schermo con i comandi (Esc per uscire)">Schermo intero</button>
+          </span>
+          <span class="gruppo" id="velBtn" role="group" aria-label="Velocità">Velocità
+            <button data-v="0.25" aria-pressed="false">0,25×</button>
+            <button data-v="0.5" aria-pressed="false">0,5×</button>
+            <button data-v="1" aria-pressed="true">1×</button>
+            <button data-v="2" aria-pressed="false">2×</button>
+          </span>
+          <span class="gruppo">
+            <button id="rallenty" class="rall" title="Rivede l'azione selezionata (o il punto attuale) al rallenty e poi si ferma">Rallenty azione</button>
+          </span>
+          <span class="gruppo">
+            <button id="taratura" title="Serve per misurare l'altezza della palla: tre tocchi su rete e pavimento, una volta per video">Taratura rete</button>
+          </span>
+          <span class="gruppo">Fotogramma
+            <button id="fPrima" aria-label="Fotogramma precedente">◀</button>
+            <button id="fDopo" aria-label="Fotogramma successivo">▶</button>
+          </span>
+        </div>
+        <form class="yt" id="ytForm">
+          <input type="url" id="ytLink" placeholder="Incolla il link YouTube della partita" aria-label="Link YouTube">
+          <button type="submit">Apri da YouTube</button>
+        </form>
+        <div class="msg" id="msg" hidden></div>
+      </div>
+    </div>
+
+    <div class="destra">
+      <div class="card ins">
+        <h2>Nuova azione</h2>
+        <div class="passo" style="margin-top:12px">
+          <span class="et">1 · Squadra</span>
+          <div class="chips" id="cSquadra"></div>
+        </div>
+        <div class="passo">
+          <span class="et">2 · Giocatrice</span>
+          <div class="chips" id="cNumeri"></div>
+        </div>
+        <div class="passo">
+          <span class="et">3 · Fondamentale</span>
+          <div class="chips" id="cFond"></div>
+        </div>
+        <div class="passo">
+          <span class="et">4 · Esito: toccandolo l'azione viene salvata</span>
+          <div class="chips" id="cEsiti"></div>
+        </div>
+        <div class="stato">
+          <span>Scambio <b class="num" id="sRally">1</b></span>
+          <span>Batte <b id="sBatte">Martesana</b></span>
+          <span>Rotazione <b class="num" id="sRot">1</b></span>
+          <span class="spazio"></span>
+          <button id="puntoNoi">Punto Martesana</button>
+          <button id="puntoLoro">Punto Geas</button>
+          <button id="annulla">Annulla ultima</button>
+        </div>
+        </div>
+      <div class="card lista">
+        <h2 id="titLista">Azioni</h2>
+        <div class="filtri" id="filtri"></div>
+        <div class="scorri" id="elenco"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pStat" class="card stat" hidden>
+    <h2>Statistiche Martesana</h2>
+    <div class="riquadri" id="riquadri"></div>
+    <div class="tab-scorri"><table id="tabella"></table></div>
+    <p class="nota"><b>Come si calcolano.</b> Efficienza d'attacco = (punti − errori − murate) ÷ attacchi totali, la stessa formula di Balltime.
+      Media ricezione = somma dei voti 3-2-1-0 ÷ ricezioni. Positiva = ricezioni da 3 e da 2 sul totale.
+      I numeri si aggiornano a ogni azione inserita.</p>
+    <div class="stato" style="border-top:0;padding-top:0;margin-top:0">
+      <span class="spazio"></span>
+      <button id="svuota">Svuota e prova da zero</button>
+      <button id="ricarica">Rimetti i dati di esempio</button>
+    </div>
+  </section>
+
+  <section id="pImp" class="card imp" hidden>
+    <h2>Partita</h2>
+    <div class="campi">
+      <label class="campo">Squadra avversaria
+        <input id="impAvv" type="text" autocomplete="off" placeholder="Per esempio Geas Volley">
+      </label>
+      <label class="campo">Altezza della rete (cm)
+        <input id="impRete" type="number" min="150" max="260" inputmode="numeric" style="min-width:0;width:110px">
+      </label>
+      <div class="campo">Batte per prima nel set
+        <div class="seg" role="group" aria-label="Batte per prima" id="impBatte"></div>
+      </div>
+    </div>
+
+    <h2>Rosa Martesana</h2>
+    <p class="nota">Numero di maglia e nome come volete vederli sui pulsanti (bastano cognome o soprannome). Il ruolo è facoltativo.
+      La rosa resta salvata anche per le prossime partite.</p>
+    <div class="rosa-scorri">
+      <div class="rosa" id="impRosa"></div>
+    </div>
+    <div class="avvisi" id="impAvvisi"></div>
+    <div><button class="aggiungi" id="impAggiungi">Aggiungi giocatrice</button></div>
+  </section>
+</div>
+
+<script>
+(function(){
+// Impostazioni: rosa e avversaria, salvate a parte così restano da una partita all'altra.
+const CHIAVE_IMP='scout-impostazioni-v1';
+const RUOLI=['Palleggiatrice','Opposto','Schiacciatrice','Centrale','Libero'];
+let IMP=(()=>{
+  try{const s=JSON.parse(localStorage.getItem(CHIAVE_IMP));if(s&&Array.isArray(s.rosa))return s}catch(e){}
+  return {avversaria:'Geas Volley',hRete:224,rosa:[1,3,4,5,7,8,9,10,11,12,14,17].map(n=>({n,nome:'',ruolo:''}))};
+})();
+function salvaImp(){try{localStorage.setItem(CHIAVE_IMP,JSON.stringify(IMP))}catch(e){}}
+const rosa=()=>IMP.rosa.filter(g=>Number.isInteger(g.n)).sort((a,b)=>a.n-b.n);
+const nomeG=n=>{const g=IMP.rosa.find(x=>x.n===n);return g&&g.nome?g.nome:''};
+const etichetta=n=>'#'+n+(nomeG(n)?' '+nomeG(n):'');
+const nomeSq=sq=>sq==='noi'?'Martesana':(IMP.avversaria.trim()||'Avversaria');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const FOND=[
+  ['battuta','Battuta'],['ricezione','Ricezione'],['alzata','Alzata'],
+  ['attacco','Attacco'],['muro','Muro'],['difesa','Difesa']];
+const NOMEF=Object.fromEntries(FOND);
+// esito: [chiave, etichetta, effetto] effetto: 'v' punto a chi fa l'azione, 'p' punto all'altra squadra
+const ESITI={
+  battuta:[['ace','Ace','v'],['err','Errore','p'],['gioco','In gioco','']],
+  ricezione:[['3','3 · perfetta',''],['2','2 · buona',''],['1','1 · scarsa',''],['0','0 · errore','p']],
+  alzata:[['gioco','In gioco',''],['err','Errore','p']],
+  attacco:[['punto','Punto','v'],['gioco','In gioco',''],['err','Errore','p'],['murato','Murato','p']],
+  muro:[['punto','Punto','v'],['tocco','Tocco',''],['err','Invasione','p']],
+  difesa:[['ok','Buona',''],['scarsa','Scarsa','']],
+};
+const DOPO={battuta:['ricezione',true],ricezione:['alzata',false],alzata:['attacco',false],
+  attacco:['difesa',true],muro:['difesa',false],difesa:['alzata',false]};
+
+function esempio(){
+  const a=[];let t=4;
+  const r=(sq,n,f,e,dt)=>{a.push({t,sq,n,f,e});t+=dt};
+  // scambio 1
+  r('loro',null,'battuta','gioco',1);r('noi',7,'ricezione','2',2);r('noi',4,'alzata','gioco',1);
+  r('noi',10,'attacco','punto',17);
+  // 2
+  r('noi',9,'battuta','gioco',1);r('loro',null,'ricezione','3',2);r('loro',null,'attacco','gioco',1);
+  r('noi',5,'difesa','ok',2);r('noi',4,'alzata','gioco',1);r('noi',12,'attacco','murato',19);
+  // 3
+  r('loro',null,'battuta','gioco',1);r('noi',1,'ricezione','3',2);r('noi',4,'alzata','gioco',1);
+  r('noi',14,'attacco','punto',16);
+  // 4
+  r('noi',12,'battuta','ace',18);
+  // 5
+  r('noi',12,'battuta','gioco',1);r('loro',null,'ricezione','2',2);r('loro',null,'attacco','gioco',1);
+  r('noi',8,'muro','tocco',1);r('noi',7,'difesa','scarsa',2);r('noi',4,'alzata','gioco',1);
+  r('noi',10,'attacco','err',17);
+  // 6
+  r('loro',null,'battuta','gioco',1);r('noi',7,'ricezione','1',2);r('noi',4,'alzata','gioco',1);
+  r('noi',14,'attacco','gioco',1);r('loro',null,'difesa','ok',2);r('loro',null,'attacco','gioco',1);
+  r('noi',1,'difesa','ok',2);r('noi',4,'alzata','gioco',1);r('noi',10,'attacco','punto',18);
+  // 7
+  r('noi',3,'battuta','err',16);
+  // 8
+  r('loro',null,'battuta','gioco',1);r('noi',5,'ricezione','2',2);r('noi',4,'alzata','gioco',1);
+  r('noi',17,'attacco','gioco',1);r('loro',null,'attacco','punto',17);
+  // 9
+  r('loro',null,'battuta','gioco',1);r('noi',1,'ricezione','3',2);r('noi',4,'alzata','gioco',1);
+  r('noi',12,'attacco','punto',18);
+  // 10
+  r('noi',8,'battuta','gioco',1);r('loro',null,'ricezione','1',2);r('loro',null,'attacco','gioco',1);
+  r('noi',8,'muro','punto',16);
+  a.forEach((x,i)=>x.id=i+1);
+  return a;
+}
+
+const CHIAVE='scout-bozza-v1';
+let S;
+function carica(){
+  try{const s=JSON.parse(localStorage.getItem(CHIAVE));if(s&&Array.isArray(s.azioni))return s}catch(e){}
+  return {azioni:esempio(),esempio:true,primaBatte:'loro'};
+}
+function salva(){try{localStorage.setItem(CHIAVE,JSON.stringify(S))}
+  catch(e){messaggio('La memoria del browser è piena: le ultime azioni potrebbero non restare salvate.',true)}}
+S=carica();
+
+const sel={sq:'noi',n:null,f:'battuta'};
+let modifica=null,soloNote=false;
+let filtroF='tutte',filtroN='tutte',tempo=0,gira=null,attiva=null,vista='ins';
+const $=id=>document.getElementById(id);
+const mmss=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const altra=sq=>sq==='noi'?'loro':'noi';
+
+// Ricostruisce punteggio, scambi, rotazione e battuta rileggendo le azioni in ordine.
+function ricostruisci(){
+  const p={noi:0,loro:0};let batte=S.primaBatte,rot=1,rally=1;
+  for(const a of S.azioni){
+    a._rally=rally;a._rot=rot;a._prima=[p.noi,p.loro];a._vince=null;
+    let vince=null;
+    if(a.f==='punto')vince=a.sq;
+    else{const e=(ESITI[a.f]||[]).find(x=>x[0]===a.e);
+      if(e&&e[2]==='v')vince=a.sq;if(e&&e[2]==='p')vince=altra(a.sq);}
+    if(vince){
+      a._vince=vince;p[vince]++;
+      if(vince==='noi'&&batte==='loro')rot=rot%6+1; // cambio palla: si ruota
+      batte=vince;rally++;
+    }
+  }
+  return {p,batte,rot,rally};
+}
+
+function bottone(testo,premuto,fn,cls){
+  const b=document.createElement('button');b.type='button';b.className='chip'+(cls?' '+cls:'');
+  b.textContent=testo;if(premuto!==undefined)b.setAttribute('aria-pressed',premuto?'true':'false');
+  b.onclick=fn;return b;
+}
+
+function disegnaIns(st){
+  const cs=$('cSquadra');cs.replaceChildren(
+    bottone(nomeSq('noi'),sel.sq==='noi',()=>{sel.sq='noi';disegna()}),
+    bottone(nomeSq('loro'),sel.sq==='loro',()=>{sel.sq='loro';sel.n=null;disegna()}));
+  const cn=$('cNumeri');
+  if(sel.sq==='loro'){
+    const s=document.createElement('span');s.className='suggerimento';
+    s.textContent='Per le avversarie basta la squadra: il numero si può aggiungere più avanti.';
+    cn.replaceChildren(s);
+  }else{
+    const gg=rosa();
+    if(!gg.length){const s=document.createElement('span');s.className='suggerimento';
+      s.textContent='La rosa è vuota: aggiungi le giocatrici in Impostazioni.';cn.replaceChildren(s)}
+    else cn.replaceChildren(...gg.map(g=>{
+      const b=bottone('',sel.n===g.n,()=>{sel.n=sel.n===g.n?null:g.n;disegna()},'gioc');
+      b.innerHTML=`<b>#${g.n}</b>`+(g.nome?`<small>${esc(g.nome)}</small>`:'');
+      b.title=etichetta(g.n)+(g.ruolo?' · '+g.ruolo:'');return b}));
+  }
+  $('cFond').replaceChildren(...FOND.map(([k,l])=>bottone(l,sel.f===k,()=>{sel.f=k;disegna()})));
+  const manca=sel.sq==='noi'&&sel.n===null;
+  $('cEsiti').replaceChildren(...ESITI[sel.f].map(([k,l,eff])=>{
+    const cls=eff==='v'?'vince':eff==='p'?'perde':'';
+    const b=bottone(l,undefined,()=>registra(k),cls);b.disabled=manca;
+    if(manca)b.title='Scegli prima la giocatrice';return b;}));
+  $('sRally').textContent=st.rally;$('sBatte').textContent=nomeSq(st.batte);$('sRot').textContent=st.rot;
+}
+
+function registra(e){
+  const id=S.azioni.reduce((m,a)=>Math.max(m,a.id),0)+1;
+  const az={id,t:Math.round(adesso()),sq:sel.sq,n:sel.sq==='noi'?sel.n:null,f:sel.f,e};
+  const img=fotogramma();if(img)az.img=img;
+  S.azioni.push(az);
+  S.azioni.sort((a,b)=>a.t-b.t||a.id-b.id);
+  const st=ricostruisci();const ultima=S.azioni.find(a=>a.id===id);
+  if(ultima._vince){ // scambio finito: la prossima è la battuta di chi ha fatto punto
+    sel.f='battuta';sel.sq=st.batte;
+  }else{const d=DOPO[sel.f];sel.f=d[0];if(d[1])sel.sq=altra(sel.sq);}
+  sel.n=null;attiva=id;salva();disegna();
+}
+
+function disegnaFiltri(){
+  const f=$('filtri');
+  const opz=[['tutte','Tutte'],...FOND];
+  const nodi=opz.map(([k,l])=>{const b=document.createElement('button');b.type='button';b.textContent=l;
+    b.setAttribute('aria-pressed',filtroF===k?'true':'false');b.onclick=()=>{filtroF=k;disegna()};return b});
+  const s=document.createElement('select');s.id='filtroN';s.setAttribute('aria-label','Filtra per giocatrice');
+  s.innerHTML='<option value="tutte">Tutte le giocatrici</option><option value="loro">Solo '+esc(nomeSq('loro'))+'</option>'+
+    rosa().map(g=>`<option value="${g.n}">${esc(etichetta(g.n))}</option>`).join('');
+  s.value=String(filtroN);s.onchange=()=>{filtroN=s.value;disegna()};
+  const n=document.createElement('button');n.type='button';n.textContent='Con nota';
+  n.setAttribute('aria-pressed',soloNote?'true':'false');n.onclick=()=>{soloNote=!soloNote;disegna()};
+  f.replaceChildren(...nodi,n,s);
+}
+
+function descr(a){
+  if(a.f==='punto')return {chi:'',cosa:'Punto assegnato a mano',es:'Punto '+nomeSq(a.sq),cls:a.sq==='noi'?'vince':'perde'};
+  const e=ESITI[a.f].find(x=>x[0]===a.e)||['', a.e,''];
+  let cls='';
+  if(a._vince)cls=a._vince==='noi'?'vince':'perde';
+  return {chi:a.sq==='noi'?etichetta(a.n):nomeSq('loro'),cosa:NOMEF[a.f],es:e[1],cls};
+}
+
+function disegnaElenco(){
+  const el=$('elenco');el.replaceChildren();
+  const vis=S.azioni.filter(a=>(filtroF==='tutte'||a.f===filtroF)&&
+    (filtroN==='tutte'||(filtroN==='loro'?a.sq==='loro':a.sq==='noi'&&String(a.n)===filtroN))&&
+    (!soloNote||a.nota));
+  $('titLista').textContent='Azioni ('+vis.length+(vis.length!==S.azioni.length?' di '+S.azioni.length:'')+')';
+  if(!vis.length){const d=document.createElement('div');d.className='vuoto';
+    d.textContent=S.azioni.length?'Nessuna azione con questi filtri.':'Ancora nessuna azione. Avvia il video e inserisci la prima battuta.';
+    el.append(d);return}
+  let ultimo=null;
+  for(const a of vis){
+    if(a._rally!==ultimo){ultimo=a._rally;
+      const h=document.createElement('div');h.className='rally';
+      h.innerHTML=`Scambio ${a._rally} <span class="ps num">${a._prima[0]} – ${a._prima[1]}</span> <span>rot. ${a._rot}</span>`;
+      el.append(h)}
+    const d=descr(a);
+    const b=document.createElement('button');b.type='button';b.className='az'+(a.img?' con-img':'')+(a.id===attiva?' attiva':'');
+    b.innerHTML=(a.img?`<img src="${a.img}" alt="">`:'')+`<span class="t num">${mmss(a.t)}</span><span class="d"><b class="${a.sq==='loro'?'loro':''}">${esc(d.chi)}</b> ${d.cosa}</span><span class="esito ${d.cls}">${d.es}</span>`;
+    b.title='Rivedi dal secondo '+mmss(Math.max(0,a.t-1));
+    b.onclick=()=>{attiva=a.id;vai(Math.max(0,a.t-1));disegnaElenco()};
+    const riga=document.createElement('div');riga.className='riga'+(a.img?' con-img':'');
+    const m=document.createElement('button');m.type='button';m.className='matita';
+    m.setAttribute('aria-label','Modifica o aggiungi una nota');m.title='Modifica o aggiungi una nota';
+    m.setAttribute('aria-expanded',modifica===a.id?'true':'false');
+    m.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+    m.onclick=()=>{modifica=modifica===a.id?null:a.id;disegnaElenco()};
+    riga.append(b,m);
+    if(a.nota){m.classList.add('ha-nota');m.title='C\'è una nota: apri per leggerla o modificarla'}
+    if(modifica===a.id)riga.append(editor(a));
+    el.append(riga);
+    if(a.id===attiva||a.id===modifica)requestAnimationFrame(()=>riga.scrollIntoView({block:'nearest'}));
+  }
+}
+
+// Modifica di un'azione già salvata: secondo del video, chi, cosa, esito, nota.
+const leggiTempo=v=>{v=v.trim();const m=v.match(/^(\d+):([0-5]?\d)$/);
+  if(m)return Number(m[1])*60+Number(m[2]);return /^\d+$/.test(v)?Number(v):null};
+function editor(a){
+  const d=document.createElement('div');d.className='editor';
+  const q=a.id;
+  d.innerHTML=`
+    <div class="righe">
+      <label>Secondo del video
+        <span class="tempo-riga">
+          <button type="button" data-dt="-1" aria-label="Un secondo prima">−1 s</button>
+          <input id="ed-t-${q}" class="num" value="${mmss(a.t)}" aria-label="Minuto e secondo">
+          <button type="button" data-dt="1" aria-label="Un secondo dopo">+1 s</button>
+          <button type="button" data-ora>Usa il punto attuale del video</button>
+        </span>
+      </label>
+    </div>
+    <div class="righe">
+      <label>Squadra<select id="ed-sq-${q}"><option value="noi">${esc(nomeSq('noi'))}</option><option value="loro">${esc(nomeSq('loro'))}</option></select></label>
+      <label>Giocatrice<select id="ed-n-${q}"></select></label>
+      <label>Fondamentale<select id="ed-f-${q}">${FOND.map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}<option value="punto">Punto assegnato a mano</option></select></label>
+      <label>Esito<select id="ed-e-${q}"></select></label>
+    </div>
+    <label>Nota per la squadra (cosa dire rivedendo il video)
+      <textarea id="ed-nota-${q}" placeholder="Per esempio: guarda i piedi prima della ricezione, eri già ferma in ritardo"></textarea>
+    </label>
+    <div class="misure" id="ed-misure-${q}"></div>
+    <div class="errore-ed" id="ed-err-${q}"></div>
+    <div class="azioni-ed">
+      <button type="button" class="salva" data-salva>Salva</button>
+      <button type="button" data-annulla>Annulla</button>
+      <button type="button" data-rivedi>Rivedi da qui</button>
+      <button type="button" data-rall>Rallenty</button>
+      <span class="spazio"></span>
+      <button type="button" class="elimina" data-elimina>Elimina azione</button>
+    </div>`;
+  const $e=id=>d.querySelector('#ed-'+id+'-'+q);
+  const sq=$e('sq'),n=$e('n'),f=$e('f'),e=$e('e'),t=$e('t'),nota=$e('nota'),err=$e('err');
+  sq.value=a.sq;f.value=a.f;nota.value=a.nota||'';
+  disegnaMisure(a,$e('misure'));
+  const numeri=()=>{
+    if(sq.value==='loro'||f.value==='punto'){n.innerHTML='<option value="">—</option>';n.disabled=true;return}
+    n.disabled=false;const gg=rosa();
+    const extra=a.n!=null&&!gg.some(g=>g.n===a.n)?`<option value="${a.n}">#${a.n}</option>`:'';
+    n.innerHTML='<option value="">Scegli…</option>'+extra+gg.map(g=>`<option value="${g.n}">${esc(etichetta(g.n))}</option>`).join('');
+    if(a.n!=null)n.value=String(a.n);
+  };
+  const esiti=()=>{
+    if(f.value==='punto'){e.innerHTML='<option value="">—</option>';e.disabled=true;return}
+    e.disabled=false;const prima=e.value||a.e;
+    e.innerHTML=ESITI[f.value].map(([k,l])=>`<option value="${k}">${l}</option>`).join('');
+    if(ESITI[f.value].some(x=>x[0]===prima))e.value=prima;
+  };
+  numeri();esiti();
+  sq.onchange=numeri;f.onchange=()=>{numeri();esiti()};
+  d.querySelectorAll('[data-dt]').forEach(b=>b.onclick=()=>{
+    const v=leggiTempo(t.value);t.value=mmss(Math.max(0,(v??a.t)+Number(b.dataset.dt)))});
+  d.querySelector('[data-ora]').onclick=()=>{t.value=mmss(adesso())};
+  d.querySelector('[data-rall]').onclick=()=>{const v=leggiTempo(t.value);rallenty(v??a.t)};
+  d.querySelector('[data-rivedi]').onclick=()=>{const v=leggiTempo(t.value);vai(Math.max(0,(v??a.t)-1))};
+  d.querySelector('[data-annulla]').onclick=()=>{modifica=null;disegnaElenco()};
+  d.querySelector('[data-salva]').onclick=()=>{
+    const v=leggiTempo(t.value);
+    if(v===null){err.textContent='Scrivi il tempo come minuti:secondi, per esempio 10:52.';t.focus();return}
+    if(sq.value==='noi'&&f.value!=='punto'&&n.value===''){err.textContent='Scegli la giocatrice.';n.focus();return}
+    a.t=v;a.sq=sq.value;a.f=f.value;
+    a.n=sq.value==='noi'&&f.value!=='punto'?Number(n.value):null;
+    a.e=f.value==='punto'?'':e.value;
+    const tn=nota.value.trim();if(tn)a.nota=tn;else delete a.nota;
+    S.azioni.sort((x,y)=>x.t-y.t||x.id-y.id);
+    modifica=null;attiva=a.id;salva();disegna();
+  };
+  const el=d.querySelector('[data-elimina]');
+  el.onclick=()=>{
+    if(!el.classList.contains('conferma')){el.classList.add('conferma');el.textContent='Sì, elimina';return}
+    S.azioni=S.azioni.filter(x=>x!==a);modifica=null;if(attiva===a.id)attiva=null;salva();disegna();
+  };
+  return d;
+}
+
+function disegnaStat(){
+  const mie=S.azioni.filter(a=>a.sq==='noi'&&a.n!=null);
+  const vuota=()=>({att:0,kp:0,ke:0,km:0,bt:0,ace:0,be:0,r:[0,0,0,0],alz:0,mp:0,mt:0,dif:0,salti:[],contatti:[]});
+  const per={};const tot=vuota();
+  for(const a of mie){
+    const g=per[a.n]||(per[a.n]=vuota());
+    for(const x of [g,tot]){
+      if(a.f==='attacco'){x.att++;if(a.e==='punto')x.kp++;if(a.e==='err')x.ke++;if(a.e==='murato')x.km++}
+      if(a.f==='battuta'){x.bt++;if(a.e==='ace')x.ace++;if(a.e==='err')x.be++}
+      if(a.f==='ricezione')x.r[3-Number(a.e)]++;
+      if(a.f==='alzata')x.alz++;
+      if(a.f==='muro'){if(a.e==='punto')x.mp++;if(a.e==='tocco')x.mt++}
+      if(a.f==='difesa')x.dif++;
+      const hs=cmSalto(a),hc=cmContatto(a);if(hs!==null)x.salti.push(hs);if(hc!==null)x.contatti.push(hc);
+    }
+  }
+  const f3=v=>v.toFixed(3).replace('.',',');
+  const eff=x=>x.att?(x.kp-x.ke-x.km)/x.att:null;
+  const rt=x=>x.r[0]+x.r[1]+x.r[2]+x.r[3];
+  const media=x=>rt(x)?(x.r[0]*3+x.r[1]*2+x.r[2])/rt(x):null;
+  const posi=x=>rt(x)?(x.r[0]+x.r[1])/rt(x):null;
+  const c=(v,fmt)=>v===null||v===0?'<td class="num">–</td>':`<td class="num">${fmt?fmt(v):v}</td>`;
+  const cEff=v=>v===null?'<td class="num">–</td>':`<td class="num ${v>0?'pos':v<0?'neg':''}">${f3(v)}</td>`;
+  const riga=(nome,x,cls)=>`<tr class="${cls||''}"><td>${nome}</td>`+
+    c(x.kp)+c(x.ke+x.km)+c(x.att)+cEff(eff(x))+
+    `<td class="num gr">${x.ace||'–'}</td>`+c(x.be)+c(x.bt)+
+    `<td class="num gr">${x.r[0]||'–'}</td>`+c(x.r[1])+c(x.r[2])+c(x.r[3])+c(rt(x))+
+    (media(x)===null?'<td class="num">–</td>':`<td class="num">${media(x).toFixed(2).replace('.',',')}</td>`)+
+    `<td class="num gr">${x.mp||'–'}</td>`+c(x.mt)+`<td class="num gr">${x.alz||'–'}</td>`+c(x.dif)+
+    `<td class="num gr">${x.salti.length?Math.max(...x.salti):'–'}</td>`+
+    `<td class="num">${x.salti.length?Math.round(x.salti.reduce((a,b)=>a+b,0)/x.salti.length):'–'}</td>`+
+    `<td class="num">${x.contatti.length?(Math.max(...x.contatti)/100).toFixed(2).replace('.',','):'–'}</td>`+'</tr>';
+  const nums=Object.keys(per).map(Number).sort((a,b)=>a-b);
+  $('tabella').innerHTML=`<thead><tr><th></th><th colspan="4">Attacco</th><th colspan="3" class="gr">Battuta</th>
+    <th colspan="6" class="gr">Ricezione</th><th colspan="2" class="gr">Muro</th><th colspan="2" class="gr">Altro</th><th colspan="3" class="gr">Misure</th></tr>
+    <tr><th>Giocatrice</th><th>Punti</th><th>Err.</th><th>Tot.</th><th>Eff.</th>
+    <th class="gr">Ace</th><th>Err.</th><th>Tot.</th>
+    <th class="gr">3</th><th>2</th><th>1</th><th>0</th><th>Tot.</th><th>Media</th>
+    <th class="gr">Punti</th><th>Tocchi</th><th class="gr">Alzate</th><th>Difese</th><th class="gr">Salto max (cm)</th><th>Salto medio</th><th>Contatto max (m)</th></tr></thead><tbody>`+
+    (nums.length?nums.map(n=>riga(esc(etichetta(n)),per[n])).join(''):'<tr><td colspan="21" class="vuoto">Nessuna azione di Martesana inserita.</td></tr>')+
+    riga('Squadra',tot,'squadra')+'</tbody>';
+  const st=ricostruisci();
+  const pct=v=>v===null?'–':Math.round(v*100)+'%';
+  const e=eff(tot);
+  $('riquadri').innerHTML=[
+    [`${st.p.noi} – ${st.p.loro}`,'Punteggio del set'],
+    [e===null?'–':f3(e),'Efficienza in attacco'],
+    [pct(posi(tot)),'Ricezione positiva (3 e 2)'],
+    [`${tot.ace} / ${tot.be}`,'Ace / errori in battuta'],
+  ].map(([v,l])=>`<div class="riq"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join('');
+}
+
+function disegna(){
+  const st=ricostruisci();
+  $('pNoi').textContent=punteggioAl(tempo).noi;$('pLoro').textContent=punteggioAl(tempo).loro;
+  $('etEsempio').hidden=!S.esempio;
+  $('titolo').textContent='Martesana – '+nomeSq('loro');$('tabLoro').textContent=nomeSq('loro');
+  $('puntoLoro').textContent='Punto '+nomeSq('loro');
+  if(vista==='ins'){disegnaIns(st);disegnaFiltri();disegnaElenco()}
+  else if(vista==='stat')disegnaStat();
+  else disegnaBatte();
+}
+
+// Il tabellone del video mostra il punteggio al secondo in cui si trova il video.
+function punteggioAl(t){
+  const p={noi:0,loro:0};
+  for(const a of S.azioni){if(a.t>t)break;if(a._vince)p[a._vince]++}
+  return p;
+}
+
+// Video: finto (un orologio) finché non se ne apre uno vero dal computer.
+const vid=$('vid');let conVideo=false,durata=900,vel=1;
+let yt=null,conYt=false;
+// YouTube aggiorna il tempo con un po' di ritardo dopo un salto: a video fermo, per un attimo
+// vale il punto dove l'abbiamo mandato noi. Così i passi a fotogramma si sommano bene.
+let ultimoSalto=null;
+function adesso(){
+  if(conYt){
+    if(ultimoSalto&&yt.getPlayerState()!==1&&performance.now()-ultimoSalto.quando<1500)return ultimoSalto.t;
+    return yt.getCurrentTime();
+  }
+  return conVideo?vid.currentTime:tempo;
+}
+function mostraTempo(t){
+  if(fineRall!==null&&t>=fineRall)fermaRallenty();
+  tempo=t;$('cursore').value=t;
+  $('tempo').textContent=mmss(t)+' / '+mmss(durata);
+  const p=punteggioAl(t);$('pNoi').textContent=p.noi;$('pLoro').textContent=p.loro;
+  disegnaSopra();
+}
+function vai(t){
+  t=Math.min(durata,Math.max(0,t));
+  if(conYt){yt.seekTo(t,true);ultimoSalto={t,quando:performance.now()}}
+  else if(conVideo)vid.currentTime=t;
+  mostraTempo(t);
+}
+function statoPlay(va){$('play').textContent=va?'❚❚':'▶';$('playBarra').textContent=va?'❚❚ Pausa':'▶ Play';$('video').classList.toggle('ferma',!va)}
+function playPausa(){
+  if(conYt){yt.getPlayerState()===1?yt.pauseVideo():yt.playVideo();return}
+  if(conVideo){vid.paused?vid.play():vid.pause();return}
+  if(gira){clearInterval(gira);gira=null;statoPlay(false)}
+  else{gira=setInterval(()=>{vai(tempo+.25*vel);if(tempo>=durata){clearInterval(gira);gira=null;statoPlay(false)}},250);statoPlay(true)}
+}
+$('cursore').oninput=e=>vai(Number(e.target.value));
+$('indietro').onclick=()=>vai(adesso()-5);
+$('play').onclick=playPausa;
+$('playBarra').onclick=playPausa;
+// Tastiera: spazio = play/pausa, frecce = un fotogramma. Non quando si sta scrivendo.
+const scrivendo=e=>/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable;
+document.addEventListener('keydown',e=>{
+  if(scrivendo(e)||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.key===' '){e.preventDefault();if(!e.repeat)playPausa()}
+  else if(e.key==='ArrowLeft'){e.preventDefault();passo(-1)}
+  else if(e.key==='ArrowRight'){e.preventDefault();passo(1)}
+});
+document.addEventListener('keyup',e=>{if(e.key===' '&&!scrivendo(e))e.preventDefault()});
+vid.onclick=playPausa;
+vid.onplay=()=>statoPlay(true);vid.onpause=()=>statoPlay(false);
+vid.ontimeupdate=()=>mostraTempo(vid.currentTime);
+function impostaVel(v){
+  vel=v;vid.playbackRate=v;if(conYt)yt.setPlaybackRate(v);
+  document.querySelectorAll('#velBtn button').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.v)===v?'true':'false'));
+}
+document.querySelectorAll('#velBtn button').forEach(b=>b.onclick=()=>{fineRall=null;impostaVel(Number(b.dataset.v))});
+function staGirando(){return conYt?yt.getPlayerState()===1:conVideo?!vid.paused:!!gira}
+function avvia(){if(!staGirando())playPausa()}
+function ferma(){if(staGirando())playPausa()}
+
+// Rallenty: parte 1,5 s prima dell'azione a 0,25× e si ferma 2,5 s dopo, poi torna alla velocità di prima.
+let fineRall=null,velPrima=1;
+function rallenty(t){
+  if(fineRall===null)velPrima=vel===.25?1:vel;
+  impostaVel(.25);vai(Math.max(0,t-1.5));fineRall=t+2.5;avvia();
+}
+function fermaRallenty(){fineRall=null;ferma();impostaVel(velPrima)}
+$('rallenty').onclick=()=>{
+  const a=S.azioni.find(x=>x.id===attiva);
+  rallenty(a?a.t:adesso());
+};
+// Zoom: ingrandisce il riquadro del video (funziona anche con YouTube) e si sposta trascinando.
+let zoom=1,zx=.5,zy=.5;
+const ZOOM_MAX=4;
+function applicaZoom(){
+  const m=.5/zoom;zx=Math.min(1-m,Math.max(m,zx));zy=Math.min(1-m,Math.max(m,zy));
+  const tr=zoom===1?'':`translate(${(.5-zx*zoom)*100}%,${(.5-zy*zoom)*100}%) scale(${zoom})`;
+  vid.style.transform=tr;$('ytBox').style.transform=tr;$('sopra').style.transform=tr;
+  const txt=String(zoom).replace('.',',')+'×';
+  $('zVal').textContent=txt;$('zoomInfo').textContent=txt+' · trascina per spostarti · clic per play/pausa · doppio clic per tornare normale';
+  $('zoomInfo').hidden=zoom===1;
+  aggiornaPad();
+}
+function impostaZoom(z,px,py){ // px,py: punto (0-1) del riquadro che resta fermo
+  z=Math.min(ZOOM_MAX,Math.max(1,Math.round(z*4)/4));
+  if(px!==undefined){const vx=zx+(px-.5)/zoom,vy=zy+(py-.5)/zoom;zx=vx-(px-.5)/z;zy=vy-(py-.5)/z}
+  zoom=z;applicaZoom();
+}
+$('zPiu').onclick=()=>impostaZoom(zoom+.5);
+$('zMeno').onclick=()=>impostaZoom(zoom-.5);
+$('zReset').onclick=()=>{zx=zy=.5;impostaZoom(1)};
+// Schermo intero: il riquadro del video con barra e strumenti
+$('schermo').onclick=()=>{
+  const c=$('cardVideo');
+  if(document.fullscreenElement)document.exitFullscreen();
+  else if(c.requestFullscreen)c.requestFullscreen().catch(()=>messaggio('Il browser non permette lo schermo intero qui.',true));
+};
+document.addEventListener('fullscreenchange',()=>{
+  $('schermo').textContent=document.fullscreenElement?'Esci da schermo intero':'Schermo intero';
+  setTimeout(disegnaSopra,50);
+});
+// Esporta / importa: un file .json con la partita (azioni, note, misure, disegni, link del video) e la rosa.
+const FORMATO='scout-martesana';
+$('esporta').onclick=()=>{
+  const dati={formato:FORMATO,versione:1,esportato:new Date().toISOString(),impostazioni:IMP,partita:S};
+  const testo=JSON.stringify(dati,(k,v)=>k.startsWith('_')?undefined:v,1); // senza i campi ricalcolati
+  const oggi=new Date().toISOString().slice(0,10);
+  const nome=('Martesana-'+nomeSq('loro')+'-'+oggi).replace(/[^\w\-àèéìòù]+/gi,'-').replace(/-+/g,'-')+'.json';
+  const url=URL.createObjectURL(new Blob([testo],{type:'application/json'}));
+  const l=document.createElement('a');l.href=url;l.download=nome;document.body.append(l);l.click();l.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  messaggio('Scaricato «'+nome+'» nella cartella Download. Per riaprirlo, anche su un altro computer, usa «Importa partita».');
+};
+$('importaFile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let d;try{d=JSON.parse(await f.text())}catch(err){messaggio('«'+f.name+'» non è un file di partita leggibile.',true);return}
+  if(!d||d.formato!==FORMATO||!d.partita||!Array.isArray(d.partita.azioni)){
+    messaggio('«'+f.name+'» non è un file esportato da questa pagina.',true);return}
+  if(S.azioni.length&&!S.esempio&&!confirm('Aprire «'+f.name+'»? La partita aperta adesso verrà sostituita. Se non l\'hai esportata, fallo prima.'))return;
+  S=d.partita;S.esempio=false;
+  if(d.impostazioni&&Array.isArray(d.impostazioni.rosa)){IMP=d.impostazioni;salvaImp()}
+  salva();modifica=null;attiva=null;
+  if(S.yt){try{localStorage.setItem('scout-ultimo-video',S.yt)}catch(err){}
+    $('ytLink').value='https://youtu.be/'+S.yt;await apriYoutube(S.yt)}
+  mostra(vista);
+  messaggio('Partita aperta da «'+f.name+'»: '+S.azioni.length+' azioni.');
+};
+
+// Aspetto: automatico (come il computer), chiaro o scuro; la scelta resta salvata
+function tema(v){
+  if(v==='auto')document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',v);
+  document.querySelectorAll('#tema button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tema===v?'true':'false'));
+  try{localStorage.setItem('scout-tema',v)}catch(e){}
+}
+document.querySelectorAll('#tema button').forEach(b=>b.onclick=()=>tema(b.dataset.tema));
+tema((()=>{try{return localStorage.getItem('scout-tema')||'auto'}catch(e){return 'auto'}})());
+(()=>{
+  const pad=$('zoomPad'),box=$('video');let pr=null,mosso=0;
+  pad.onpointerdown=e=>{pr={x:e.clientX,y:e.clientY};mosso=0;pad.setPointerCapture(e.pointerId);box.classList.add('trascino')};
+  pad.onpointermove=e=>{if(!pr)return;const r=box.getBoundingClientRect();
+    mosso+=Math.abs(e.clientX-pr.x)+Math.abs(e.clientY-pr.y);
+    zx-=(e.clientX-pr.x)/(r.width*zoom);zy-=(e.clientY-pr.y)/(r.height*zoom);pr={x:e.clientX,y:e.clientY};applicaZoom()};
+  pad.onpointerup=e=>{
+    const eraClic=pr&&mosso<8;pr=null;box.classList.remove('trascino');
+    if(eraClic&&!modo){playPausa();return} // con lo zoom un clic sul video fa play/pausa
+    if(eraClic&&modo){const r=box.getBoundingClientRect(); // dal punto sullo schermo al punto del video, tenendo conto dello zoom
+      tocco((e.clientX-r.left)/r.width/zoom+zx-.5/zoom,(e.clientY-r.top)/r.height/zoom+zy-.5/zoom)}
+  };
+  pad.onpointercancel=()=>{pr=null;box.classList.remove('trascino')};
+  pad.ondblclick=()=>{if(!modo){zx=zy=.5;impostaZoom(1)}};
+  box.addEventListener('wheel',e=>{
+    if(zoom===1&&!e.ctrlKey&&!e.altKey)return; // a zoom normale la rotellina scorre la pagina
+    e.preventDefault();const r=box.getBoundingClientRect();
+    impostaZoom(zoom*(e.deltaY<0?1.25:.8),(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height);
+  },{passive:false});
+})();
+
+// Un fotogramma alla volta (circa 1/30 di secondo), a video fermo.
+function passo(dir){
+  if(conYt){if(yt.getPlayerState()===1)yt.pauseVideo()}
+  else if(conVideo){if(!vid.paused)vid.pause()}
+  else if(gira){clearInterval(gira);gira=null;statoPlay(false)}
+  vai(adesso()+dir/30);
+}
+// Tenendo premuto il pulsante i fotogrammi scorrono di continuo (circa 14 al secondo).
+function tieniPremuto(b,fn){
+  let attesa=null,giro=null;
+  const stop=()=>{clearTimeout(attesa);clearInterval(giro);attesa=giro=null};
+  b.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();stop();fn();
+    attesa=setTimeout(()=>{giro=setInterval(fn,70)},350)};
+  b.onpointerup=b.onpointerleave=b.onpointercancel=stop;
+  b.onblur=stop;
+  b.onclick=e=>{if(e.detail===0)fn()}; // da tastiera (Invio)
+}
+tieniPremuto($('fPrima'),()=>passo(-1));tieniPremuto($('fDopo'),()=>passo(1));
+
+
+// ===== Misure a mano: salto (tempo di volo), altezza della palla al contatto, traiettoria =====
+// I punti sono in coordinate del video (0-1), così restano giusti con qualsiasi zoom e dimensione.
+let modo=null; // {tipo:'taratura'|'contatto'|'traccia', a, punti}
+const cs=s=>{s=Math.max(0,s);const m=Math.floor(s/60),r=s-m*60;return m+':'+r.toFixed(2).padStart(5,'0').replace('.',',')};
+function cmSalto(a){
+  if(!a.salto||a.salto.stacco==null||a.salto.atterra==null)return null;
+  const t=a.salto.atterra-a.salto.stacco;if(t<=0.15||t>1.3)return null;
+  return Math.round(9.81*t*t/8*100);
+}
+function cmContatto(a){
+  const T=S.taratura;if(!a.contatto||!T)return null;
+  const f=(a.contatto.x-T.l.x)/((T.r.x-T.l.x)||1e-6);
+  const yRete=T.l.y+f*(T.r.y-T.l.y);           // bordo della rete sulla verticale della palla
+  const k=T.h/((T.terra.y-T.l.y)||1e-6);         // centimetri per unità di altezza del video
+  return Math.round(T.h+(yRete-a.contatto.y)*k);
+}
+function aggiornaPad(){
+  $('zoomPad').hidden=zoom===1&&!modo;
+  $('video').classList.toggle('in-modo',!!modo);
+  const tb=$('taratura');tb.classList.toggle('fatto',!!S.taratura);
+  tb.textContent=S.taratura?'Taratura rete ✓':'Taratura rete';
+}
+function istruzione(testo,bottoni){
+  const box=$('istruzione');
+  if(!testo){box.hidden=true;box.replaceChildren();return}
+  const t=document.createElement('span');t.textContent=testo;
+  box.replaceChildren(t,...(bottoni||[]).map(([l,fn,ok])=>{const b=document.createElement('button');b.type='button';
+    b.textContent=l;if(ok)b.className='ok';b.onclick=fn;return b}));
+  box.hidden=false;
+}
+function esciModo(){
+  if(modo&&modo.a&&modo.a.cerchi){modo.a.cerchi.forEach(c=>{if(c.giusto&&c.giusto.length<2)delete c.giusto});
+    modo.a.cerchi=modo.a.cerchi.filter(c=>c.punti.length);if(!modo.a.cerchi.length)delete modo.a.cerchi;salva()}
+  modo=null;istruzione(null);aggiornaPad();disegnaSopra();aggiornaMisureAperte()}
+const PASSI_TARATURA=[
+  'Tocca il bordo superiore della rete, dove incontra l\'antenna di sinistra',
+  'Ora il bordo superiore della rete all\'antenna di destra',
+  'Ora il pavimento esattamente sotto il primo punto (base del palo o linea sotto l\'antenna sinistra)'];
+function avviaTaratura(){
+  ferma();modo={tipo:'taratura',punti:[]};aggiornaPad();
+  istruzione('1/3 · '+PASSI_TARATURA[0]+'. Usa lo zoom per essere preciso.',[['Esci',esciModo]]);disegnaSopra();
+}
+$('taratura').onclick=avviaTaratura;
+function avviaContatto(a){
+  if(!S.taratura){avviaTaratura();return}
+  ferma();modo={tipo:'contatto',a};aggiornaPad();
+  istruzione('Ora tocca la palla dentro il video. Se serve, prima porta il video al fotogramma del contatto con ◀ ▶.',[['Esci',esciModo]]);disegnaSopra();aggiornaMisureAperte();
+}
+function avviaTraccia(a){
+  ferma();a.traccia=a.traccia||[];modo={tipo:'traccia',a};aggiornaPad();istruzioneTraccia();disegnaSopra();aggiornaMisureAperte();
+}
+function istruzioneTraccia(){
+  const n=modo.a.traccia.length;
+  istruzione((n?n+' punti · ':'')+'Tocca la palla dentro il video: dopo ogni tocco il video va avanti di 3 fotogrammi',[
+    ['Annulla ultimo',()=>{modo.a.traccia.pop();salva();istruzioneTraccia();disegnaSopra()}],
+    ['Fine',esciModo,true]]);
+}
+// Cerchi sulle giocatrici: un tocco sui piedi mette il cerchio; altri tocchi in momenti diversi lo fanno seguire.
+function avviaCerchio(a,i){
+  ferma();a.cerchi=a.cerchi||[];
+  if(i===undefined){const vuoto=a.cerchi.findIndex(c=>!c.punti.length);
+    if(vuoto>=0)i=vuoto;else{a.cerchi.push({n:null,punti:[]});i=a.cerchi.length-1}}
+  modo={tipo:'cerchio',a,i};aggiornaPad();istruzioneCerchio();disegnaSopra();aggiornaMisureAperte();
+}
+function istruzioneCerchio(){
+  const c=modo.a.cerchi[modo.i],n=c.punti.length;
+  istruzione(n?`Cerchio ${modo.i+1} messo (${n} ${n===1?'posizione':'posizioni'}). Per farlo seguire la giocatrice vai avanti con ▶ e toccale di nuovo i piedi.`
+    :`Tocca i piedi della giocatrice da cerchiare, nel momento in cui entra in azione.`,[
+    ...(n?[['Annulla ultimo',()=>{c.punti.pop();salva();istruzioneCerchio();disegnaSopra();aggiornaMisureAperte()}]]:[]),
+    ...(n?[['Un\'altra giocatrice',()=>avviaCerchio(modo.a)]]:[]),
+    ['Fine',esciModo,true]]);
+}
+function posizioneAl(punti,t){ // posizione del cerchio all'istante t: ferma prima del primo punto e dopo l'ultimo
+  if(t<=punti[0].t)return punti[0];
+  for(let i=1;i<punti.length;i++)if(t<=punti[i].t){
+    const p0=punti[i-1],p1=punti[i],f=(t-p0.t)/((p1.t-p0.t)||1);
+    return {x:p0.x+(p1.x-p0.x)*f,y:p0.y+(p1.y-p0.y)*f}}
+  return punti[punti.length-1];
+}
+
+// Movimento corretto: parte da dove si trova la giocatrice all'inizio, poi si toccano i punti in ordine.
+function avviaGiusto(a,i){
+  ferma();const c=a.cerchi[i];
+  c.giusto=[{x:c.punti[0].x,y:c.punti[0].y}];
+  vai(c.punti[0].t);modo={tipo:'giusto',a,i};aggiornaPad();istruzioneGiusto();disegnaSopra();aggiornaMisureAperte();
+}
+function istruzioneGiusto(){
+  const c=modo.a.cerchi[modo.i],n=c.giusto.length-1;
+  istruzione(n?`Movimento corretto: ${n} ${n===1?'punto':'punti'}. Continua a toccare il percorso giusto, in ordine, fino a dove doveva arrivare.`
+    :'Disegna il movimento corretto: tocca in ordine i punti del percorso giusto. Parte da dove si trova la giocatrice.',[
+    ...(n?[['Annulla ultimo',()=>{c.giusto.pop();salva();istruzioneGiusto();disegnaSopra();aggiornaMisureAperte()}]]:[]),
+    ['Fine',esciModo,true]]);
+}
+
+function tocco(x,y){
+  if(modo.tipo==='taratura'){
+    modo.punti.push({x,y});const i=modo.punti.length;
+    if(i<3){istruzione((i+1)+'/3 · '+PASSI_TARATURA[i],[['Ricomincia',avviaTaratura],['Esci',esciModo]]);disegnaSopra();return}
+    const [l,r,terra]=modo.punti;
+    if(terra.y<=l.y+.02||Math.abs(r.x-l.x)<.05){
+      istruzione('I punti non tornano: il pavimento deve stare sotto la rete e le due antenne distanti. Riproviamo.',[['Ricomincia',avviaTaratura],['Esci',esciModo]]);
+      modo.punti=[];disegnaSopra();return}
+    S.taratura={l,r,terra,h:IMP.hRete||224};salva();
+    esciModo();
+    messaggio('Taratura fatta con la rete a '+S.taratura.h+' cm. Vale per tutto questo video: rifalla solo se la camera si sposta.');
+    disegna();return;
+  }
+  if(modo.tipo==='contatto'){
+    const a=modo.a;a.contatto={x,y,t:adesso()};salva();esciModo();disegna();return;
+  }
+  if(modo.tipo==='giusto'){
+    modo.a.cerchi[modo.i].giusto.push({x,y});salva();istruzioneGiusto();disegnaSopra();aggiornaMisureAperte();return;
+  }
+  if(modo.tipo==='cerchio'){
+    const c=modo.a.cerchi[modo.i];c.punti.push({t:adesso(),x,y});c.punti.sort((p,q)=>p.t-q.t);salva();
+    istruzioneCerchio();disegnaSopra();aggiornaMisureAperte();return;
+  }
+  if(modo.tipo==='traccia'){
+    modo.a.traccia.push({t:adesso(),x,y});modo.a.traccia.sort((p,q)=>p.t-q.t);salva();
+    vai(adesso()+3/30);istruzioneTraccia();disegnaSopra();aggiornaMisureAperte();
+  }
+}
+function aggiornaMisureAperte(){
+  if(modifica===null)return;const a=S.azioni.find(x=>x.id===modifica);
+  const box=document.getElementById('ed-misure-'+modifica);if(a&&box)disegnaMisure(a,box);
+}
+function disegnaMisure(a,box){
+  box.replaceChildren();
+  const tit=document.createElement('div');tit.className='tit';tit.textContent='Misure (si salvano subito)';box.append(tit);
+  const riga=(nome,ris,bottoni)=>{
+    const r=document.createElement('div');r.className='misura';
+    const n=document.createElement('span');n.className='nome';n.textContent=nome;
+    const v=document.createElement('span');
+    if(ris&&ris.startsWith('→')){v.className='ris attesa'}else v.className='ris'+(ris?'':' vuota');
+    v.textContent=ris||'non misurato';
+    r.append(n,...bottoni.map(([l,fn])=>{const b=document.createElement('button');b.type='button';b.textContent=l;b.onclick=fn;return b}),v);
+    box.append(r);
+  };
+  const aggiorna=()=>{salva();disegnaMisure(a,box);disegnaSopra()};
+  // salto
+  const attesa=t=>modo&&modo.a===a&&modo.tipo===t;
+  const sa=a.salto||{};const hs=cmSalto(a);
+  let rs=hs!==null?`${hs} cm · volo ${((sa.atterra-sa.stacco)).toFixed(2).replace('.',',')} s`:'';
+  if(!rs&&sa.stacco!=null&&sa.atterra!=null)rs='tempi non validi: controlla stacco e atterraggio';
+  else if(!rs&&sa.stacco!=null)rs='stacco a '+cs(sa.stacco)+', manca l\'atterraggio';
+  riga('Altezza di salto',rs,[
+    ['Stacco = ora',()=>{a.salto=Object.assign({},a.salto,{stacco:adesso()});aggiorna()}],
+    ['Atterraggio = ora',()=>{a.salto=Object.assign({},a.salto,{atterra:adesso()});aggiorna()}],
+    ...(sa.stacco!=null?[['Vai allo stacco',()=>{ferma();vai(sa.stacco)}]]:[]),
+    ...(a.salto?[['Cancella',()=>{delete a.salto;aggiorna();disegna()}]]:[])]);
+  // contatto
+  const hc=cmContatto(a);
+  const rc=hc!==null?`${(hc/100).toFixed(2).replace('.',',')} m · ${hc-S.taratura.h>=0?'+':''}${hc-S.taratura.h} cm sulla rete`:
+    (a.contatto&&!S.taratura?'manca la taratura della rete':'');
+  riga('Palla al contatto',attesa('contatto')?'→ ora tocca la palla sul video':rc,[
+    [a.contatto?'Rifai':'Tocca la palla',()=>avviaContatto(a)],
+    ...(a.contatto?[['Vai al contatto',()=>{ferma();vai(a.contatto.t)}],['Cancella',()=>{delete a.contatto;aggiorna();disegna()}]]:[])]);
+  // traiettoria
+  const nt=(a.traccia||[]).length;
+  riga('Traiettoria',attesa('traccia')?'→ tocca la palla sul video ('+nt+' punti)':nt?nt+' punti':'',[
+    [nt?'Aggiungi punti':'Traccia la palla',()=>avviaTraccia(a)],
+    ...(nt?[['Rivedi',()=>{ferma();vai(Math.max(0,a.traccia[0].t-.5));avvia()}],['Cancella',()=>{delete a.traccia;aggiorna()}]]:[])]);
+  // giocatrici cerchiate
+  const cc=(a.cerchi||[]).filter(c=>c.punti.length);
+  riga('Giocatrici cerchiate',attesa('cerchio')?'→ tocca i piedi della giocatrice sul video':cc.length?cc.length+(cc.length===1?' cerchio':' cerchi'):'',[
+    ['Cerchia una giocatrice',()=>avviaCerchio(a)],
+    ...(cc.length?[['Cancella tutti',()=>{delete a.cerchi;aggiorna()}]]:[])]);
+  (a.cerchi||[]).forEach((c,i)=>{
+    if(!c.punti.length)return;
+    const r=document.createElement('div');r.className='misura';
+    const l=document.createElement('span');l.className='nome';l.textContent='· Cerchio '+(i+1);
+    const sel=document.createElement('select');sel.id=`ed-cerchio-${a.id}-${i}`;sel.setAttribute('aria-label','Chi è nel cerchio '+(i+1));
+    sel.innerHTML='<option value="">senza nome</option>'+rosa().map(g=>`<option value="${g.n}">${esc(etichetta(g.n))}</option>`).join('');
+    sel.value=c.n==null?'':String(c.n);sel.style.width='auto';
+    sel.onchange=()=>{c.n=sel.value===''?null:Number(sel.value);salva();disegnaSopra()};
+    const piu=document.createElement('button');piu.type='button';piu.textContent='Aggiungi posizioni';piu.onclick=()=>avviaCerchio(a,i);
+    const via=document.createElement('button');via.type='button';via.textContent='Togli';
+    via.onclick=()=>{a.cerchi.splice(i,1);if(!a.cerchi.length)delete a.cerchi;aggiorna()};
+    const gb=document.createElement('button');gb.type='button';
+    gb.textContent=c.giusto?'Rifai movimento corretto':'Movimento corretto';gb.onclick=()=>avviaGiusto(a,i);
+    const extra=[gb];
+    if(c.giusto){const gt=document.createElement('button');gt.type='button';gt.textContent='Togli corretto';
+      gt.onclick=()=>{delete c.giusto;aggiorna()};extra.push(gt)}
+    r.append(l,sel,piu,...extra,via);box.append(r);
+  });
+  const aiuto=document.createElement('div');aiuto.className='aiuto';
+  aiuto.textContent='Salto: con ◀ ▶ trova l\'ultimo fotogramma a terra e premi "Stacco = ora", poi il primo fotogramma di nuovo a terra e "Atterraggio = ora".'+
+    (S.taratura?'':' Per l\'altezza della palla serve prima la taratura della rete (una volta per video).');
+  box.append(aiuto);
+}
+
+// Anello tratteggiato "3D" che gira sul proprio asse: un disco appoggiato sul pavimento
+// con spessore (anello inferiore più scuro), bagliore sul pavimento e trattini che scorrono.
+const TINTA_REALE={chiaro:'77,227,255',scuro:'20,140,165'},TINTA_GIUSTA={chiaro:'95,224,138',scuro:'28,128,68'};
+// Punto a una certa frazione (0-1) della lunghezza di un percorso.
+function lungoPercorso(pp,f){
+  const L=[0];for(let i=1;i<pp.length;i++)L.push(L[i-1]+Math.hypot(pp[i].x-pp[i-1].x,pp[i].y-pp[i-1].y));
+  const tot=L[L.length-1];if(!tot)return {p:pp[0],k:0};
+  const d=f*tot;let i=1;while(i<pp.length-1&&L[i]<d)i++;
+  const u=(d-L[i-1])/((L[i]-L[i-1])||1);
+  return {p:{x:pp[i-1].x+(pp[i].x-pp[i-1].x)*u,y:pp[i-1].y+(pp[i].y-pp[i-1].y)*u},k:i};
+}
+const MOTO_RIDOTTO=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let cerchiVisibili=false;
+function anello(g,x,y,rx,ry,attivo,tinta){
+  tinta=tinta||TINTA_REALE;
+  const perim=Math.PI*(3*(rx+ry)-Math.sqrt((3*rx+ry)*(rx+3*ry)));
+  const passo=perim/14,giro=MOTO_RIDOTTO?0:(performance.now()/1000/3.5%1)*perim; // un giro ogni 3,5 s
+  const sp=ry*.45; // spessore del disco
+  g.save();
+  // bagliore sul pavimento
+  const gr=g.createRadialGradient(x,y+sp*.5,0,x,y+sp*.5,rx);
+  gr.addColorStop(0,`rgba(${tinta.chiaro},.28)`);gr.addColorStop(1,`rgba(${tinta.chiaro},0)`);
+  g.fillStyle=gr;g.beginPath();g.ellipse(x,y+sp*.5,rx*1.08,ry*1.15,0,0,7);g.fill();
+  g.lineCap='round';g.setLineDash([passo*.62,passo*.38]);
+  // anello inferiore: il bordo sotto del disco, più scuro
+  g.lineWidth=3/zoom;g.strokeStyle=`rgba(${tinta.scuro},.85)`;g.lineDashOffset=-giro;
+  g.beginPath();g.ellipse(x,y+sp,rx,ry,0,0,7);g.stroke();
+  // lati del disco
+  g.setLineDash([]);g.lineWidth=1.5/zoom;g.strokeStyle=`rgba(${tinta.chiaro},.45)`;
+  g.beginPath();g.moveTo(x-rx,y);g.lineTo(x-rx,y+sp);g.moveTo(x+rx,y);g.lineTo(x+rx,y+sp);g.stroke();
+  // anello superiore: dietro più tenue, davanti più acceso
+  const lg=g.createLinearGradient(0,y-ry,0,y+ry);
+  const col=attivo?'255,255,255':tinta.chiaro;
+  lg.addColorStop(0,`rgba(${col},.45)`);lg.addColorStop(1,`rgba(${col},1)`);
+  g.setLineDash([passo*.62,passo*.38]);g.lineDashOffset=-giro;
+  g.lineWidth=(attivo?4.5:3.5)/zoom;g.strokeStyle=lg;g.shadowColor=`rgb(${tinta.chiaro})`;g.shadowBlur=10/zoom;
+  g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.stroke();
+  g.restore();
+}
+// Mentre c'è un anello a video lo si ridisegna di continuo, per farlo girare (circa 30 volte al secondo).
+let ultimoGiro=0;
+(function gira(ts){
+  requestAnimationFrame(gira);
+  if(!cerchiVisibili||MOTO_RIDOTTO||ts-ultimoGiro<33)return;
+  ultimoGiro=ts;disegnaSopra();
+})(0);
+
+// Disegno sopra il video: traiettoria, punto di contatto, taratura.
+function disegnaSopra(){
+  cerchiVisibili=false;
+  const cv=$('sopra'),box=$('video');if(!cv)return;
+  const dpr=window.devicePixelRatio||1,W=box.clientWidth,H=box.clientHeight;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const lw=2.5/zoom,P=(p)=>[p.x*W,p.y*H];
+  const punto=(p,col,r)=>{const [x,y]=P(p);g.beginPath();g.arc(x,y,(r||5)/zoom,0,7);g.fillStyle=col;g.fill();
+    g.lineWidth=1.5/zoom;g.strokeStyle='#fff';g.stroke()};
+  const scritta=(p,t)=>{const [x,y]=P(p);g.font=`700 ${13/zoom}px -apple-system,BlinkMacSystemFont,sans-serif`;
+    const w=g.measureText(t).width,dx=x+w+24/zoom>W?-(w+18/zoom):8/zoom; // se esce a destra, va a sinistra
+    g.fillStyle='#000c';g.fillRect(x+dx,y-18/zoom,w+10/zoom,20/zoom);
+    g.fillStyle='#fff';g.fillText(t,x+dx+5/zoom,y-4/zoom)};
+  const ora=adesso();
+  // taratura: si vede mentre la si fa o mentre si misura un contatto
+  const tar=modo&&modo.tipo==='taratura'?modo.punti:(S.taratura&&modo&&modo.tipo==='contatto'?[S.taratura.l,S.taratura.r,S.taratura.terra]:null);
+  if(tar&&tar.length){
+    g.setLineDash([6/zoom,4/zoom]);g.lineWidth=lw;g.strokeStyle='#7fe3d4';
+    if(tar.length>=2){g.beginPath();g.moveTo(...P(tar[0]));g.lineTo(...P(tar[1]));g.stroke()}
+    if(tar.length>=3){g.beginPath();g.moveTo(...P(tar[0]));g.lineTo(...P(tar[2]));g.stroke()}
+    g.setLineDash([]);tar.forEach(p=>punto(p,'#7fe3d4',4));
+  }
+  const a=S.azioni.find(x=>x.id===(modo&&modo.a?modo.a.id:modifica!==null?modifica:attiva));
+  if(!a)return;
+  const traccio=modo&&modo.a===a&&modo.tipo==='traccia';
+  // Traiettoria: all'inizio dell'azione non c'è, cresce seguendo la palla mentre il video scorre
+  // e poi resta a video. Sparisce se si torna prima dell'azione o se si seleziona un'altra azione.
+  // Solo mentre la si sta segnando si vede tutta, per controllare i punti.
+  const tr=a.traccia||[];
+  if(tr.length){
+    const vis=traccio?tr:tr.filter(p=>p.t<=ora+.02);
+    if(!traccio&&vis.length&&vis.length<tr.length){ // punta della linea tra un punto e il successivo
+      const p0=vis[vis.length-1],p1=tr[vis.length],f=Math.min(1,Math.max(0,(ora-p0.t)/((p1.t-p0.t)||1)));
+      vis.push({t:ora,x:p0.x+(p1.x-p0.x)*f,y:p0.y+(p1.y-p0.y)*f});
+    }
+    if(vis.length){
+      g.lineWidth=lw*1.3;g.strokeStyle='#f5c542';g.lineJoin=g.lineCap='round';
+      // linea morbida che passa tra i punti (curve sui punti medi), senza pallini
+      const q=vis.map(P);g.beginPath();g.moveTo(...q[0]);
+      for(let i=1;i<q.length-1;i++)g.quadraticCurveTo(q[i][0],q[i][1],(q[i][0]+q[i+1][0])/2,(q[i][1]+q[i+1][1])/2);
+      if(q.length>1)g.lineTo(...q[q.length-1]);
+      g.shadowColor='#f5c542';g.shadowBlur=8/zoom;g.stroke();g.shadowBlur=0;
+      if(traccio)vis.forEach(p=>punto(p,'#f5c542',3.5)); // i pallini solo mentre la si segna
+    }
+  }
+  // cerchi: compaiono quando la giocatrice entra in azione, la seguono, poi restano
+  const cerchiando=modo&&modo.a===a&&modo.tipo==='cerchio';
+  (a.cerchi||[]).forEach((c,i)=>{
+    if(!c.punti.length)return;
+    const suQuesto=modo&&modo.a===a&&modo.tipo==='giusto'&&modo.i===i;
+    if(!cerchiando&&!suQuesto&&ora<c.punti[0].t-.02)return;
+    const pos=posizioneAl(c.punti,ora),[x,y]=P(pos);
+    const rx=W*(.022+.03*pos.y),ry=rx*.38; // più grande vicino alla camera
+    // scia: il percorso fatto finora sul pavimento, più tenue all'inizio e piena vicino alla giocatrice
+    const scia=(cerchiando?c.punti:c.punti.filter(p=>p.t<=ora+.02)).slice();
+    if(!cerchiando&&ora<c.punti[c.punti.length-1].t)scia.push(pos);
+    if(scia.length>1){
+      g.save();g.lineCap='round';g.shadowColor='#4de3ff';g.shadowBlur=6/zoom;
+      g.setLineDash([9/zoom,7/zoom]);let fatto=0; // tratteggio continuo da un tratto all'altro
+      for(let k=1;k<scia.length;k++){
+        const [x0,y0]=P(scia[k-1]),[x1,y1]=P(scia[k]);
+        g.globalAlpha=.25+.65*(k/(scia.length-1));
+        g.lineWidth=(2+2.5*(k/(scia.length-1)))/zoom;g.strokeStyle='#4de3ff';
+        g.lineDashOffset=-fatto;
+        g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();
+        fatto+=Math.hypot(x1-x0,y1-y0);
+      }
+      g.restore();
+    }
+    // movimento corretto: linea verde con freccia e un anello "fantasma" che lo percorre
+    // nello stesso tempo in cui la giocatrice fa il suo movimento
+    const gg=c.giusto||[];
+    const disegnoGiusto=modo&&modo.a===a&&modo.tipo==='giusto'&&modo.i===i;
+    if(gg.length>1){
+      const T0=c.punti[0].t,T1=Math.max(c.punti[c.punti.length-1].t,T0+1.5);
+      const f=disegnoGiusto||cerchiando?1:Math.min(1,Math.max(0,(ora-T0)/(T1-T0)));
+      const {p:testa,k}=lungoPercorso(gg,f);
+      const tratto=[...gg.slice(0,k),testa];
+      g.save();g.lineCap='round';g.lineJoin='round';g.setLineDash([9/zoom,7/zoom]);
+      g.lineWidth=4/zoom;g.strokeStyle='rgba(95,224,138,.95)';g.shadowColor='#5fe08a';g.shadowBlur=8/zoom;
+      g.beginPath();tratto.forEach((p,j)=>j?g.lineTo(...P(p)):g.moveTo(...P(p)));g.stroke();
+      if(f>=1){ // freccia alla fine
+        const a1=P(gg[gg.length-2]),a2=P(gg[gg.length-1]),ang=Math.atan2(a2[1]-a1[1],a2[0]-a1[0]),L=16/zoom;
+        g.setLineDash([]);g.fillStyle='rgba(95,224,138,.95)';g.beginPath();g.moveTo(...a2);
+        g.lineTo(a2[0]-L*Math.cos(ang-.45),a2[1]-L*Math.sin(ang-.45));
+        g.lineTo(a2[0]-L*Math.cos(ang+.45),a2[1]-L*Math.sin(ang+.45));g.closePath();g.fill();
+      }
+      g.restore();
+      const [gx,gy]=P(testa),grx=W*(.022+.03*testa.y);
+      g.save();g.globalAlpha=.9;anello(g,gx,gy,grx,grx*.38,false,TINTA_GIUSTA);g.restore();
+      if(f>=1)scritta({x:testa.x+grx/W*.9,y:testa.y},'movimento corretto');
+    }else if(disegnoGiusto&&gg.length===1){
+      const [gx,gy]=P(gg[0]),grx=W*(.022+.03*gg[0].y);anello(g,gx,gy,grx,grx*.38,false,TINTA_GIUSTA);
+    }
+    const attivo=cerchiando&&modo.i===i;
+    anello(g,x,y,rx,ry,attivo);cerchiVisibili=true;
+    if(c.n!=null)scritta({x:pos.x+rx/W*.9,y:pos.y},etichetta(c.n));
+  });
+  // contatto
+  if(a.contatto&&(modo&&modo.a===a||ora>=a.contatto.t-.02)){
+    punto(a.contatto,'#ff6b57',6);const h=cmContatto(a);
+    if(h!==null)scritta(a.contatto,(h/100).toFixed(2).replace('.',',')+' m');
+  }
+  // salto: il numero compare allo stacco e resta, accanto all'altezza di contatto
+  // (o all'anello della stessa giocatrice, o in alto a sinistra se non c'è altro)
+  const sl=a.salto,hs=cmSalto(a);
+  if(hs!==null&&(modo&&modo.a===a||ora>=sl.stacco-.02)){
+    let dove=null;
+    if(a.contatto)dove={x:a.contatto.x,y:a.contatto.y+26/zoom/H};
+    else{const c=(a.cerchi||[]).find(c=>c.n!=null&&c.n===a.n&&c.punti.length);
+      if(c){const p=posizioneAl(c.punti,ora);dove={x:p.x,y:p.y-.05}}}
+    if(!dove)dove={x:.01,y:.2};
+    scritta(dove,'salto '+hs+' cm');
+  }
+}
+window.addEventListener('resize',disegnaSopra);
+
+function togliEsempio(){
+  if(!S.esempio)return false;
+  const toccati=S.azioni.length!==esempio().length||S.azioni.some(a=>a.nota||a.salto||a.contatto||a.traccia||a.cerchi||a.img);
+  if(toccati){S.esempio=false;salva();return false} // ci hai già lavorato: restano
+  S={azioni:[],esempio:false,primaBatte:'noi',yt:S.yt};sel.sq='noi';sel.f='battuta';sel.n=null;salva();return true;
+}
+
+// YouTube: il video resta sul canale che l'ha pubblicato, la pagina lo mostra e ne legge il secondo.
+function idYoutube(testo){
+  testo=(testo||'').trim();
+  if(/^[\w-]{11}$/.test(testo))return testo;
+  const m=testo.match(/(?:[?&]v=|youtu\.be\/|\/live\/|\/shorts\/|\/embed\/)([\w-]{11})/);
+  return m?m[1]:null;
+}
+let apiPronta=null;
+function caricaApi(){
+  if(apiPronta)return apiPronta;
+  apiPronta=new Promise((ok,ko)=>{
+    window.onYouTubeIframeAPIReady=ok;
+    const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';
+    s.onerror=()=>ko(new Error('rete'));document.head.append(s);
+  });
+  return apiPronta;
+}
+const ERRORI_YT={2:'Il link non è valido.',5:'Il video non si riesce a riprodurre qui.',
+  100:'Il video non esiste più o è privato.',101:'Chi ha pubblicato il video non permette di vederlo fuori da YouTube.',
+  150:'Chi ha pubblicato il video non permette di vederlo fuori da YouTube.',153:'YouTube non riceve l\'indirizzo della pagina: apri la bozza da http://localhost, non facendo doppio clic sul file.'};
+async function apriYoutube(testo){
+  const id=idYoutube(testo);
+  if(!id){messaggio('Non trovo il video in questo link. Copialo dalla barra dell\'indirizzo di YouTube o da «Condividi».',true);return}
+  messaggio('Apro il video…');
+  try{await caricaApi()}catch(e){messaggio('Non riesco a raggiungere YouTube. Controlla la connessione.',true);return}
+  if(gira){clearInterval(gira);gira=null}
+  if(conVideo){vid.pause();vid.hidden=true;conVideo=false}
+  $('ytBox').hidden=false;$('avviso').hidden=true;
+  $('video').classList.add('con-video','con-yt');
+  const pronto=()=>{
+    conYt=true;durata=Math.floor(yt.getDuration())||durata;$('cursore').max=durata;yt.setPlaybackRate(vel);
+    let t='Video YouTube aperto. Metti in pausa quando vuoi segnare un\'azione, oppure segna mentre scorre.';
+    if(togliEsempio())t+=' Ho tolto i dati di esempio: le azioni che inserisci ora sono legate a questo video.';
+    S.yt=id;salva();try{localStorage.setItem('scout-ultimo-video',id)}catch(e){}
+    messaggio(t);disegna();
+  };
+  if(yt){yt.loadVideoById(id);yt.pauseVideo();setTimeout(pronto,800);return}
+  yt=new YT.Player('ytPlayer',{videoId:id,width:'100%',height:'100%',
+    playerVars:{rel:0,playsinline:1,modestbranding:1,origin:location.origin},
+    events:{
+      onReady:pronto,
+      onStateChange:e=>{statoPlay(e.data===1);if(e.data===1&&!durata)durata=Math.floor(yt.getDuration())},
+      onError:e=>messaggio(ERRORI_YT[e.data]||'YouTube ha dato un errore ('+e.data+').',true),
+    }});
+}
+setInterval(()=>{if(conYt&&yt&&yt.getCurrentTime)mostraTempo(adesso())},100);
+$('ytForm').onsubmit=e=>{e.preventDefault();apriYoutube($('ytLink').value)};
+let togliMsg=null;
+function messaggio(testo,errore){const m=$('msg');m.textContent=testo;m.hidden=!testo;m.classList.toggle('errore',!!errore);
+  clearTimeout(togliMsg);if(testo&&!errore)togliMsg=setTimeout(()=>{m.hidden=true},8000)} // le conferme spariscono, gli errori restano
+function apriVideo(file){
+  if(!file)return;
+  if(!file.type.startsWith('video/')&&!/\.(mp4|mov|m4v|webm)$/i.test(file.name)){
+    messaggio('«'+file.name+'» non sembra un video. Scegli un file .mp4 o .mov.',true);return}
+  if(gira){clearInterval(gira);gira=null}
+  if(conYt){yt.pauseVideo();$('ytBox').hidden=true;conYt=false;$('video').classList.remove('con-yt');delete S.yt;salva()}
+  if(vid.src)URL.revokeObjectURL(vid.src);
+  vid.src=URL.createObjectURL(file);vid.playbackRate=vel;
+  vid.onloadedmetadata=()=>{
+    conVideo=true;durata=Math.floor(vid.duration)||900;$('cursore').max=durata;
+    vid.hidden=false;$('avviso').hidden=true;$('video').classList.add('con-video');statoPlay(false);
+    let testo='Video aperto: '+file.name+'. Resta sul tuo computer, non viene caricato da nessuna parte.';
+    if(togliEsempio())testo+=' Ho tolto i dati di esempio: le azioni che inserisci ora sono legate a questo video.';
+    messaggio(testo);vai(0);disegna();
+  };
+  vid.onerror=()=>messaggio('Il browser non riesce a leggere «'+file.name+'». Di solito succede con i .mov registrati in HEVC: prova ad aprirlo con Safari, oppure esportalo in MP4 (H.264).',true);
+}
+$('file').onchange=e=>{apriVideo(e.target.files[0]);e.target.value=''};
+const zona=$('video');
+zona.ondragover=e=>{e.preventDefault();zona.classList.add('trascina')};
+zona.ondragleave=()=>zona.classList.remove('trascina');
+zona.ondrop=e=>{e.preventDefault();zona.classList.remove('trascina');apriVideo(e.dataTransfer.files[0])};
+$('puntoNoi').onclick=()=>registraPunto('noi');
+$('puntoLoro').onclick=()=>registraPunto('loro');
+function registraPunto(sq){
+  const id=S.azioni.reduce((m,a)=>Math.max(m,a.id),0)+1;
+  S.azioni.push({id,t:Math.round(adesso()),sq,n:null,f:'punto',e:''});
+  S.azioni.sort((a,b)=>a.t-b.t||a.id-b.id);
+  const st=ricostruisci();sel.f='battuta';sel.sq=st.batte;sel.n=null;attiva=id;salva();disegna();
+}
+$('annulla').onclick=()=>{
+  if(!S.azioni.length)return;
+  const ult=S.azioni.reduce((m,a)=>a.id>m.id?a:m);
+  S.azioni=S.azioni.filter(a=>a!==ult);attiva=null;salva();disegna();
+};
+$('svuota').onclick=()=>{S={azioni:[],esempio:false,primaBatte:'noi',yt:S.yt};sel.sq='noi';sel.f='battuta';sel.n=null;vai(0);salva();disegna()};
+$('ricarica').onclick=()=>{S={azioni:esempio(),esempio:true,primaBatte:'loro',yt:S.yt};salva();disegna()};
+function mostra(v){vista=v;
+  for(const [k,sez,bt] of [['ins','pIns','vIns'],['stat','pStat','vStat'],['imp','pImp','vImp']]){
+    $(sez).hidden=v!==k;$(bt).setAttribute('aria-pressed',v===k)}
+  if(v==='imp')disegnaImp();
+  disegna()}
+$('vIns').onclick=()=>mostra('ins');$('vStat').onclick=()=>mostra('stat');$('vImp').onclick=()=>mostra('imp');
+
+// Miniatura: si può prendere solo da un video aperto dal computer.
+// Da YouTube il browser non lascia leggere le immagini del video.
+function fotogramma(){
+  if(!conVideo||!vid.videoWidth)return null;
+  try{
+    const c=document.createElement('canvas');c.width=144;c.height=Math.round(144*vid.videoHeight/vid.videoWidth);
+    c.getContext('2d').drawImage(vid,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.6);
+  }catch(e){return null}
+}
+
+// Impostazioni
+function disegnaBatte(){
+  const box=$('impBatte');box.replaceChildren(...['noi','loro'].map(sq=>{
+    const b=document.createElement('button');b.type='button';b.textContent=nomeSq(sq);
+    b.setAttribute('aria-pressed',S.primaBatte===sq);
+    b.onclick=()=>{S.primaBatte=sq;salva();disegna()};return b}));
+}
+function controllaRosa(){
+  const conta={};for(const g of IMP.rosa)if(Number.isInteger(g.n))conta[g.n]=(conta[g.n]||0)+1;
+  const doppi=Object.keys(conta).filter(n=>conta[n]>1);
+  document.querySelectorAll('#impRosa input[data-campo="n"]').forEach(i=>i.classList.toggle('doppio',doppi.includes(i.value)));
+  $('impAvvisi').textContent=doppi.length?'Numero ripetuto: '+doppi.map(n=>'#'+n).join(', ')+'. Ogni giocatrice deve avere un numero diverso.':'';
+}
+function disegnaImp(){
+  $('impAvv').value=IMP.avversaria;$('impRete').value=IMP.hRete||224;
+  const r=$('impRosa');
+  r.innerHTML='<span class="intest">Numero</span><span class="intest">Nome</span><span class="intest">Ruolo</span><span></span>';
+  IMP.rosa.forEach((g,i)=>{
+    const n=document.createElement('input');n.type='number';n.min='0';n.max='99';n.inputMode='numeric';
+    n.id='imp-n-'+i;n.dataset.campo='n';n.value=Number.isInteger(g.n)?g.n:'';n.setAttribute('aria-label','Numero di maglia');
+    n.oninput=()=>{const v=parseInt(n.value,10);g.n=Number.isInteger(v)&&v>=0&&v<=99?v:null;salvaImp();controllaRosa()};
+    const t=document.createElement('input');t.type='text';t.id='imp-nome-'+i;t.value=g.nome;t.placeholder='Nome o cognome';
+    t.setAttribute('aria-label','Nome');t.oninput=()=>{g.nome=t.value.trim();salvaImp()};
+    const s=document.createElement('select');s.id='imp-ruolo-'+i;s.setAttribute('aria-label','Ruolo');
+    s.innerHTML='<option value="">—</option>'+RUOLI.map(x=>`<option>${x}</option>`).join('');
+    s.value=g.ruolo||'';s.onchange=()=>{g.ruolo=s.value;salvaImp()};
+    const x=document.createElement('button');x.type='button';x.className='togli';x.textContent='Togli';
+    x.onclick=()=>{IMP.rosa.splice(i,1);salvaImp();disegnaImp()};
+    r.append(n,t,s,x);
+  });
+  controllaRosa();
+}
+$('impAvv').oninput=e=>{IMP.avversaria=e.target.value;salvaImp();disegna()};
+$('impRete').oninput=e=>{const v=parseInt(e.target.value,10);if(v>=150&&v<=260){IMP.hRete=v;salvaImp()}};
+$('impAggiungi').onclick=()=>{
+  IMP.rosa.push({n:null,nome:'',ruolo:''});salvaImp();disegnaImp();
+  $('imp-n-'+(IMP.rosa.length-1)).focus();
+};
+
+// all'apertura il video parte dopo l'ultima azione di esempio
+ricostruisci();
+vai(S.azioni.length?S.azioni[S.azioni.length-1].t+3:0);
+sel.sq=ricostruisci().batte;
+disegna();
+// se l'ultima volta c'era un video YouTube, lo riapre
+// il link del video è salvato anche a parte, così non si perde se si svuotano le azioni
+const ultimoVideo=S.yt||(()=>{try{return localStorage.getItem('scout-ultimo-video')}catch(e){return null}})();
+if(ultimoVideo){$('ytLink').value='https://youtu.be/'+ultimoVideo;apriYoutube(ultimoVideo)}
+})();
+</script>
+</body>
+</html>
