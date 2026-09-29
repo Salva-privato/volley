@@ -1225,7 +1225,13 @@ function chiHaVinto(){
 function partitaInCorso(){
   const chi = (DIRETTA&&!DIRETTA.finita&&DIRETTA.gara) || (PUNTEGGIO&&PUNTEGGIO.gara);
   if(!chi) return null;
-  return ourMatches().find(m=>String(m.gara)===String(chi)) || null;
+  const m=ourMatches().find(m=>String(m.gara)===String(chi));
+  if(m) return m;
+  /* Le amichevoli non stanno nel calendario FIPAV: la regia da' loro un
+     numero di gara che comincia per "A-", e i nomi li porta il punteggio. */
+  if(String(chi).startsWith('A-')&&PUNTEGGIO&&PUNTEGGIO.gara===chi)
+    return {gara:chi, home:PUNTEGGIO.casa, away:PUNTEGGIO.ospiti};
+  return null;
 }
 
 /* Chi sta segnando i punti fa avanti e indietro fra la regia e l'app: se e'

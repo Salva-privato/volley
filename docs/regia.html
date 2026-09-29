@@ -56,6 +56,9 @@
   .parziali{font-size:13px;color:var(--muted);text-align:center;margin-top:10px;letter-spacing:.06em}
   .invito{font-size:12px;color:var(--muted);line-height:1.5}
   .invito button{width:100%;margin-top:8px;font-size:14px;padding:10px}
+  #amichevole{margin-top:10px}
+  #amichevole input,#amichevole select{margin-top:8px}
+  #amichevole button{width:100%;margin-top:10px;background:var(--accent);border-color:transparent}
   .nascosto{display:none}
   #inizio{width:100%;margin-top:10px;background:var(--accent);border-color:transparent}
   #inizio.fatto{background:none;color:var(--muted);font-weight:600;font-size:14px}
@@ -91,6 +94,16 @@
   <h1>Che partita</h1>
   <div class="card">
     <select id="partita"></select>
+    <!-- le amichevoli non stanno nel calendario FIPAV: i nomi si scrivono qui -->
+    <div id="amichevole" class="nascosto">
+      <input id="avversaria" type="text" placeholder="nome della squadra avversaria"
+             autocapitalize="characters" autocomplete="off" spellcheck="false">
+      <select id="dove">
+        <option value="casa">giochiamo in casa</option>
+        <option value="trasferta">giochiamo in trasferta</option>
+      </select>
+      <button id="amichevoleOk">Prepara il tabellone</button>
+    </div>
     <button id="inizio">Partita iniziata</button>
   </div>
 
@@ -195,10 +208,33 @@ async function caricaPartite(){
   // prima quelle di oggi, poi le prossime, poi le ultime giocate
   nostre.sort((a, b) => Math.abs(new Date(a.date) - new Date(oggi)) - Math.abs(new Date(b.date) - new Date(oggi)));
   partite = nostre.slice(0, 12);
+  elenco();
+}
+
+/** La tendina: le partite del calendario, poi la voce per le amichevoli. */
+function elenco(){
   el('partita').innerHTML = partite.map((m, i) =>
     '<option value="' + i + '">' + esc(m.date.split('-').reverse().slice(0,2).join('/')) + ' · '
     + esc(m.home) + ' – ' + esc(m.away) + '</option>').join('')
-    || '<option value="-1">nessuna partita trovata</option>';
+    + '<option value="amichevole">Amichevole…</option>';
+}
+
+/* Un'amichevole non ha il numero di gara della FIPAV: se ne inventa uno col
+   giorno, che comincia per "A-" (cosi' l'app la riconosce) e sta nei venti
+   caratteri che il servizio accetta. */
+const NOI = 'MARTESANA VOLLEY';
+function amichevole(avversaria, inCasa, data){
+  const giorno = data || new Date().toLocaleDateString('sv-SE');   // AAAA-MM-GG, ora italiana
+  return { gara: 'A-' + giorno.replace(/-/g, ''), date: giorno, amichevole: true,
+           home: inCasa ? NOI : avversaria, away: inCasa ? avversaria : NOI };
+}
+/** Mette l'amichevole nella tendina, al posto di una eventuale precedente. */
+function aggiungiAmichevole(m){
+  partite = partite.filter(x => !x.amichevole);
+  partite.unshift(m);
+  elenco();
+  el('partita').value = 0;
+  el('amichevole').classList.add('nascosto');
 }
 
 function scegli(i){
@@ -339,7 +375,22 @@ el('togli').addEventListener('click', async () => {
   } catch (e) { avviso('nessuna rete', true); }
 });
 
-el('partita').addEventListener('change', e => scegli(Number(e.target.value)));
+el('partita').addEventListener('change', e => {
+  const amich = e.target.value === 'amichevole';
+  el('amichevole').classList.toggle('nascosto', !amich);
+  if (amich) el('avversaria').focus();
+  else scegli(Number(e.target.value));
+});
+
+el('amichevoleOk').addEventListener('click', () => {
+  const avversaria = el('avversaria').value.trim().toUpperCase();
+  if (!avversaria) { el('avversaria').focus(); return avviso('scrivi il nome della squadra avversaria', true); }
+  // se c'era gia' un punteggio sul servizio, quello resta: la nuova partita
+  // parte da zero e sostituisce il tabellone solo al primo tocco
+  stato = null;
+  aggiungiAmichevole(amichevole(avversaria, el('dove').value === 'casa'));
+  scegli(0);
+});
 
 // --- inviti ---------------------------------------------------------------
 async function crea(ruolo){
@@ -378,6 +429,10 @@ async function avvia(){
                 punti: p.punti || [0, 0], finita: !!p.finita };
       dalServizio = JSON.parse(JSON.stringify(stato));
       avviata = true;
+      // un'amichevole gia' in corso torna nella tendina con i suoi nomi
+      if (String(p.gara).startsWith('A-') && !partite.some(m => m.gara === p.gara))
+        aggiungiAmichevole({ gara: p.gara, home: p.casa, away: p.ospiti, amichevole: true,
+                             date: p.gara.replace(/^A-(\d{4})(\d\d)(\d\d)$/, '$1-$2-$3') });
       const i = partite.findIndex(m => m.gara === p.gara);
       if (i >= 0) el('partita').value = i;
       mostra();
