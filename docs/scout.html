@@ -338,6 +338,9 @@ tr.squadra td{font-weight:700;background:var(--accent-soft);border-bottom:0}
             <button id="rallenty" class="rall" title="Rivede l'azione selezionata (o il punto attuale) al rallenty e poi si ferma">Rallenty azione</button>
           </span>
           <span class="gruppo">
+            <button id="disegna" title="Ferma il video e disegna sopra col mouse: a mano libera, linee, frecce, cerchi">Disegna</button>
+          </span>
+          <span class="gruppo">
             <button id="taratura" title="Serve per misurare l'altezza della palla: tre tocchi su rete e pavimento, una volta per video">Taratura rete</button>
           </span>
           <span class="gruppo">Fotogramma
@@ -815,7 +818,9 @@ function vai(t){
   else if(conVideo)vid.currentTime=t;
   mostraTempo(t);
 }
-function statoPlay(va){$('play').textContent=va?'❚❚':'▶';$('playBarra').textContent=va?'❚❚ Pausa':'▶ Play';$('video').classList.toggle('ferma',!va)}
+let schizzi=[];   // i disegni liberi sul video fermo: solo in memoria
+function statoPlay(va){
+  if(va&&(schizzi.length||(modo&&modo.tipo==='disegno'))){schizzi=[];if(modo&&modo.tipo==='disegno')esciModo();else disegnaSopra()}$('play').textContent=va?'❚❚':'▶';$('playBarra').textContent=va?'❚❚ Pausa':'▶ Play';$('video').classList.toggle('ferma',!va)}
 function playPausa(){
   if(conYt){yt.getPlayerState()===1?yt.pauseVideo():yt.playVideo();return}
   if(conVideo){vid.paused?vid.play():vid.pause();return}
@@ -932,17 +937,24 @@ document.querySelectorAll('#tema button').forEach(b=>b.onclick=()=>tema(b.datase
 tema((()=>{try{return localStorage.getItem('scout-tema')||'auto'}catch(e){return 'auto'}})());
 (()=>{
   const pad=$('zoomPad'),box=$('video');let pr=null,mosso=0;
-  pad.onpointerdown=e=>{pr={x:e.clientX,y:e.clientY};mosso=0;pad.setPointerCapture(e.pointerId);box.classList.add('trascino')};
-  pad.onpointermove=e=>{if(!pr)return;const r=box.getBoundingClientRect();
+  const nelVideo=e=>{const r=box.getBoundingClientRect(); // dal punto sullo schermo al punto del video, tenendo conto dello zoom
+    return {x:(e.clientX-r.left)/r.width/zoom+zx-.5/zoom,y:(e.clientY-r.top)/r.height/zoom+zy-.5/zoom}};
+  const disegnando=()=>modo&&modo.tipo==='disegno';
+  pad.onpointerdown=e=>{
+    if(disegnando()){if(e.button!==0)return;pad.setPointerCapture(e.pointerId);iniziaTratto(nelVideo(e));return}
+    pr={x:e.clientX,y:e.clientY};mosso=0;pad.setPointerCapture(e.pointerId);box.classList.add('trascino')};
+  pad.onpointermove=e=>{if(disegnando()){if(modo.tratto)continuaTratto(nelVideo(e));return}
+    if(!pr)return;const r=box.getBoundingClientRect();
     mosso+=Math.abs(e.clientX-pr.x)+Math.abs(e.clientY-pr.y);
     zx-=(e.clientX-pr.x)/(r.width*zoom);zy-=(e.clientY-pr.y)/(r.height*zoom);pr={x:e.clientX,y:e.clientY};applicaZoom()};
   pad.onpointerup=e=>{
+    if(disegnando()){chiudiTratto();return}
     const eraClic=pr&&mosso<8;pr=null;box.classList.remove('trascino');
     if(eraClic&&!modo){playPausa();return} // con lo zoom un clic sul video fa play/pausa
     if(eraClic&&modo){const r=box.getBoundingClientRect(); // dal punto sullo schermo al punto del video, tenendo conto dello zoom
       tocco((e.clientX-r.left)/r.width/zoom+zx-.5/zoom,(e.clientY-r.top)/r.height/zoom+zy-.5/zoom)}
   };
-  pad.onpointercancel=()=>{pr=null;box.classList.remove('trascino')};
+  pad.onpointercancel=()=>{if(disegnando()){chiudiTratto();return}pr=null;box.classList.remove('trascino')};
   pad.ondblclick=()=>{if(!modo){zx=zy=.5;impostaZoom(1)}};
   box.addEventListener('wheel',e=>{
     if(zoom===1&&!e.ctrlKey&&!e.altKey)return; // a zoom normale la rotellina scorre la pagina
@@ -988,8 +1000,9 @@ function cmContatto(a){
   return Math.round(T.h+(yRete-a.contatto.y)*k);
 }
 function aggiornaPad(){
-  $('zoomPad').hidden=zoom===1&&!modo;
+  $('zoomPad').hidden=zoom===1&&!modo;$('zoomInfo').hidden=zoom===1; // la scritta dello zoom solo quando c'e' zoom
   $('video').classList.toggle('in-modo',!!modo);
+  $('disegna').setAttribute('aria-pressed',modo&&modo.tipo==='disegno'?'true':'false');
   const tb=$('taratura');tb.classList.toggle('fatto',!!S.taratura);
   tb.textContent=S.taratura?'Taratura rete ✓':'Taratura rete';
 }
@@ -1064,6 +1077,47 @@ function istruzioneGiusto(){
     ...(n?[['Annulla ultimo',()=>{c.giusto.pop();salva();istruzioneGiusto();disegnaSopra();aggiornaMisureAperte()}]]:[]),
     ['Fine',esciModo,true]]);
 }
+
+// ===== Disegni liberi sul video fermo =====
+// Servono a spiegare al momento, sul fotogramma fermo: non si salvano con la partita e
+// spariscono appena il video riparte (vedi statoPlay). Si puo' andare avanti e indietro di un
+// fotogramma senza perderli.
+const COLORI=[['rosso','#ff3b30'],['giallo','#ffd60a'],['azzurro','#4de3ff'],['bianco','#ffffff']];
+const STRUMENTI=[['mano','Mano libera'],['linea','Linea'],['freccia','Freccia'],['cerchio','Cerchio']];
+let strumentoDis='mano',coloreDis=0;
+function avviaDisegno(){
+  if(modo)esciModo();
+  ferma();modo={tipo:'disegno',tratto:null};aggiornaPad();istruzioneDisegno();disegnaSopra();
+}
+function istruzioneDisegno(){
+  const n=schizzi.length;
+  istruzione('Tieni premuto il mouse e trascina sul video. I disegni non si salvano: spariscono quando riparte il video.',[
+    ...STRUMENTI.map(([k,l])=>[(k===strumentoDis?'✓ ':'')+l,()=>{strumentoDis=k;istruzioneDisegno()}]),
+    ['Colore: '+COLORI[coloreDis][0],()=>{coloreDis=(coloreDis+1)%COLORI.length;istruzioneDisegno()}],
+    ...(n?[['Annulla ultimo',()=>{schizzi.pop();istruzioneDisegno();disegnaSopra()}],
+      ['Cancella tutto',()=>{schizzi=[];istruzioneDisegno();disegnaSopra()}]]:[]),
+    ['Fine',esciModo,true]]);
+}
+function iniziaTratto(p){
+  modo.tratto={tipo:strumentoDis,colore:COLORI[coloreDis][1],punti:[p,p]};
+  if(strumentoDis==='mano')modo.tratto.punti=[p];
+  disegnaSopra();
+}
+function continuaTratto(p){
+  const d=modo.tratto;
+  if(d.tipo==='mano'){const u=d.punti[d.punti.length-1];
+    if(Math.hypot(p.x-u.x,p.y-u.y)*zoom>.002)d.punti.push(p)} // niente punti doppi
+  else d.punti[1]=p;
+  disegnaSopra();
+}
+function chiudiTratto(){
+  const d=modo&&modo.tratto;if(!d)return;modo.tratto=null;
+  const [a,b]=[d.punti[0],d.punti[d.punti.length-1]];
+  // un clic senza trascinare: con la mano libera resta un punto, gli altri non si tengono
+  if(d.tipo!=='mano'&&Math.hypot(b.x-a.x,b.y-a.y)*zoom<.006){disegnaSopra();return}
+  schizzi.push(d);istruzioneDisegno();disegnaSopra();
+}
+$('disegna').onclick=()=>modo&&modo.tipo==='disegno'?esciModo():avviaDisegno();
 
 function tocco(x,y){
   if(modo.tipo==='taratura'){
@@ -1232,6 +1286,26 @@ function disegnaSopra(){
     if(tar.length>=3){g.beginPath();g.moveTo(...P(tar[0]));g.lineTo(...P(tar[2]));g.stroke()}
     g.setLineDash([]);tar.forEach(p=>punto(p,'#7fe3d4',4));
   }
+  // disegni liberi, piu' quello che si sta tracciando
+  const dis=schizzi.slice();
+  if(modo&&modo.tipo==='disegno'&&modo.tratto)dis.push(modo.tratto);
+  dis.forEach(d=>{
+    const q=d.punti.map(P);g.save();g.strokeStyle=g.fillStyle=d.colore;g.lineWidth=lw*1.4;
+    g.lineCap=g.lineJoin='round';g.shadowColor='#000a';g.shadowBlur=4/zoom;g.beginPath();
+    if(d.tipo==='mano'){
+      if(q.length===1){g.arc(q[0][0],q[0][1],lw*1.6,0,7);g.fill()}
+      else{g.moveTo(...q[0]);for(let i=1;i<q.length;i++)g.lineTo(...q[i]);g.stroke()}
+    }else if(d.tipo==='cerchio'){
+      g.arc(q[0][0],q[0][1],Math.hypot(q[1][0]-q[0][0],q[1][1]-q[0][1]),0,7);g.stroke();
+    }else{
+      g.moveTo(...q[0]);g.lineTo(...q[1]);g.stroke();
+      if(d.tipo==='freccia'){const ang=Math.atan2(q[1][1]-q[0][1],q[1][0]-q[0][0]),L=16/zoom;
+        g.beginPath();g.moveTo(...q[1]);
+        g.lineTo(q[1][0]-L*Math.cos(ang-.45),q[1][1]-L*Math.sin(ang-.45));
+        g.lineTo(q[1][0]-L*Math.cos(ang+.45),q[1][1]-L*Math.sin(ang+.45));g.closePath();g.fill()}
+    }
+    g.restore();
+  });
   const a=S.azioni.find(x=>x.id===(modo&&modo.a?modo.a.id:modifica!==null?modifica:attiva));
   if(!a)return;
   const traccio=modo&&modo.a===a&&modo.tipo==='traccia';
