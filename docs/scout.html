@@ -512,6 +512,11 @@ let modifica=null,soloNote=false;
 let filtroF='tutte',filtroN='tutte',tempo=0,gira=null,attiva=null,vista='ins';
 const $=id=>document.getElementById(id);
 const mmss=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const durataTesto=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return h?h+' h '+(m%60)+' min':m+' min'};
+/* Un video aperto dal computer non si puo' salvare ne' riaprire da soli: il
+   browser lo legge dal disco e basta. Si tiene a mente come si chiama e quanto
+   dura, cosi' si sa quale riaprire e ci si accorge se e' quello sbagliato. */
+const quelVideo=v=>'«'+v.nome+'» ('+durataTesto(v.durata)+')';
 const altra=sq=>sq==='noi'?'loro':'noi';
 
 // Ricostruisce punteggio, scambi, rotazione e battuta rileggendo le azioni in ordine.
@@ -893,7 +898,9 @@ $('esporta').onclick=()=>{
   const url=URL.createObjectURL(new Blob([testo],{type:'application/json'}));
   const l=document.createElement('a');l.href=url;l.download=nome;document.body.append(l);l.click();l.remove();
   setTimeout(()=>URL.revokeObjectURL(url),2000);
-  messaggio('Scaricato «'+nome+'» nella cartella Download. Per riaprirlo, anche su un altro computer, usa «Importa partita».');
+  let testoOk='Scaricato «'+nome+'» nella cartella Download. Per riaprirlo, anche su un altro computer, usa «Importa partita».';
+  if(!S.yt&&S.videoLocale)testoOk+=' Il video '+quelVideo(S.videoLocale)+' non è dentro il file: tienilo nella stessa cartella.';
+  messaggio(testoOk,false,!S.yt&&!!S.videoLocale);
 };
 $('importaFile').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
@@ -907,7 +914,11 @@ $('importaFile').onchange=async e=>{
   if(S.yt){try{localStorage.setItem('scout-ultimo-video',S.yt)}catch(err){}
     $('ytLink').value='https://youtu.be/'+S.yt;await apriYoutube(S.yt)}
   mostra(vista);
-  messaggio('Partita aperta da «'+f.name+'»: '+S.azioni.length+' azioni.');
+  if(!S.yt&&S.videoLocale){
+    messaggio('Partita aperta da «'+f.name+'»: '+S.azioni.length+' azioni. Era sul video '+quelVideo(S.videoLocale)
+      +': aprilo con «Apri un video».',false,true);
+    if(conYt){yt.pauseVideo();$('ytBox').hidden=true;conYt=false;$('video').classList.remove('con-yt','con-video');$('avviso').hidden=false}
+  } else messaggio('Partita aperta da «'+f.name+'»: '+S.azioni.length+' azioni.');
 };
 
 // Aspetto: automatico (come il computer), chiaro o scuro; la scelta resta salvata
@@ -1356,7 +1367,7 @@ async function apriYoutube(testo){
     conYt=true;durata=Math.floor(yt.getDuration())||durata;$('cursore').max=durata;yt.setPlaybackRate(vel);
     let t='Video YouTube aperto. Metti in pausa quando vuoi segnare un\'azione, oppure segna mentre scorre.';
     if(togliEsempio())t+=' Ho tolto i dati di esempio: le azioni che inserisci ora sono legate a questo video.';
-    S.yt=id;salva();try{localStorage.setItem('scout-ultimo-video',id)}catch(e){}
+    S.yt=id;delete S.videoLocale;salva();try{localStorage.setItem('scout-ultimo-video',id)}catch(e){}
     messaggio(t);disegna();
   };
   if(yt){yt.loadVideoById(id);yt.pauseVideo();setTimeout(pronto,800);return}
@@ -1371,8 +1382,8 @@ async function apriYoutube(testo){
 setInterval(()=>{if(conYt&&yt&&yt.getCurrentTime)mostraTempo(adesso())},100);
 $('ytForm').onsubmit=e=>{e.preventDefault();apriYoutube($('ytLink').value)};
 let togliMsg=null;
-function messaggio(testo,errore){const m=$('msg');m.textContent=testo;m.hidden=!testo;m.classList.toggle('errore',!!errore);
-  clearTimeout(togliMsg);if(testo&&!errore)togliMsg=setTimeout(()=>{m.hidden=true},8000)} // le conferme spariscono, gli errori restano
+function messaggio(testo,errore,resta){const m=$('msg');m.textContent=testo;m.hidden=!testo;m.classList.toggle('errore',!!errore);
+  clearTimeout(togliMsg);if(testo&&!errore&&!resta)togliMsg=setTimeout(()=>{m.hidden=true},8000)} // le conferme spariscono, gli errori e le indicazioni restano
 function apriVideo(file){
   if(!file)return;
   if(!file.type.startsWith('video/')&&!/\.(mp4|mov|m4v|webm)$/i.test(file.name)){
@@ -1386,6 +1397,17 @@ function apriVideo(file){
     vid.hidden=false;$('avviso').hidden=true;$('video').classList.add('con-video');statoPlay(false);
     let testo='Video aperto: '+file.name+'. Resta sul tuo computer, non viene caricato da nessuna parte.';
     if(togliEsempio())testo+=' Ho tolto i dati di esempio: le azioni che inserisci ora sono legate a questo video.';
+    const questo={nome:file.name,durata:Math.round(vid.duration)};
+    const prima=S.videoLocale;
+    /* Le azioni stanno ai secondi del video: su un file diverso, anche solo
+       tagliato all'inizio, finirebbero tutte fuori posto. Due secondi di
+       scarto si perdonano, i programmi che ricopiano un video li cambiano. */
+    if(prima&&S.azioni.length&&!S.esempio&&Math.abs(prima.durata-questo.durata)>2){
+      messaggio('Attenzione: questo video dura '+durataTesto(questo.durata)+', ma le azioni sono state segnate su '
+        +quelVideo(prima)+'. Se è un altro video finiranno fuori posto: riapri quello giusto con «Apri un video».',true);
+      vai(0);disegna();return;             // si tiene a mente quello giusto, non questo
+    }
+    S.videoLocale=questo;salva();
     messaggio(testo);vai(0);disegna();
   };
   vid.onerror=()=>messaggio('Il browser non riesce a leggere «'+file.name+'». Di solito succede con i .mov registrati in HEVC: prova ad aprirlo con Safari, oppure esportalo in MP4 (H.264).',true);
@@ -1408,8 +1430,13 @@ $('annulla').onclick=()=>{
   const ult=S.azioni.reduce((m,a)=>a.id>m.id?a:m);
   S.azioni=S.azioni.filter(a=>a!==ult);attiva=null;salva();disegna();
 };
-$('svuota').onclick=()=>{S={azioni:[],esempio:false,primaBatte:'noi',yt:S.yt};sel.sq='noi';sel.f='battuta';sel.n=null;vai(0);salva();disegna()};
-$('ricarica').onclick=()=>{S={azioni:esempio(),esempio:true,primaBatte:'loro',yt:S.yt};salva();disegna()};
+/* Tutti e due cancellano la partita aperta: se c'e' del lavoro vero, prima si chiede. */
+const sicuro=()=>!S.azioni.length||S.esempio||confirm('Cancello le '+S.azioni.length
+  +' azioni della partita aperta? Se non l\'hai esportata con «Esporta partita», fallo prima: dopo non si recuperano.');
+$('svuota').onclick=()=>{if(!sicuro())return;
+  S={azioni:[],esempio:false,primaBatte:'noi',yt:S.yt,videoLocale:conVideo?S.videoLocale:undefined};
+  sel.sq='noi';sel.f='battuta';sel.n=null;vai(0);salva();disegna()};
+$('ricarica').onclick=()=>{if(!sicuro())return;S={azioni:esempio(),esempio:true,primaBatte:'loro',yt:S.yt};salva();disegna()};
 function mostra(v){vista=v;
   for(const [k,sez,bt] of [['ins','pIns','vIns'],['stat','pStat','vStat'],['imp','pImp','vImp']]){
     $(sez).hidden=v!==k;$(bt).setAttribute('aria-pressed',v===k)}
@@ -1473,8 +1500,10 @@ sel.sq=ricostruisci().batte;
 disegna();
 // se l'ultima volta c'era un video YouTube, lo riapre
 // il link del video è salvato anche a parte, così non si perde se si svuotano le azioni
-const ultimoVideo=S.yt||(()=>{try{return localStorage.getItem('scout-ultimo-video')}catch(e){return null}})();
+const ultimoVideo=S.yt||(!S.videoLocale&&(()=>{try{return localStorage.getItem('scout-ultimo-video')}catch(e){return null}})());
 if(ultimoVideo){$('ytLink').value='https://youtu.be/'+ultimoVideo;apriYoutube(ultimoVideo)}
+else if(S.videoLocale&&S.azioni.length&&!S.esempio)
+  messaggio('Questa partita è sul video '+quelVideo(S.videoLocale)+': riaprilo con «Apri un video».',false,true);
 })();
 </script>
 </body>
