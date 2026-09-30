@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-09-29T11:04:53.208Z",
+ "updatedAt": "2026-09-30T07:26:25.200Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1030,8 +1030,8 @@
      "gara": "9507",
      "giornata": 1,
      "date": "2026-10-18",
-     "time": "18:30",
-     "dateRaw": "18/10/2026 dom : 18.30",
+     "time": "19:30",
+     "dateRaw": "18/10/2026 dom : 19.30",
      "home": "CALIMAN BRESSO",
      "away": "EXPERIENCE FITNESS CLUB",
      "sets": null,
@@ -1179,9 +1179,9 @@
     {
      "gara": "9517",
      "giornata": 4,
-     "date": "2026-11-06",
+     "date": "2026-11-04",
      "time": "21:00",
-     "dateRaw": "06/11/2026 ven : 21.00",
+     "dateRaw": "04/11/2026 mer : 21.00",
      "home": "PALLAVOLO RONDO' MUGGIO'",
      "away": "CALIMAN BRESSO",
      "sets": null,
@@ -1449,9 +1449,9 @@
     {
      "gara": "9535",
      "giornata": 8,
-     "date": "2026-12-04",
-     "time": "21:00",
-     "dateRaw": "04/12/2026 ven : 21.00",
+     "date": "2026-12-06",
+     "time": "18:30",
+     "dateRaw": "06/12/2026 dom : 18.30",
      "home": "EXPERIENCE FITNESS CLUB",
      "away": "CALIMAN BRESSO",
      "sets": null,
