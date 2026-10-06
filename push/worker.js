@@ -531,10 +531,13 @@ async function sistema(env, opz = {}) {
   // 4) tutto fermo: si prepara la prossima partita, se non c'e' gia'
   // Se la creazione fallisce si riprova fra venti minuti, non a ogni giro:
   // ogni tentativo costa a Google cento gettoni anche quando va male.
-  // Anche appena finita una diretta se ne prepara subito un'altra: se il
-  // telefono si e' scaricato, quello di scorta deve trovare la chiave pulita.
+  // Una diretta pulita dev'essere SEMPRE pronta prima che Moblin si colleghi:
+  // provato il 06/10, creata anche solo due secondi dopo non viene agganciata.
+  // Quindi appena una finisce se ne prepara un'altra, anche nei giorni senza
+  // partita (amichevoli, prove, il telefono di scorta).
   const t = await bersaglio(env);
-  if (t && (prep?.gara !== t.gara || prep.usata) && !(await leggi(env, 'pausa-crea'))) {
+  const serve = !prep || prep.usata || (t && prep.gara !== t.gara);
+  if (serve && !(await leggi(env, 'pausa-crea'))) {
     try { prep = (await crea(env, t)) || prep; }
     catch (e) {
       await env.ISCRITTI.put('meta:pausa-crea', JSON.stringify(e.message), { expirationTtl: 20 * 60 });
