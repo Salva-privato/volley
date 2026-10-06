@@ -231,3 +231,7 @@ Indirizzi nuovi: `POST /google/collega`, `GET /google/torna`, `POST /sistema`
 (`?inonda=1` per forzare l'avvio, `?prepara=1` per una diretta nuova).
 Se il permesso viene ritirato, il servizio torna da solo al vecchio modo
 (ricerca sul canale) e la spia dice di ricollegarlo.
+
+**Fare una prova senza avvisare i genitori:** dalla cartella `push`,
+`npx wrangler@4 kv key put meta:prova 1 --namespace-id 0063130dbfd443cfb96844798d1016ac --remote --ttl 10800`.
+Per tre ore "Siamo in diretta" arriva solo ai telefoni di servizio.

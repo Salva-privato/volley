@@ -251,8 +251,10 @@ async function accendi(env, video, gara, aMano) {
     tag: 'diretta-' + video,
     quando: new Date(adesso).toISOString(),
   });
-  const esito = await avvisaTutti(env, false);
-  return { stato: 'appena cominciata', video, ...esito };
+  // in prova (meta:prova, scade da sola) l'avviso arriva solo a chi cura l'app
+  const prova = !!(await leggi(env, 'prova'));
+  const esito = await avvisaTutti(env, prova);
+  return { stato: 'appena cominciata', video, prova, ...esito };
 }
 
 /** E' finita: il video si aggiunge alle registrazioni di quella giornata.
