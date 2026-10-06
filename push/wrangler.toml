@@ -1,0 +1,23 @@
+# Per pubblicare il servizio dal computer:  npx wrangler@4 deploy  (da questa cartella)
+# Rispecchia quello che c'era sul pannello di Cloudflare il 06/10/2026.
+# I segreti non stanno qui: restano su Cloudflare e il deploy non li tocca.
+name = "volley-notifiche"
+main = "worker.js"
+compatibility_date = "2026-09-21"
+keep_vars = true          # le variabili scritte a mano sul pannello restano
+
+[observability]
+enabled = true
+
+[[kv_namespaces]]
+binding = "ISCRITTI"
+id = "0063130dbfd443cfb96844798d1016ac"
+
+[vars]
+CANALE_YOUTUBE = "UCPfD8euVksy_zOQf6m57MDw"
+CONTATTO = "mailto:s.piazzolla@gmail.com"
+VAPID_PUBBLICA = "BDAfIvkQK7zujBbQXkBHq5n3Fv7DRTiQSedfLYobX0aoJlU5L-AKRmdobfx88dqZ16wBlv5Ut3iGyUTV4KpCEmQ"
+
+[triggers]
+# ogni due minuti la diretta, due volte al giorno la sentinella
+crons = ["*/2 * * * *", "30 12,20 * * *"]
