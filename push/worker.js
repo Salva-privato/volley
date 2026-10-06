@@ -381,13 +381,14 @@ const bello = s => String(s || '').toLowerCase().replace(/(^|[\s'-])\S/g, c => c
  *  Le altre non si cancellano: si staccano dalla chiave e restano li'. */
 async function liberaFlusso(env, flusso, nostra) {
   const d = await canale(env, 'GET', 'liveBroadcasts?part=id,status,contentDetails&broadcastStatus=upcoming&broadcastType=all&maxResults=20');
-  let staccate = 0;
+  let staccate = 0, presente = false;
   for (const b of d.items || []) {
+    if (b.id === nostra && b.contentDetails?.boundStreamId === flusso) presente = true;
     if (b.id === nostra || b.contentDetails?.boundStreamId !== flusso) continue;
     await canale(env, 'POST', `liveBroadcasts/bind?id=${b.id}&part=id`).catch(() => {});   // senza streamId = stacca
     staccate++;
   }
-  return staccate;
+  return { staccate, presente };
 }
 
 /** Crea la diretta su YouTube e la lega al flusso di Moblin. Una diretta
@@ -408,8 +409,10 @@ async function crea(env, t) {
     const adesso = Date.now();
     const quando = new Date(Math.max(t?.inizio || 0, adesso + 2 * 60e3));
     const giorno = quando.toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit' });
-    const titolo = (t?.casa && t?.ospiti ? `${bello(t.casa)} – ${bello(t.ospiti)}` : 'Martesana Volley in diretta')
-      .slice(0, 85) + ' · ' + giorno;
+    // senza partita la data no: la diretta pronta puo' aspettare giorni
+    const titolo = t?.casa && t?.ospiti
+      ? `${bello(t.casa)} – ${bello(t.ospiti)}`.slice(0, 85) + ' · ' + giorno
+      : 'Martesana Volley in diretta';
     const nuova = await canale(env, 'POST', 'liveBroadcasts?part=id,snippet,status,contentDetails', {
       snippet: {
         title: titolo,
@@ -535,8 +538,14 @@ async function sistema(env, opz = {}) {
   // provato il 06/10, creata anche solo due secondi dopo non viene agganciata.
   // Quindi appena una finisce se ne prepara un'altra, anche nei giorni senza
   // partita (amichevoli, prove, il telefono di scorta).
+  // Anche se qualcuno l'ha cancellata da YouTube Studio: si rifa'.
   const t = await bersaglio(env);
-  const serve = !prep || prep.usata || (t && prep.gara !== t.gara);
+  let sparita = false;
+  if (prep && !prep.usata) {
+    const l = await liberaFlusso(env, flusso, prep.video).catch(() => null);
+    sparita = l ? !l.presente : false;
+  }
+  const serve = !prep || prep.usata || sparita || (t && prep.gara !== t.gara);
   if (serve && !(await leggi(env, 'pausa-crea'))) {
     try { prep = (await crea(env, t)) || prep; }
     catch (e) {
@@ -544,8 +553,6 @@ async function sistema(env, opz = {}) {
       fuori.errore = e.message;
     }
   }
-  // Studio puo' aver messo un'altra diretta sulla chiave: la nostra deve restare sola
-  if (prep && !prep.usata) await liberaFlusso(env, flusso, prep.video).catch(() => {});
   if (prep && !prep.usata) Object.assign(fuori, { stato: 'pronta', video: prep.video, titolo: prep.titolo, inizio: prep.inizio });
   else fuori.stato = 'niente in programma';
   return fuori;

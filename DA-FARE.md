@@ -1,6 +1,6 @@
 # Da fare
 
-Aggiornato il 22 settembre 2026. Prima partita vera: **venerdì 16 ottobre**,
+Aggiornato il 6 ottobre 2026. Prima partita vera: **venerdì 16 ottobre**,
 Geas Volley – Martesana, Under 19, ore 21:00 a Sesto San Giovanni.
 
 ## 22 settembre — fatto
@@ -35,6 +35,30 @@ fatte dall'esterno:
 - Quando YouTube resta appeso su "Preparazione dello stream in corso" dopo
   tante accensioni ravvicinate: fermare Moblin, chiuderla, chiudere la scheda
   di Studio, aspettare un minuto e ricominciare.
+
+## 6 ottobre — la diretta del 29/09 non era partita: risolto
+
+Il 29/09 in palestra Moblin trasmetteva e YouTube non e' mai andato in onda.
+**Causa trovata provando:** finita una diretta, YouTube Studio ne crea da solo
+un'altra vuota sulla stessa chiave. Con due dirette in attesa YouTube non ne
+avvia nessuna. E YouTube decide a quale diretta agganciare Moblin **solo nel
+momento in cui Moblin si collega**: se la chiave non e' pulita in quell'istante,
+non c'e' comando che tenga, bisogna fermare e ripartire.
+
+- [x] Il servizio ha il permesso del canale (OAuth, progetto Google
+      "Martesana Volley App", app **in produzione**). Si pubblica dal Mac con
+      `npx wrangler@4 deploy` dalla cartella `push`.
+- [x] C'e' **sempre** una diretta pulita pronta sulla chiave: col nome della
+      partita il giorno prima, col nome dell'amichevole appena la si segna in
+      regia, "Martesana Volley in diretta" negli altri giorni. Appena una
+      finisce se ne prepara un'altra; se la si cancella da Studio si rifa'.
+- [x] Le dirette che Studio aggiunge sulla chiave vengono staccate (non
+      cancellate).
+- [x] Spia in `diretta.html`: grigia "Pronta, aspetto Moblin", gialla, verde
+      "In onda", rossa "Ferma Moblin e ripremi il tasto rosso".
+- [x] Provato: tre dirette di fila partite da sole in 30-45 secondi, una con
+      l'amichevole di prova segnata in regia.
+- La diretta "In programma" sul canale **non va cancellata**: e' quella pronta.
 
 ## Resta da fare sul telefono
 
