@@ -514,7 +514,12 @@ async function sistema(env, opz = {}) {
         await canale(env, 'POST', `liveBroadcasts/transition?broadcastStatus=live&id=${p.video}&part=id`);
         fuori.stato = 'mandata in onda';
       } catch (e) {
-        fuori.stato = e.motivo === 'redundantTransition' ? 'sta partendo' : 'non parte';
+        // Provato il 06/10: YouTube aggancia Moblin a una diretta solo nel
+        // momento in cui Moblin si collega. Se in quel momento la chiave non
+        // era pulita, l'avvio viene rifiutato finche' Moblin non si ricollega.
+        // Ora la chiave e' pulita: basta fermare e ripartire.
+        fuori.stato = e.motivo === 'redundantTransition' ? 'sta partendo'
+                    : e.motivo === 'invalidTransition' ? 'riavvia Moblin' : 'non parte';
         fuori.errore = e.message;
       }
     } else {
@@ -526,8 +531,10 @@ async function sistema(env, opz = {}) {
   // 4) tutto fermo: si prepara la prossima partita, se non c'e' gia'
   // Se la creazione fallisce si riprova fra venti minuti, non a ogni giro:
   // ogni tentativo costa a Google cento gettoni anche quando va male.
+  // Anche appena finita una diretta se ne prepara subito un'altra: se il
+  // telefono si e' scaricato, quello di scorta deve trovare la chiave pulita.
   const t = await bersaglio(env);
-  if (t && prep?.gara !== t.gara && !(await leggi(env, 'pausa-crea'))) {
+  if (t && (prep?.gara !== t.gara || prep.usata) && !(await leggi(env, 'pausa-crea'))) {
     try { prep = (await crea(env, t)) || prep; }
     catch (e) {
       await env.ISCRITTI.put('meta:pausa-crea', JSON.stringify(e.message), { expirationTtl: 20 * 60 });

@@ -180,6 +180,10 @@
     <div class="dentro">
       <p><b>Gialla, "YouTube riceve Moblin":</b> premi <b>Manda in onda
         adesso</b>. Se non lo fai tu, ci pensa il servizio entro due minuti.</p>
+      <p><b>Rossa, "Ferma Moblin e ripremi il tasto rosso":</b> fai proprio
+        così — ferma, conta cinque secondi, riparti. YouTube decide a quale
+        diretta agganciare Moblin solo nel momento in cui si collega: provato
+        il 6 ottobre, ripartendo va in onda in mezzo minuto.</p>
       <p><b>Grigia, "Aspetto Moblin":</b> a YouTube non arriva niente. Guarda
         Moblin: in alto deve esserci il pallino rosso e i numeri della
         velocità che si muovono. Se la rete è debole, avvicinati a una
@@ -359,6 +363,9 @@ function mostra(d){
     case 'ricevo, aspetto YouTube':
       el('inOnda').classList.remove('nascosto');
       return spia('gialla', 'YouTube riceve Moblin', 'Di solito parte da solo. Se fra un minuto non è in onda ci pensa il servizio, oppure premi qui sotto.' + segnale);
+    case 'riavvia Moblin':
+      return spia('rossa', 'Ferma Moblin e ripremi il tasto rosso',
+        'YouTube ha agganciato Moblin quando la chiave non era pulita. Adesso lo è: in Moblin <b>ferma</b> la diretta, conta <b>5 secondi</b> e <b>ripremi il tasto rosso</b>. Parte in mezzo minuto.' + segnale);
     case 'non parte':
       el('inOnda').classList.remove('nascosto');
       return spia('rossa', 'YouTube non parte', 'Risposta di YouTube: ' + (d.errore || '?') + '. Riprova col tasto qui sotto.' + segnale);
