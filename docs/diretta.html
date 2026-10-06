@@ -53,6 +53,16 @@
   details.card .dentro p:first-child{margin-top:0}
   .male{color:#f08072}
   .nascosto{display:none}
+  /* La spia: verde in onda, gialla quando YouTube riceve ma non e' ancora
+     partito, rossa quando qualcosa non va, grigia quando si aspetta. */
+  .spia .riga{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700}
+  .luce{width:16px;height:16px;border-radius:50%;background:#5d706d;flex:none}
+  .luce.verde{background:#3ccf7a;box-shadow:0 0 12px #3ccf7a}
+  .luce.gialla{background:#e8b93a;box-shadow:0 0 12px #e8b93a;animation:batte 1.2s infinite}
+  .luce.rossa{background:#e5484d;box-shadow:0 0 12px #e5484d}
+  @keyframes batte{50%{opacity:.35}}
+  .spia p{margin:8px 0 0}
+  button.forte{background:#b3261e;border-color:transparent;font-size:17px;padding:16px}
   /* Aperta dall'app sulla schermata di casa, questa pagina non ha i tasti del
      browser: senza la striscia non si tornerebbe indietro. Sfondo pieno, se
      no il resto della pagina le scorre attraverso. */
@@ -80,6 +90,14 @@
 <div id="tutto" class="nascosto">
   <h1>Vai in diretta</h1>
   <p id="chi"></p>
+
+  <div id="spia" class="card spia">
+    <div class="riga"><span id="luce" class="luce"></span><span id="spiaTitolo">Chiedo a YouTube…</span></div>
+    <p id="spiaTesto"></p>
+    <button id="inOnda" class="forte nascosto">Manda in onda adesso</button>
+    <a id="vediVideo" class="tasto nascosto" target="_blank" rel="noopener">Guarda su YouTube</a>
+    <button id="collega" class="nascosto" style="background:var(--accent);border-color:transparent">Collega il canale YouTube</button>
+  </div>
 
   <a class="tasto vai" id="apri" href="#">Apri Moblin già pronto</a>
   <p class="nota">Moblin chiederà conferma prima di prendere la configurazione.
@@ -118,9 +136,11 @@
   <div class="card">
     <ol class="passi">
       <li>Telefono sul treppiede, in orizzontale, <b>attaccato alla corrente</b>.</li>
-      <li>Apri Moblin e premi il tasto rosso. Da qui in poi non devi fare niente:
-          l'app si accorge da sola che siamo in onda, fa comparire il video e
-          manda l'avviso a tutti. Ci mette qualche minuto.</li>
+      <li>Apri Moblin e premi il tasto rosso. La diretta l'ha già preparata il
+          servizio il giorno prima: YouTube parte da solo e l'avviso arriva a
+          tutti. Se dopo un minuto YouTube non è partito, lo manda in onda il
+          servizio. Vuoi vederlo? Apri questa pagina: la spia diventa
+          <b>verde</b>.</li>
       <li>Qualcuno apre la <a href="regia.html" style="color:#74c4b8">regia</a>
           e batte i punti: compaiono dentro il video e sull'app.</li>
       <li>A partita finita fermi Moblin, e basta così.</li>
@@ -155,6 +175,20 @@
   </div>
 
   <h2>Se qualcosa non parte</h2>
+  <details class="card">
+    <summary>La spia resta gialla o rossa</summary>
+    <div class="dentro">
+      <p><b>Gialla, "YouTube riceve Moblin":</b> premi <b>Manda in onda
+        adesso</b>. Se non lo fai tu, ci pensa il servizio entro due minuti.</p>
+      <p><b>Grigia, "Aspetto Moblin":</b> a YouTube non arriva niente. Guarda
+        Moblin: in alto deve esserci il pallino rosso e i numeri della
+        velocità che si muovono. Se la rete è debole, avvicinati a una
+        finestra o passa al telefono di scorta.</p>
+      <p>Se la diretta preparata si è rovinata — cancellata da Studio, chiusa
+        per sbaglio — se ne fa una nuova al volo:</p>
+      <button id="nuova">Prepara una diretta nuova</button>
+    </div>
+  </details>
   <details class="card">
     <summary>Il video non compare nell'app</summary>
     <div class="dentro">
@@ -235,6 +269,7 @@ async function prepara(quale){
   el('indirizzoTabellone').textContent = TABELLONE;
   el('entra').classList.add('nascosto');
   el('tutto').classList.remove('nascosto');
+  sorveglia();
   return true;
 }
 
@@ -288,6 +323,90 @@ el('guarda').addEventListener('click', async () => {
     el('esitoGuarda').textContent = 'non ha funzionato (' + e.message + ')';
     el('esitoGuarda').className = 'nota male';
   }
+});
+
+// --- la spia: com'e' la diretta adesso -------------------------------------
+const SALUTE = { good: 'ottimo', ok: 'buono', bad: 'scarso, la rete fatica', noData: 'in arrivo' };
+let ultimo = null, inCorso = false;
+
+function spia(colore, titolo, testo){
+  el('luce').className = 'luce ' + colore;
+  el('spiaTitolo').textContent = titolo;
+  el('spiaTesto').innerHTML = testo || '';
+}
+const quando = iso => new Date(iso).toLocaleString('it-IT',
+  { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+
+function mostra(d){
+  ultimo = d;
+  const segnale = d.arriva ? ' Segnale di Moblin: <b>' + (SALUTE[d.salute] || 'arriva') + '</b>.' : '';
+  const titolo = d.titolo ? '<b>' + d.titolo.replace(/</g, '&lt;') + '</b>. ' : '';
+  el('inOnda').classList.add('nascosto');
+  el('collega').classList.add('nascosto');
+  el('vediVideo').classList.toggle('nascosto', !d.video);
+  if (d.video) el('vediVideo').href = 'https://www.youtube.com/watch?v=' + d.video;
+  if (!d.collegato) {
+    spia('', d.rotto ? 'Il permesso su YouTube è scaduto' : 'Il servizio non comanda il canale',
+      'Funziona come prima: YouTube parte da solo, se vuole. ' +
+      (GETTONE ? 'Avvisa chi cura l\'app.' : 'Premi il tasto qui sotto per collegarlo.'));
+    if (!GETTONE) el('collega').classList.remove('nascosto');
+    return;
+  }
+  switch (d.stato) {
+    case 'in onda': return spia('verde', 'In onda', titolo + 'I genitori sono stati avvisati.' + segnale);
+    case 'sta partendo':
+    case 'mandata in onda': return spia('gialla', 'Sta partendo…', 'YouTube sta accendendo la diretta: qualche secondo.' + segnale);
+    case 'ricevo, aspetto YouTube':
+      el('inOnda').classList.remove('nascosto');
+      return spia('gialla', 'YouTube riceve Moblin', 'Di solito parte da solo. Se fra un minuto non è in onda ci pensa il servizio, oppure premi qui sotto.' + segnale);
+    case 'non parte':
+      el('inOnda').classList.remove('nascosto');
+      return spia('rossa', 'YouTube non parte', 'Risposta di YouTube: ' + (d.errore || '?') + '. Riprova col tasto qui sotto.' + segnale);
+    case 'pronta': return spia('', 'Pronta, aspetto Moblin',
+      titolo + (d.inizio ? 'Preparata per ' + quando(d.inizio) + '. ' : '') + 'Quando sei pronto apri Moblin e premi il tasto rosso.');
+    case 'niente in programma': return spia('', 'Aspetto Moblin',
+      'Nessuna diretta in attesa. Se trasmetti, premi il tasto rosso in Moblin: la diretta la prepara il servizio e la manda in onda in un minuto o due.');
+    case 'sto preparando': return spia('gialla', 'Preparo la diretta…', 'Qualche secondo.' + segnale);
+    case 'chiusa perche\' muta': return spia('', 'Diretta chiusa', 'Era in onda senza segnale da un quarto d\'ora: chiusa. Ripremi il tasto rosso in Moblin per ricominciare.');
+    default: return spia('rossa', 'Qualcosa non va', (d.errore || d.stato || 'nessuna risposta') + segnale);
+  }
+}
+
+async function controlla(extra){
+  if (inCorso) return;
+  inCorso = true;
+  try {
+    const r = await fetch(viaConGettone('/sistema') + (extra ? (GETTONE ? '&' : '?') + extra : ''),
+      { method: 'POST', headers: intestazione });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.errore || r.status);
+    mostra(d);
+  } catch (e) {
+    spia('rossa', 'Non riesco a sentire il servizio', 'Controlla la connessione (' + e.message + ').');
+  } finally { inCorso = false; }
+}
+let giro = null;
+function sorveglia(){
+  controlla();
+  clearInterval(giro);
+  giro = setInterval(() => { if (!document.hidden) controlla(); }, 15000);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && giro) controlla(); });
+
+el('inOnda').addEventListener('click', () => {
+  spia('gialla', 'Mando in onda…', '');
+  controlla('inonda=1');
+});
+el('nuova').addEventListener('click', () => {
+  if (!confirm('Preparo una diretta nuova su YouTube? Quella preparata prima, se non è mai andata in onda, si cancella.')) return;
+  el('spia').scrollIntoView({ behavior: 'smooth' });
+  controlla('prepara=1');
+});
+el('collega').addEventListener('click', async () => {
+  const r = await fetch(SERVIZIO + '/google/collega', { method: 'POST', headers: intestazione });
+  const d = await r.json().catch(() => ({}));
+  if (d.indirizzo) location.href = d.indirizzo;
+  else spia('rossa', 'Non si può collegare', d.errore || 'il servizio non risponde');
 });
 
 el('accendi').addEventListener('click', () => {

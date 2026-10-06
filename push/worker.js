@@ -19,6 +19,8 @@
  *   CHIAVE_TRASMISSIONE  la chiave di trasmissione del canale YouTube -> segreta
  *   CHIAVE_YOUTUBE       la chiave per interrogare le API di Google   -> segreta
  *   CANALE_YOUTUBE       il codice del canale (UC...), non e' un segreto
+ *   GOOGLE_ID            il client OAuth del progetto Google
+ *   GOOGLE_SEGRETO       il suo segreto                              -> segreta
  */
 
 const b64 = d => btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -194,15 +196,16 @@ function istanteRoma(data, ora) {
 
 /** Le nostre partite, prese dal sito e tenute da parte per qualche ora. */
 async function nostrePartite(env) {
-  const salvato = await leggi(env, 'calendario');
+  const salvato = await leggi(env, 'calendario-nomi');
   if (salvato && Date.now() - Date.parse(salvato.quando) < 6 * 36e5) return salvato.partite;
   try {
     const dati = await (await fetch(SITO + 'data.json')).json();
     const partite = [];
     for (const c of dati.championships || [])
       for (const m of c.matches || [])
-        if (m.mine && m.date) partite.push({ gara: m.gara, inizio: istanteRoma(m.date, m.time) });
-    await scrivi(env, 'calendario', { quando: new Date().toISOString(), partite });
+        if (m.mine && m.date) partite.push({ gara: m.gara, inizio: istanteRoma(m.date, m.time),
+                                             casa: m.home, ospiti: m.away });
+    await scrivi(env, 'calendario-nomi', { quando: new Date().toISOString(), partite });
     return partite;
   } catch (e) { return salvato?.partite || []; }
 }
@@ -239,9 +242,12 @@ async function accendi(env, video, gara, aMano) {
   const adesso = Date.now();
   await scrivi(env, 'diretta', { video, gara: gara || prima?.gara || '', aMano: !!aMano,
                                  dal: new Date(adesso).toISOString(), finita: false });
+  // ripartita da poco (telefono scarico, quello di scorta riprende): non e'
+  // una partita nuova, e l'avviso lo deve dire
+  const ripresa = prima?.finita && adesso - Date.parse(prima.fino || 0) < 60 * 60e3;
   await scrivi(env, 'messaggio', {
-    titolo: 'Siamo in diretta',
-    testo: 'La partita e\' cominciata: tocca per vederla.',
+    titolo: ripresa ? 'La diretta e\' ripartita' : 'Siamo in diretta',
+    testo: ripresa ? 'Si era interrotta: tocca per tornare a vederla.' : 'La partita e\' cominciata: tocca per vederla.',
     tag: 'diretta-' + video,
     quando: new Date(adesso).toISOString(),
   });
@@ -271,10 +277,253 @@ async function finisci(env, prima) {
   return { stato: 'finita', video: prima.video, pezzi: archivio[giorno].length };
 }
 
+// --- comandare il canale, non solo guardarlo --------------------------------
+/* Il 29/09 Moblin trasmetteva e YouTube non e' mai andato in onda: con la
+   sola chiave predefinita e' YouTube a decidere quando aprire una diretta, e
+   da fuori non si poteva ne' vederlo ne' sbloccarlo. Con il permesso del
+   canale (OAuth) il servizio:
+     - prepara lui la diretta della partita, legata alla chiave di Moblin,
+       con l'avvio automatico;
+     - vede se a YouTube arriva il segnale di Moblin;
+     - se il segnale arriva e YouTube non parte, la manda in onda lui;
+     - se una diretta resta "in onda" senza segnale, la chiude lui.
+   Variabili in piu' su Cloudflare: GOOGLE_ID e GOOGLE_SEGRETO (segreta), dal
+   client OAuth del progetto Google. Il permesso vero (il "refresh token") lo
+   si da' una volta dalla pagina diretta.html e sta nel magazzino. */
+const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
+const PERMESSO_YT = 'https://www.googleapis.com/auth/youtube';
+const ATTESA_AVVIO = 60e3;            // YouTube ha un minuto per partire da solo
+const MUTO_TROPPO = 15 * 60e3;        // in onda senza segnale da un quarto d'ora: e' appesa
+const FINESTRA_PROSSIMA = 24 * 36e5;  // si prepara la partita delle prossime 24 ore
+
+const collegato = async env => { const g = await leggi(env, 'google'); return !!(g?.refresh && !g.rotto); };
+
+/** Il gettone per parlare con YouTube a nome del canale: dura un'ora e si
+ *  tiene da parte, cosi' non lo si chiede a ogni giro. */
+async function accessoGoogle(env) {
+  const pronto = await leggi(env, 'google-accesso');
+  if (pronto?.token && pronto.scade > Date.now() + 60e3) return pronto.token;
+  const g = await leggi(env, 'google');
+  if (!g?.refresh || g.rotto) throw new Error('canale non collegato');
+  const r = await fetch(GOOGLE_TOKEN, {
+    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ client_id: env.GOOGLE_ID, client_secret: env.GOOGLE_SEGRETO,
+                                refresh_token: g.refresh, grant_type: 'refresh_token' }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    // permesso ritirato o scaduto: si torna al vecchio modo finche' non si ricollega
+    if (d.error === 'invalid_grant') await scrivi(env, 'google', { ...g, rotto: new Date().toISOString() });
+    throw new Error('Google: ' + (d.error_description || d.error || r.status));
+  }
+  await env.ISCRITTI.put('meta:google-accesso',
+    JSON.stringify({ token: d.access_token, scade: Date.now() + d.expires_in * 1000 }),
+    { expirationTtl: Math.max(60, d.expires_in - 120) });
+  return d.access_token;
+}
+
+/** Una richiesta a YouTube a nome del canale. */
+async function canale(env, metodo, via, corpo) {
+  const token = await accessoGoogle(env);
+  const r = await fetch(YT + via, {
+    method: metodo,
+    headers: { authorization: 'Bearer ' + token, ...(corpo ? { 'content-type': 'application/json' } : {}) },
+    body: corpo ? JSON.stringify(corpo) : undefined,
+  });
+  if (r.status === 204) return {};
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const motivo = d.error?.errors?.[0]?.reason || '';
+    const e = new Error(motivo || d.error?.message || 'youtube ' + r.status);
+    e.motivo = motivo;
+    throw e;
+  }
+  return d;
+}
+
+/** Il flusso di YouTube che riceve Moblin: quello con la stessa chiave che
+ *  la pagina diretta.html consegna a Moblin. Cosi' Moblin non va toccato. */
+async function flussoId(env) {
+  const noto = await leggi(env, 'flusso');
+  if (noto?.id && noto.chiave === env.CHIAVE_TRASMISSIONE) return noto.id;
+  let pagina = '';
+  do {
+    const d = await canale(env, 'GET', `liveStreams?part=id,cdn&mine=true&maxResults=50${pagina ? '&pageToken=' + pagina : ''}`);
+    const f = (d.items || []).find(s => s.cdn?.ingestionInfo?.streamName === env.CHIAVE_TRASMISSIONE);
+    if (f) { await scrivi(env, 'flusso', { id: f.id, chiave: env.CHIAVE_TRASMISSIONE }); return f.id; }
+    pagina = d.nextPageToken || '';
+  } while (pagina);
+  throw new Error('la chiave di Moblin non e\' fra le chiavi del canale');
+}
+
+/** Quale partita preparare: quella che si sta segnando in regia (anche
+ *  un'amichevole), se no la prossima del calendario entro un giorno. */
+async function bersaglio(env) {
+  const adesso = Date.now();
+  const p = await leggi(env, 'punteggio');
+  if (p?.gara && !p.finita && adesso - Date.parse(p.quando || 0) < 3 * 36e5)
+    return { gara: p.gara, casa: p.casa, ospiti: p.ospiti, inizio: adesso };
+  const prossime = (await nostrePartite(env))
+    .filter(x => x.inizio > adesso - 3 * 36e5 && x.inizio < adesso + FINESTRA_PROSSIMA)
+    .sort((a, b) => a.inizio - b.inizio);
+  return prossime[0] || null;
+}
+
+const bello = s => String(s || '').toLowerCase().replace(/(^|[\s'-])\S/g, c => c.toUpperCase());
+
+/** Crea la diretta su YouTube e la lega al flusso di Moblin. Una diretta
+ *  preparata e mai usata si cancella: due dirette in attesa sulla stessa
+ *  chiave, e non si saprebbe quale parte. */
+async function crea(env, t) {
+  if (await leggi(env, 'creando')) return null;   // la sta gia' creando qualcun altro
+  await env.ISCRITTI.put('meta:creando', '1', { expirationTtl: 60 });
+  try {
+    const flusso = await flussoId(env);
+    const vecchia = await leggi(env, 'preparata');
+    if (vecchia?.video) {
+      const v = await canale(env, 'GET', `liveBroadcasts?part=status&id=${vecchia.video}`).catch(() => null);
+      const stato = v?.items?.[0]?.status?.lifeCycleStatus;
+      if (stato === 'created' || stato === 'ready')
+        await canale(env, 'DELETE', `liveBroadcasts?id=${vecchia.video}`).catch(() => {});
+    }
+    const adesso = Date.now();
+    const quando = new Date(Math.max(t?.inizio || 0, adesso + 2 * 60e3));
+    const giorno = quando.toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit' });
+    const titolo = (t?.casa && t?.ospiti ? `${bello(t.casa)} – ${bello(t.ospiti)}` : 'Martesana Volley in diretta')
+      .slice(0, 85) + ' · ' + giorno;
+    const nuova = await canale(env, 'POST', 'liveBroadcasts?part=id,snippet,status,contentDetails', {
+      snippet: {
+        title: titolo,
+        scheduledStartTime: quando.toISOString(),
+        description: 'Il punteggio dal vivo e i risultati sono nell\'app della Martesana: ' + SITO,
+      },
+      // pubblica mentre si gioca: deciso il 22/09
+      status: { privacyStatus: 'public', selfDeclaredMadeForKids: false },
+      contentDetails: {
+        enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true,
+        monitorStream: { enableMonitorStream: false },   // cosi' si puo' andare in onda in un passo solo
+      },
+    });
+    await canale(env, 'POST', `liveBroadcasts/bind?id=${nuova.id}&part=id&streamId=${flusso}`);
+    const preparata = { video: nuova.id, gara: t?.gara || '', titolo, inizio: quando.toISOString(),
+                        creata: new Date(adesso).toISOString() };
+    await scrivi(env, 'preparata', preparata);
+    return preparata;
+  } finally {
+    await env.ISCRITTI.delete('meta:creando');
+  }
+}
+
+/** La diretta preparata e' ancora buona? Se no se ne fa un'altra. */
+async function assicuraPreparata(env) {
+  const prep = await leggi(env, 'preparata');
+  if (prep?.video) {
+    const d = await canale(env, 'GET', `liveBroadcasts?part=status,contentDetails&id=${prep.video}`).catch(() => null);
+    const b = d?.items?.[0];
+    const stato = b?.status?.lifeCycleStatus;
+    if (['created', 'ready', 'testing'].includes(stato)) {
+      const flusso = await flussoId(env);
+      if (b.contentDetails?.boundStreamId !== flusso)
+        await canale(env, 'POST', `liveBroadcasts/bind?id=${prep.video}&part=id&streamId=${flusso}`);
+      return prep;
+    }
+  }
+  return crea(env, await bersaglio(env));
+}
+
+/** Il cuore: guarda il canale e rimette le cose a posto. Lo chiamano il
+ *  cron ogni due minuti e la pagina diretta.html finche' e' aperta.
+ *  opz.inOnda: chi trasmette ha premuto "Manda in onda adesso".
+ *  opz.prepara: ha premuto "Prepara una diretta nuova". */
+async function sistema(env, opz = {}) {
+  const adesso = Date.now();
+  const flusso = await flussoId(env);
+  const [fl, attive] = await Promise.all([
+    canale(env, 'GET', `liveStreams?part=status&id=${flusso}`),
+    canale(env, 'GET', 'liveBroadcasts?part=id,snippet,status&broadcastStatus=active&broadcastType=all&maxResults=5'),
+  ]);
+  const st = fl.items?.[0]?.status || {};
+  const arriva = st.streamStatus === 'active';
+  const salute = st.healthStatus?.status || '';
+
+  // da quanto il segnale arriva, o manca: si scrive solo quando cambia
+  const prima = (await leggi(env, 'segnale')) || {};
+  const ora = arriva ? { attivoDal: prima.attivoDal || adesso } : { mutoDal: prima.mutoDal || adesso };
+  if (ora.attivoDal !== prima.attivoDal || ora.mutoDal !== prima.mutoDal) await scrivi(env, 'segnale', ora);
+
+  const fuori = { collegato: true, arriva, salute };
+  const viva = (attive.items || [])[0];
+  const diretta = await leggi(env, 'diretta');
+  let prep = await leggi(env, 'preparata');
+
+  if (opz.prepara && !viva) prep = await crea(env, await bersaglio(env));
+
+  // 1) c'e' una diretta aperta su YouTube
+  if (viva) {
+    const stato = viva.status?.lifeCycleStatus;
+    Object.assign(fuori, { video: viva.id, titolo: viva.snippet?.title });
+    if (stato === 'live') {
+      const gara = prep?.video === viva.id ? prep.gara : '';
+      await accendi(env, viva.id, gara, false);   // avvisa tutti, una volta sola
+      // una diretta finita non riparte: la prossima volta se ne fa un'altra
+      if (prep?.video === viva.id && !prep.usata) await scrivi(env, 'preparata', { ...prep, usata: true });
+      fuori.stato = 'in onda';
+    } else fuori.stato = 'sta partendo';
+    // in onda senza segnale da troppo: e' la diretta appesa del 29/09
+    if (!arriva && adesso - ora.mutoDal > MUTO_TROPPO) {
+      await canale(env, 'POST', `liveBroadcasts/transition?broadcastStatus=complete&id=${viva.id}&part=id`).catch(() => {});
+      if (diretta?.video === viva.id && !diretta.finita) await finisci(env, diretta);
+      fuori.stato = 'chiusa perche\' muta';
+    }
+    return fuori;
+  }
+
+  // 2) niente in onda: se l'app crede di si', la diretta e' finita
+  if (diretta?.video && !diretta.finita) await finisci(env, diretta);
+
+  // 3) Moblin trasmette ma YouTube non e' partito: dopo un minuto ci si pensa
+  //    noi. Subito, se non c'era niente di pronto da far partire da solo.
+  const pronta = prep?.video && !prep.usata;
+  if (arriva) {
+    if (opz.inOnda || !pronta || adesso - ora.attivoDal > ATTESA_AVVIO) {
+      const p = await assicuraPreparata(env);
+      if (!p) return { ...fuori, stato: 'sto preparando' };
+      Object.assign(fuori, { video: p.video, titolo: p.titolo });
+      try {
+        await canale(env, 'POST', `liveBroadcasts/transition?broadcastStatus=live&id=${p.video}&part=id`);
+        fuori.stato = 'mandata in onda';
+      } catch (e) {
+        fuori.stato = e.motivo === 'redundantTransition' ? 'sta partendo' : 'non parte';
+        fuori.errore = e.message;
+      }
+    } else {
+      Object.assign(fuori, { stato: 'ricevo, aspetto YouTube', video: prep?.video, titolo: prep?.titolo });
+    }
+    return fuori;
+  }
+
+  // 4) tutto fermo: si prepara la prossima partita, se non c'e' gia'
+  // Se la creazione fallisce si riprova fra venti minuti, non a ogni giro:
+  // ogni tentativo costa a Google cento gettoni anche quando va male.
+  const t = await bersaglio(env);
+  if (t && prep?.gara !== t.gara && !(await leggi(env, 'pausa-crea'))) {
+    try { prep = (await crea(env, t)) || prep; }
+    catch (e) {
+      await env.ISCRITTI.put('meta:pausa-crea', JSON.stringify(e.message), { expirationTtl: 20 * 60 });
+      fuori.errore = e.message;
+    }
+  }
+  if (prep && !prep.usata) Object.assign(fuori, { stato: 'pronta', video: prep.video, titolo: prep.titolo, inizio: prep.inizio });
+  else fuori.stato = 'niente in programma';
+  return fuori;
+}
+
 /** Il controllo del canale. Cercare costa cento gettoni, controllare un
  *  video gia' noto ne costa uno: quindi si cerca solo finche' non si trova,
- *  poi si tiene d'occhio quel video e basta. */
+ *  poi si tiene d'occhio quel video e basta.
+ *  Col canale collegato non si cerca piu' niente: comanda sistema(). */
 async function guardaCanale(env, forza = false) {
+  if (await collegato(env)) return sistema(env).catch(e => ({ stato: 'errore', errore: e.message }));
   if (!env.CHIAVE_YOUTUBE || !env.CANALE_YOUTUBE) return { stato: 'non configurato' };
   const chiavi = `key=${env.CHIAVE_YOUTUBE}`;
   const prima = await leggi(env, 'diretta');
@@ -377,6 +626,65 @@ async function rottaDiretta(req, env, url) {
     return risposta(fuori);
   }
 
+  // --- il permesso sul canale YouTube -------------------------------------
+  // Si da' una volta sola: diretta.html chiede l'indirizzo, il browser va da
+  // Google, chi ha il canale preme "Consenti" e Google torna qui col codice.
+  if (via === '/google/collega' && req.method === 'POST') {
+    if (req.headers.get('x-segreto') !== env.SEGRETO) return risposta({ errore: 'no' }, 401);
+    if (!env.GOOGLE_ID || !env.GOOGLE_SEGRETO) return risposta({ errore: 'mancano GOOGLE_ID e GOOGLE_SEGRETO su Cloudflare' }, 400);
+    const stato = b64(crypto.getRandomValues(new Uint8Array(18)));
+    await env.ISCRITTI.put('meta:google-stato:' + stato, '1', { expirationTtl: 15 * 60 });
+    const q = new URLSearchParams({
+      client_id: env.GOOGLE_ID, redirect_uri: url.origin + '/google/torna', response_type: 'code',
+      scope: PERMESSO_YT, access_type: 'offline', prompt: 'consent', state: stato,
+    });
+    return risposta({ indirizzo: 'https://accounts.google.com/o/oauth2/v2/auth?' + q });
+  }
+  if (via === '/google/torna' && req.method === 'GET') {
+    const pagina = (titolo, testo, bene) => new Response(
+      `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${titolo}</title><body style="font:17px/1.5 -apple-system,sans-serif;background:#0b1a19;color:#e7efed;padding:24px">
+<h1 style="font-size:22px;color:${bene ? '#7fd1a4' : '#f08072'}">${titolo}</h1><p>${testo}</p>
+<p><a style="color:#74c4b8" href="${SITO}diretta.html">Torna a "Vai in diretta"</a></p>`,
+      { headers: { 'content-type': 'text/html; charset=utf-8' } });
+    const stato = url.searchParams.get('state') || '';
+    if (!stato || !(await env.ISCRITTI.get('meta:google-stato:' + stato)))
+      return pagina('Collegamento scaduto', 'Questo passaggio vale un quarto d\'ora: ricomincia dal tasto "Collega il canale YouTube".');
+    await env.ISCRITTI.delete('meta:google-stato:' + stato);
+    if (url.searchParams.get('error'))
+      return pagina('Non collegato', 'Google dice: ' + url.searchParams.get('error') + '. Non e\' cambiato niente.');
+    const r = await fetch(GOOGLE_TOKEN, {
+      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ code: url.searchParams.get('code') || '', client_id: env.GOOGLE_ID,
+        client_secret: env.GOOGLE_SEGRETO, redirect_uri: url.origin + '/google/torna', grant_type: 'authorization_code' }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.refresh_token)
+      return pagina('Non collegato', 'Google non ha dato il permesso (' + (d.error_description || d.error || 'manca il permesso permanente') + ').');
+    // chi ha premuto "Consenti" doveva scegliere il canale della Martesana, non il proprio
+    const c = await fetch(YT + 'channels?part=snippet&mine=true', { headers: { authorization: 'Bearer ' + d.access_token } })
+      .then(x => x.json()).catch(() => ({}));
+    const ch = c.items?.[0];
+    if (!ch || (env.CANALE_YOUTUBE && ch.id !== env.CANALE_YOUTUBE))
+      return pagina('Canale sbagliato', `Hai scelto <b>${ch?.snippet?.title || 'un account senza canale'}</b>. ` +
+        'Ricomincia e, quando Google chiede quale account o canale usare, scegli <b>Martesana Volley Genitori</b>.');
+    await scrivi(env, 'google', { refresh: d.refresh_token, canale: ch.id, nome: ch.snippet?.title, quando: new Date().toISOString() });
+    await env.ISCRITTI.delete('meta:google-accesso');
+    await env.ISCRITTI.delete('meta:flusso');
+    return pagina('Collegato ✓', `Il servizio ora comanda il canale <b>${ch.snippet?.title}</b>. Puoi chiudere questa pagina.`, true);
+  }
+
+  // Lo stato della diretta, e le mani per sistemarla: la pagina diretta.html
+  // lo chiede ogni quindici secondi finche' e' aperta.
+  if (via === '/sistema' && req.method === 'POST') {
+    if (!(await permesso(req, env, 'trasmetti')).ok) return risposta({ errore: 'no' }, 401);
+    if (!(await collegato(env))) return risposta({ collegato: false, rotto: !!(await leggi(env, 'google'))?.rotto });
+    try {
+      return risposta(await sistema(env, { inOnda: url.searchParams.get('inonda') === '1',
+                                           prepara: url.searchParams.get('prepara') === '1' }));
+    } catch (e) { return risposta({ collegato: true, stato: 'errore', errore: e.message }); }
+  }
+
   // --- siamo in onda? ---------------------------------------------------
   if (via === '/diretta' && req.method === 'GET') return risposta(await leggi(env, 'diretta') || {});
 
@@ -396,6 +704,9 @@ async function rottaDiretta(req, env, url) {
     if (!(await permesso(req, env, 'trasmetti')).ok) return risposta({ errore: 'no' }, 401);
     if (req.method === 'DELETE') {
       const prima = await leggi(env, 'diretta');
+      // col canale collegato "Ho finito" chiude anche la diretta su YouTube
+      if (prima?.video && !prima.finita && await collegato(env))
+        await canale(env, 'POST', `liveBroadcasts/transition?broadcastStatus=complete&id=${prima.video}&part=id`).catch(() => {});
       if (prima?.video) await finisci(env, prima);
       return risposta({ ok: true });
     }

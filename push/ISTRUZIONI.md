@@ -199,3 +199,35 @@ curl "$SERVIZIO/registrazioni"                 # le partite gia' trasmesse
 curl -X POST "$SERVIZIO/guarda" -H "x-segreto: $SEGRETO"   # forza il controllo
 curl -X DELETE "$SERVIZIO/punteggio" -H "x-segreto: $SEGRETO"  # azzera
 ```
+
+## Il servizio comanda il canale (dal 6 ottobre 2026)
+
+Il 29/09 Moblin trasmetteva e YouTube non e' mai andato in onda: con la sola
+chiave predefinita e' YouTube a decidere se aprire una diretta. Ora il
+servizio ha il permesso del canale (OAuth) e:
+
+- il giorno prima **prepara la diretta** della partita (calendario FIPAV, o
+  quella che si sta segnando in regia per le amichevoli) e la lega alla stessa
+  chiave che usa Moblin, con avvio e arresto automatici;
+- se Moblin trasmette e YouTube dopo un minuto non e' partito, **la manda in
+  onda lui** (cron ogni due minuti, o subito col tasto in `diretta.html`);
+- se una diretta resta in onda **senza segnale per un quarto d'ora**, la chiude;
+- se il telefono si scarica e quello di scorta riprende, apre una diretta
+  nuova e l'avviso dice "La diretta e' ripartita".
+
+In `diretta.html` c'e' la spia: grigia aspetta Moblin, gialla YouTube riceve
+ma non e' ancora in onda, verde in onda.
+
+Cosa serve, una volta sola:
+1. Nel progetto Google che ha gia' la chiave API: schermata di consenso OAuth
+   **pubblicata** (in "test" il permesso scade ogni 7 giorni) e un client
+   OAuth "Applicazione web" con URI di reindirizzamento
+   `https://volley-notifiche.n8ns-piazzolla.workers.dev/google/torna`.
+2. Su Cloudflare due segreti: `GOOGLE_ID` e `GOOGLE_SEGRETO`.
+3. In `diretta.html`, con la parola d'ordine: **Collega il canale YouTube**,
+   e scegliere il canale *Martesana Volley Genitori*.
+
+Indirizzi nuovi: `POST /google/collega`, `GET /google/torna`, `POST /sistema`
+(`?inonda=1` per forzare l'avvio, `?prepara=1` per una diretta nuova).
+Se il permesso viene ritirato, il servizio torna da solo al vecchio modo
+(ricerca sul canale) e la spia dice di ricollegarlo.
