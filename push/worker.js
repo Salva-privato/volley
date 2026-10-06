@@ -373,6 +373,23 @@ async function bersaglio(env) {
 
 const bello = s => String(s || '').toLowerCase().replace(/(^|[\s'-])\S/g, c => c.toUpperCase());
 
+/** Lascia sulla chiave di Moblin una sola diretta in attesa: la nostra.
+ *  Provato il 06/10: finita una diretta, YouTube Studio ne crea da solo
+ *  un'altra ("Live streaming di ...") legata alla stessa chiave. Con due
+ *  dirette in attesa YouTube non ne fa partire nessuna, e rifiuta anche il
+ *  comando di avvio (invalidTransition). Quasi certamente e' il 29/09.
+ *  Le altre non si cancellano: si staccano dalla chiave e restano li'. */
+async function liberaFlusso(env, flusso, nostra) {
+  const d = await canale(env, 'GET', 'liveBroadcasts?part=id,status,contentDetails&broadcastStatus=upcoming&broadcastType=all&maxResults=20');
+  let staccate = 0;
+  for (const b of d.items || []) {
+    if (b.id === nostra || b.contentDetails?.boundStreamId !== flusso) continue;
+    await canale(env, 'POST', `liveBroadcasts/bind?id=${b.id}&part=id`).catch(() => {});   // senza streamId = stacca
+    staccate++;
+  }
+  return staccate;
+}
+
 /** Crea la diretta su YouTube e la lega al flusso di Moblin. Una diretta
  *  preparata e mai usata si cancella: due dirette in attesa sulla stessa
  *  chiave, e non si saprebbe quale parte. */
@@ -407,6 +424,7 @@ async function crea(env, t) {
       },
     });
     await canale(env, 'POST', `liveBroadcasts/bind?id=${nuova.id}&part=id&streamId=${flusso}`);
+    await liberaFlusso(env, flusso, nuova.id);
     const preparata = { video: nuova.id, gara: t?.gara || '', titolo, inizio: quando.toISOString(),
                         creata: new Date(adesso).toISOString() };
     await scrivi(env, 'preparata', preparata);
@@ -427,6 +445,7 @@ async function assicuraPreparata(env) {
       const flusso = await flussoId(env);
       if (b.contentDetails?.boundStreamId !== flusso)
         await canale(env, 'POST', `liveBroadcasts/bind?id=${prep.video}&part=id&streamId=${flusso}`);
+      await liberaFlusso(env, flusso, prep.video);
       return prep;
     }
   }
@@ -515,6 +534,8 @@ async function sistema(env, opz = {}) {
       fuori.errore = e.message;
     }
   }
+  // Studio puo' aver messo un'altra diretta sulla chiave: la nostra deve restare sola
+  if (prep && !prep.usata) await liberaFlusso(env, flusso, prep.video).catch(() => {});
   if (prep && !prep.usata) Object.assign(fuori, { stato: 'pronta', video: prep.video, titolo: prep.titolo, inizio: prep.inizio });
   else fuori.stato = 'niente in programma';
   return fuori;
