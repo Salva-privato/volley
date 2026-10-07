@@ -220,12 +220,14 @@ function elenco(){
 }
 
 /* Un'amichevole non ha il numero di gara della FIPAV: se ne inventa uno col
-   giorno, che comincia per "A-" (cosi' l'app la riconosce) e sta nei venti
-   caratteri che il servizio accetta. */
+   giorno e l'ora, che comincia per "A-" (cosi' l'app la riconosce) e sta nei
+   venti caratteri che il servizio accetta. L'ora serve ai triangolari: con
+   il solo giorno, la seconda partita riprendeva punteggio e nomi della prima. */
 const NOI = 'MARTESANA VOLLEY';
 function amichevole(avversaria, inCasa, data){
   const giorno = data || new Date().toLocaleDateString('sv-SE');   // AAAA-MM-GG, ora italiana
-  return { gara: 'A-' + giorno.replace(/-/g, ''), date: giorno, amichevole: true,
+  const ora = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }).replace(':', '');
+  return { gara: 'A-' + giorno.replace(/-/g, '') + '-' + ora, date: giorno, amichevole: true,
            home: inCasa ? NOI : avversaria, away: inCasa ? avversaria : NOI };
 }
 /** Mette l'amichevole nella tendina, al posto di una eventuale precedente. */
@@ -432,7 +434,7 @@ async function avvia(){
       // un'amichevole gia' in corso torna nella tendina con i suoi nomi
       if (String(p.gara).startsWith('A-') && !partite.some(m => m.gara === p.gara))
         aggiungiAmichevole({ gara: p.gara, home: p.casa, away: p.ospiti, amichevole: true,
-                             date: p.gara.replace(/^A-(\d{4})(\d\d)(\d\d)$/, '$1-$2-$3') });
+                             date: p.gara.replace(/^A-(\d{4})(\d\d)(\d\d).*$/, '$1-$2-$3') });
       const i = partite.findIndex(m => m.gara === p.gara);
       if (i >= 0) el('partita').value = i;
       mostra();

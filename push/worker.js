@@ -538,8 +538,11 @@ async function datiPartita(env, gara) {
 async function accodaFine(env, diretta) {
   const t = await datiPartita(env, diretta.gara);
   if (!t) return;
+  // il risultato si fotografa subito, se la regia l'ha gia' chiuso: in un
+  // triangolare la partita dopo riscrive il punteggio dopo pochi minuti
+  const subito = await risultato(env, t).catch(() => null);
   const coda = ((await leggi(env, 'copertine-fine')) || []).filter(x => x.video !== diretta.video);
-  coda.push({ video: diretta.video, t, quando: Date.now(), provato: 0 });
+  coda.push({ video: diretta.video, t, quando: Date.now(), provato: 0, risultato: subito });
   await scrivi(env, 'copertine-fine', coda.slice(-6));
 }
 
@@ -579,7 +582,7 @@ async function lavoraCopertine(env) {
     let coda = ((await leggi(env, 'copertine-fine')) || []).filter(x => adesso - x.quando < 3 * UN_GIORNO);
     const tocca = coda.find(x => adesso - (x.provato || 0) > 30 * 60e3);
     if (!tocca) return 'niente da fare';
-    const r = await risultato(env, tocca.t);
+    const r = tocca.risultato || await risultato(env, tocca.t);
     if (r) {
       await mettiCopertina(env, tocca.video, await disegna(env, datiCopertina(tocca.t, 'fine', r)));
       coda = coda.filter(x => x !== tocca);
