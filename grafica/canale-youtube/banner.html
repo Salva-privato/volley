@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@600;800&display=block" rel="stylesheet">
+<style>
+  :root{ --oro:#e9bd5d; --oro2:#b8862a; --turchese:#2fc4b8; --notte:#060a12; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000}
+  /* 2560x1440: su computer si vede la fascia 2560x423 al centro, sul telefono 1546x423 */
+  #b{width:2560px;height:1440px;position:relative;overflow:hidden;background:#070b14}
+  .fondo{position:absolute;inset:0;
+    background:
+      radial-gradient(38% 60% at 50% 50%, rgba(47,196,184,.28), transparent 70%),
+      radial-gradient(30% 40% at 18% 50%, rgba(233,189,93,.16), transparent 70%),
+      radial-gradient(30% 40% at 82% 50%, rgba(233,189,93,.16), transparent 70%),
+      linear-gradient(180deg,#04070d 0%,#0a1220 50%,#04070d 100%)}
+  .ape{position:absolute;inset:0;opacity:.18}
+  /* fasci di luce dall'alto, come i fari del palazzetto */
+  .faro{position:absolute;top:-200px;width:260px;height:1300px;transform-origin:top center;
+    background:linear-gradient(180deg,rgba(255,240,200,.22),rgba(255,240,200,0) 80%);filter:blur(18px)}
+  /* le giocatrici: la foto si scioglie nel buio sui bordi */
+  /* sfumate su tutti e quattro i lati: niente rettangoli */
+  .gioc{position:absolute;height:640px;top:486px;z-index:1;
+    -webkit-mask:linear-gradient(90deg,transparent 48%,#000 62%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0%,#000 14%,#000 80%,transparent 100%);
+    -webkit-mask-composite:source-in;
+            mask:linear-gradient(90deg,transparent 48%,#000 62%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0%,#000 14%,#000 80%,transparent 100%);
+            mask-composite:intersect}
+  .sx{left:-20px}
+  .dx{right:-50px;transform:scaleX(-1)}
+  .dx2{display:none}
+  .centro{position:absolute;z-index:2;left:560px;width:1440px;top:508px;height:424px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .riga{display:flex;align-items:center;gap:34px}
+  .fenice{position:absolute;left:50%;top:50%;width:230px;height:460px;margin:-230px 0 0 -115px;opacity:.22;
+    background:linear-gradient(180deg,#fff1c8,var(--oro) 45%,var(--oro2));
+    -webkit-mask:url(logo.png) center/contain no-repeat;mask:url(logo.png) center/contain no-repeat;
+    filter:drop-shadow(0 0 24px rgba(233,189,93,.6))}
+  .nome{font:700 128px/.92 Oswald;white-space:nowrap;text-align:center;text-transform:uppercase;letter-spacing:.01em;
+    background:linear-gradient(180deg,#ffffff 0%,#ffffff 55%,#cfe9e6 100%);-webkit-background-clip:text;color:transparent;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,.95)) drop-shadow(0 0 40px rgba(0,0,0,.8))}
+  .nome b{background:linear-gradient(180deg,#fff3cf 0%,var(--oro) 50%,var(--oro2) 100%);-webkit-background-clip:text;color:transparent}
+  .sotto{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:18px}
+  .live{display:inline-flex;align-items:center;gap:12px;background:#e0261b;color:#fff;
+    font:700 32px/1 Oswald;letter-spacing:.08em;padding:13px 26px 14px;border-radius:10px;
+    box-shadow:0 0 40px rgba(224,38,27,.55)}
+  .live::before{content:'';width:18px;height:18px;border-radius:50%;background:#fff}
+  .motto{font:600 28px Inter;color:#d6efec;letter-spacing:.01em;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+  .filo{position:absolute;left:0;right:0;height:4px;
+    background:linear-gradient(90deg,transparent,var(--turchese) 30%,var(--oro) 50%,var(--turchese) 70%,transparent)}
+  /* scintille d'oro che salgono */
+  .p{position:absolute;border-radius:50%;background:var(--oro);filter:blur(1px)}
+</style></head>
+<body>
+<div id="b">
+  <div class="fondo"></div>
+  <svg class="ape" id="ape"></svg>
+  <div class="faro" style="left:300px;transform:rotate(18deg)"></div>
+  <div class="faro" style="left:1150px;transform:rotate(-4deg);opacity:.7"></div>
+  <div class="faro" style="left:2000px;transform:rotate(-18deg)"></div>
+  <img class="gioc sx" src="alzata.jpg">
+  <img class="gioc dx2" src="ricezione.jpg">
+  <img class="gioc dx" src="schiacciata.jpg">
+  <div class="filo" style="top:470px;opacity:.55"></div>
+  <div class="filo" style="top:966px;opacity:.55"></div>
+  <div id="scintille"></div>
+  <div class="centro">
+    <div class="fenice"></div>
+    <div class="riga">
+      <div class="nome">Martesana<br><b>Volley</b></div>
+    </div>
+    <div class="sotto">
+      <span class="live">IN DIRETTA</span>
+      <span class="motto">ogni partita, per chi non può essere in palestra</span>
+    </div>
+  </div>
+</div>
+<script>
+function ape(svg, w, h, r, colore, spessore){
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const dx = Math.sqrt(3) * r, dy = 1.5 * r; let d = '';
+  for (let y = -r, row = 0; y < h + r; y += dy, row++)
+    for (let x = (row % 2 ? dx / 2 : 0) - dx; x < w + dx; x += dx) {
+      const p = [...Array(6)].map((_, i) => { const a = Math.PI / 180 * (60 * i - 30); return [x + r * Math.cos(a), y + r * Math.sin(a)]; });
+      d += 'M' + p.map(q => q.map(v => v.toFixed(1)).join(',')).join('L') + 'Z';
+    }
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="${colore}" stroke-width="${spessore}"/>`;
+}
+ape(document.getElementById('ape'), 2560, 1440, 90, '#e9bd5d', 2.5);
+// scintille sempre uguali (seme fisso), concentrate nella fascia visibile
+let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+const box = document.getElementById('scintille');
+for (let i = 0; i < 70; i++) {
+  const d = document.createElement('div'); d.className = 'p';
+  const r = 2 + rnd() * 6;
+  Object.assign(d.style, { left: (rnd() * 2560) + 'px', top: (480 + rnd() * 480) + 'px',
+    width: r + 'px', height: r + 'px', opacity: (.25 + rnd() * .6).toFixed(2) });
+  box.appendChild(d);
+}
+document.fonts.ready.then(() => document.body.dataset.pronta = 1);
+</script>
+</body></html>

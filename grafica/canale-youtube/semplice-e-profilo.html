@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@500;700&display=block" rel="stylesheet">
+<style>
+  :root{ --oro:#deb055; --turchese:#2fb3aa; --notte:#06100f; --verde:#0d2b2b; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000}
+  .fenice{-webkit-mask:url(logo.png) center/contain no-repeat;mask:url(logo.png) center/contain no-repeat}
+  /* il nido d'ape della maglia, disegnato */
+  .ape{position:absolute;inset:0;opacity:.22}
+
+  #banner{width:2560px;height:1440px;position:relative;overflow:hidden;
+    background:radial-gradient(60% 55% at 50% 50%, #164545 0%, var(--verde) 45%, var(--notte) 100%)}
+  #banner .striscia{position:absolute;left:0;right:0;top:508px;height:424px;
+    background:linear-gradient(90deg,transparent 0%,rgba(6,16,15,.55) 30%,rgba(6,16,15,.55) 70%,transparent 100%)}
+  #banner .centro{position:absolute;left:507px;top:509px;width:1546px;height:423px;
+    display:flex;align-items:center;justify-content:center;gap:56px}
+  #banner .fenice{width:150px;height:300px;background:var(--oro);flex:none}
+  #banner .nome{font:700 150px/0.95 Oswald;letter-spacing:.02em;text-transform:uppercase;color:#fff}
+  #banner .nome span{color:var(--oro)}
+  #banner .motto{font:500 40px Inter;color:#bfe3de;margin-top:22px;letter-spacing:.01em}
+  #banner .linea{position:absolute;left:0;right:0;height:6px;background:var(--turchese)}
+
+  #profilo{width:800px;height:800px;position:relative;overflow:hidden;margin-top:40px;
+    background:radial-gradient(70% 70% at 50% 40%, #174a4a 0%, var(--verde) 55%, var(--notte) 100%);
+    display:flex;align-items:center;justify-content:center}
+  #profilo .fenice{width:330px;height:660px;background:var(--oro);margin-left:20px}
+  #profilo2{width:800px;height:800px;position:relative;overflow:hidden;margin-top:40px;
+    background:var(--turchese);display:flex;align-items:center;justify-content:center}
+  #profilo2 .fenice{width:330px;height:660px;background:#0b1414;margin-left:20px}
+</style></head>
+<body>
+<div id="banner">
+  <svg class="ape" id="ape1"></svg>
+  <div class="striscia"></div>
+  <div class="linea" style="top:500px;opacity:.0"></div>
+  <div class="centro">
+    <div class="fenice"></div>
+    <div>
+      <div class="nome">Martesana <span>Volley</span></div>
+      <div class="motto">Le nostre partite in diretta, per chi non può essere in palestra</div>
+    </div>
+  </div>
+</div>
+<div id="profilo"><svg class="ape" id="ape2"></svg><div class="fenice"></div></div>
+<div id="profilo2"><svg class="ape" id="ape3" style="opacity:.35"></svg><div class="fenice"></div></div>
+<script>
+// esagoni di lato r, con le punte a stella come sulla maglia
+function ape(svg, w, h, r, colore, spessore){
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const dx = Math.sqrt(3) * r, dy = 1.5 * r; let d = '';
+  for (let y = -r, row = 0; y < h + r; y += dy, row++)
+    for (let x = (row % 2 ? dx / 2 : 0) - dx; x < w + dx; x += dx) {
+      const p = [...Array(6)].map((_, i) => { const a = Math.PI / 180 * (60 * i - 30); return [x + r * Math.cos(a), y + r * Math.sin(a)]; });
+      d += 'M' + p.map(q => q.map(v => v.toFixed(1)).join(',')).join('L') + 'Z';
+    }
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="${colore}" stroke-width="${spessore}"/>`;
+}
+ape(document.getElementById('ape1'), 2560, 1440, 120, '#deb055', 3);
+ape(document.getElementById('ape2'), 800, 800, 110, '#deb055', 3);
+ape(document.getElementById('ape3'), 800, 800, 110, '#deb055', 5);
+document.fonts.ready.then(() => document.body.dataset.pronta = 1);
+</script>
+</body></html>
