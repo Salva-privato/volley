@@ -378,6 +378,13 @@ async function bersaglio(env) {
   return prossime[0] || null;
 }
 
+/** Quante parti di una partita sono andate in onda (se ne tengono venti). */
+async function contaParte(env, gara) {
+  const parti = (await leggi(env, 'parti')) || {};
+  parti[gara] = (parti[gara] || 0) + 1;
+  await scrivi(env, 'parti', Object.fromEntries(Object.entries(parti).slice(-20)));
+}
+
 const bello = s => String(s || '').toLowerCase().replace(/(^|[\s'-])\S/g, c => c.toUpperCase());
 
 /** Lascia sulla chiave di Moblin una sola diretta in attesa: la nostra.
@@ -416,10 +423,15 @@ async function crea(env, t) {
     const adesso = Date.now();
     const quando = new Date(Math.max(t?.inizio || 0, adesso + 2 * 60e3));
     const giorno = quando.toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit' });
+    // Se di questa partita una parte e' gia' andata in onda (telefono scarico,
+    // riprende quello di scorta), questa e' la parte dopo: lo dice il titolo,
+    // e aspetta nascosta, perche' a partita finita nessuno la usera'.
+    const gia = t?.gara ? (((await leggi(env, 'parti')) || {})[t.gara] || 0) : 0;
     // senza partita la data no: la diretta pronta puo' aspettare giorni
     const titolo = t?.casa && t?.ospiti
-      ? `${bello(t.casa)} – ${bello(t.ospiti)}`.slice(0, 85) + ' · ' + giorno
+      ? `${bello(t.casa)} – ${bello(t.ospiti)}`.slice(0, 80) + ' · ' + giorno + (gia ? ` (${gia + 1}ª parte)` : '')
       : 'Martesana Volley in diretta';
+    const nascosta = !t?.casa || gia > 0;
     const nuova = await canale(env, 'POST', 'liveBroadcasts?part=id,snippet,status,contentDetails', {
       snippet: {
         title: titolo,
@@ -430,7 +442,7 @@ async function crea(env, t) {
       // aspetta senza una partita, sta nascosta: YouTube mostra sempre
       // "Programmato per il giorno..." e sembrerebbe una partita che non c'e'.
       // Diventa pubblica quando va in onda (vedi sistema()).
-      status: { privacyStatus: t?.casa ? 'public' : 'unlisted', selfDeclaredMadeForKids: false },
+      status: { privacyStatus: nascosta ? 'unlisted' : 'public', selfDeclaredMadeForKids: false },
       contentDetails: {
         enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true,
         monitorStream: { enableMonitorStream: false },   // cosi' si puo' andare in onda in un passo solo
@@ -439,8 +451,7 @@ async function crea(env, t) {
     await canale(env, 'POST', `liveBroadcasts/bind?id=${nuova.id}&part=id&streamId=${flusso}`);
     await liberaFlusso(env, flusso, nuova.id);
     const preparata = { video: nuova.id, gara: t?.gara || '', titolo, inizio: quando.toISOString(),
-                        creata: new Date(adesso).toISOString(), partita: t || null,
-                        nascosta: !t?.casa };
+                        creata: new Date(adesso).toISOString(), partita: t || null, nascosta };
     await scrivi(env, 'preparata', preparata);
     return preparata;
   } finally {
@@ -657,7 +668,10 @@ async function sistema(env, opz = {}) {
       if (prep?.video === viva.id && prep.nascosta && !prep.usata)
         await canale(env, 'PUT', 'liveBroadcasts?part=status', { id: viva.id, status: { privacyStatus: 'public' } }).catch(() => {});
       // una diretta finita non riparte: la prossima volta se ne fa un'altra
-      if (prep?.video === viva.id && !prep.usata) await scrivi(env, 'preparata', { ...prep, usata: true });
+      if (prep?.video === viva.id && !prep.usata) {
+        await scrivi(env, 'preparata', { ...prep, usata: true });
+        if (prep.gara) await contaParte(env, prep.gara);
+      }
       fuori.stato = 'in onda';
     } else fuori.stato = 'sta partendo';
     // in onda senza segnale da troppo: e' la diretta appesa del 29/09
