@@ -245,7 +245,9 @@ async function accendi(env, video, gara, aMano) {
                                  dal: new Date(adesso).toISOString(), finita: false });
   // ripartita da poco (telefono scarico, quello di scorta riprende): non e'
   // una partita nuova, e l'avviso lo deve dire
-  const ripresa = prima?.finita && adesso - Date.parse(prima.fino || 0) < 60 * 60e3;
+  // (solo la stessa partita: in un triangolare quella dopo e' una partita nuova)
+  const ripresa = prima?.finita && (prima.gara || '') === (gara || prima.gara || '')
+    && adesso - Date.parse(prima.fino || 0) < 60 * 60e3;
   await scrivi(env, 'messaggio', {
     titolo: ripresa ? 'La diretta e\' ripartita' : 'Siamo in diretta',
     testo: ripresa ? 'Si era interrotta: tocca per tornare a vederla.' : 'La partita e\' cominciata: tocca per vederla.',
@@ -546,8 +548,21 @@ async function accodaFine(env, diretta) {
   await scrivi(env, 'copertine-fine', coda.slice(-6));
 }
 
+async function annotaRisultato(env, p) {
+  let a = 0, b = 0;
+  for (const [x, y] of p.set) { if (x > y) a++; else if (y > x) b++; }
+  if (!a && !b) return;
+  const tutti = (await leggi(env, 'risultati')) || {};
+  tutti[p.gara] = { r: `${a}-${b}`, quando: Date.now() };
+  // se ne tengono solo gli ultimi venti
+  const tenuti = Object.entries(tutti).sort((x, y) => y[1].quando - x[1].quando).slice(0, 20);
+  await scrivi(env, 'risultati', Object.fromEntries(tenuti));
+}
+
 /** Il risultato in set, "3-1" dal punto di vista di casa-ospiti. */
 async function risultato(env, t) {
+  const annotato = ((await leggi(env, 'risultati')) || {})[t.gara];
+  if (annotato) return annotato.r;
   const p = await leggi(env, 'punteggio');
   if (p?.gara === t.gara && p.finita && p.set?.length) {
     let a = 0, b = 0;
@@ -776,7 +791,11 @@ async function rottaDiretta(req, env, url) {
     else {
       const corpo = await req.json().catch(() => null);
       if (!corpo) return risposta({ errore: 'manca il punteggio' }, 400);
-      await scrivi(env, 'punteggio', ripulisciPunteggio(corpo));
+      const p = ripulisciPunteggio(corpo);
+      await scrivi(env, 'punteggio', p);
+      // "Partita finita": il risultato si annota a parte, perche' il punteggio
+      // poi si toglie o lo riscrive la partita dopo (provato il 07/10)
+      if (p.finita && p.gara) await annotaRisultato(env, p);
     }
     await caches.default.delete(CHIAVE_CACHE);   // il tabellone deve vederlo subito
     return risposta({ ok: true });
