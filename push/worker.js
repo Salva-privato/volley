@@ -586,6 +586,11 @@ async function risultato(env, t) {
 async function lavoraCopertine(env) {
   if (!env.BROWSER) return 'manca il browser';
   if (await leggi(env, 'pausa-copertine')) return 'in pausa';
+  // Una alla volta: la pagina diretta.html chiede ogni 15 secondi e il cron
+  // ogni due minuti. Il 07/10 due disegni insieme hanno aperto troppi browser
+  // e Cloudflare ha risposto 429.
+  if (await leggi(env, 'disegnando')) return 'ne sto gia\' disegnando una';
+  await env.ISCRITTI.put('meta:disegnando', '1', { expirationTtl: 90 });
   try {
     const prep = await leggi(env, 'preparata');
     if (prep?.video && !prep.copertina) {
@@ -605,8 +610,12 @@ async function lavoraCopertine(env) {
     await scrivi(env, 'copertine-fine', coda);
     return r ? 'fine fatta: ' + tocca.video : 'aspetto il risultato';
   } catch (e) {
-    await env.ISCRITTI.put('meta:pausa-copertine', JSON.stringify(e.message), { expirationTtl: 30 * 60 });
+    // troppi browser: basta aspettare un attimo. Altri errori: mezz'ora.
+    const breve = /429|rate limit/i.test(e.message);
+    await env.ISCRITTI.put('meta:pausa-copertine', JSON.stringify(e.message), { expirationTtl: breve ? 3 * 60 : 30 * 60 });
     return 'errore: ' + e.message;
+  } finally {
+    await env.ISCRITTI.delete('meta:disegnando');
   }
 }
 
