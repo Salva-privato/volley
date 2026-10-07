@@ -424,8 +424,11 @@ async function crea(env, t) {
         scheduledStartTime: quando.toISOString(),
         description: 'Il punteggio dal vivo e i risultati sono nell\'app della Martesana: ' + SITO,
       },
-      // pubblica mentre si gioca: deciso il 22/09
-      status: { privacyStatus: 'public', selfDeclaredMadeForKids: false },
+      // Pubblica mentre si gioca: deciso il 22/09. Ma quella generica, che
+      // aspetta senza una partita, sta nascosta: YouTube mostra sempre
+      // "Programmato per il giorno..." e sembrerebbe una partita che non c'e'.
+      // Diventa pubblica quando va in onda (vedi sistema()).
+      status: { privacyStatus: t?.casa ? 'public' : 'unlisted', selfDeclaredMadeForKids: false },
       contentDetails: {
         enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true,
         monitorStream: { enableMonitorStream: false },   // cosi' si puo' andare in onda in un passo solo
@@ -434,7 +437,8 @@ async function crea(env, t) {
     await canale(env, 'POST', `liveBroadcasts/bind?id=${nuova.id}&part=id&streamId=${flusso}`);
     await liberaFlusso(env, flusso, nuova.id);
     const preparata = { video: nuova.id, gara: t?.gara || '', titolo, inizio: quando.toISOString(),
-                        creata: new Date(adesso).toISOString(), partita: t || null };
+                        creata: new Date(adesso).toISOString(), partita: t || null,
+                        nascosta: !t?.casa };
     await scrivi(env, 'preparata', preparata);
     return preparata;
   } finally {
@@ -622,6 +626,9 @@ async function sistema(env, opz = {}) {
     if (stato === 'live') {
       const gara = prep?.video === viva.id ? prep.gara : '';
       await accendi(env, viva.id, gara, false);   // avvisa tutti, una volta sola
+      // la generica aspettava nascosta: in onda diventa pubblica
+      if (prep?.video === viva.id && prep.nascosta && !prep.usata)
+        await canale(env, 'PUT', 'liveBroadcasts?part=status', { id: viva.id, status: { privacyStatus: 'public' } }).catch(() => {});
       // una diretta finita non riparte: la prossima volta se ne fa un'altra
       if (prep?.video === viva.id && !prep.usata) await scrivi(env, 'preparata', { ...prep, usata: true });
       fuori.stato = 'in onda';
@@ -679,7 +686,9 @@ async function sistema(env, opz = {}) {
     const l = await liberaFlusso(env, flusso, prep.video).catch(() => null);
     sparita = l ? !l.presente : false;
   }
-  const serve = !prep || prep.usata || sparita || (t && prep.gara !== t.gara);
+  // (vecchia = una generica preparata prima che stessero nascoste: si rifa')
+  const vecchia = prep && !prep.partita && prep.nascosta === undefined;
+  const serve = !prep || prep.usata || sparita || vecchia || (t && prep.gara !== t.gara);
   if (serve && !(await leggi(env, 'pausa-crea'))) {
     try { prep = (await crea(env, t)) || prep; }
     catch (e) {
