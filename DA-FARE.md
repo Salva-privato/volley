@@ -68,8 +68,14 @@ non c'e' comando che tenga, bisogna fermare e ripartire.
       sulla diretta preparata. Provata sulla generica: arrivata su YouTube.
 - [ ] **Da vedere il 15/10 sera:** la prima copertina con le squadre vere
       (Geas – Martesana, 16/10) sulla diretta preparata il giorno prima.
-- [ ] **Da vedere dopo il 16/10:** la copertina "Rivedi la partita" col
-      risultato, dalla regia o dal sito FIPAV.
+- [x] Copertina "Rivedi la partita" col risultato: provata il 07/10 con
+      un'amichevole (Sanda – Martesana 0–3). Il risultato si annota quando
+      in regia si preme "Partita finita".
+- [ ] **Da vedere dopo il 16/10:** la stessa per una partita FIPAV.
+- **Amichevoli e triangolari:** in regia "Amichevole…" → nome →
+  "Partita iniziata"; aspettare che la spia in "Vai in diretta" dica
+  "Pronta" col nome della partita; solo allora il tasto rosso di Moblin.
+  A fine partita "Partita finita" in regia e fermare Moblin.
 - Per cambiare le foto: sostituire i tre jpg in `docs/copertine/`,
   1376x768 circa, giocatrice a destra e sinistra buia.
 
