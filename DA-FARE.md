@@ -60,6 +60,19 @@ non c'e' comando che tenga, bisogna fermare e ripartire.
       l'amichevole di prova segnata in regia.
 - La diretta "In programma" sul canale **non va cancellata**: e' quella pronta.
 
+## 7 ottobre — copertine automatiche
+
+- [x] Il servizio disegna la copertina col browser di Cloudflare
+      (`docs/copertine/copertina.html` + tre foto generate con Gemini:
+      schiacciata, alzata, ricezione — nessuna giocatrice vera) e la carica
+      sulla diretta preparata. Provata sulla generica: arrivata su YouTube.
+- [ ] **Da vedere il 15/10 sera:** la prima copertina con le squadre vere
+      (Geas – Martesana, 16/10) sulla diretta preparata il giorno prima.
+- [ ] **Da vedere dopo il 16/10:** la copertina "Rivedi la partita" col
+      risultato, dalla regia o dal sito FIPAV.
+- Per cambiare le foto: sostituire i tre jpg in `docs/copertine/`,
+  1376x768 circa, giocatrice a destra e sinistra buia.
+
 ## Resta da fare sul telefono
 
 - [ ] **Anche il telefono di scorta**, con gli stessi due passi. Se quello che
