@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Copertina</title>
+<!--
+  Il modello delle copertine YouTube (1280x720). Non lo apre nessuno: lo
+  fotografa scraper/copertine.mjs con i dati della partita nell'indirizzo.
+    ?foto=schiacciata|alzata|ricezione
+    &tipo=partita|fine|generica
+    &casa=..&ospiti=..&noi=casa|ospiti
+    &camp=..&quando=..&dove=..
+    &risultato=3-1            (solo per "fine")
+  Le tre foto sono illustrazioni generate apposta: nessuna giocatrice vera.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@500;700;800&display=block" rel="stylesheet">
+<style>
+  :root{ --oro:#deb055; --acqua:#9fd6cf; --rosso:#d93025; --notte:#05090c; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1280px;height:720px;overflow:hidden;background:var(--notte)}
+  body{font-family:Inter,sans-serif;color:#fff;position:relative}
+  .foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center}
+  /* il buio a sinistra c'e' gia' nella foto: questo lo rende sicuro per le scritte */
+  .velo{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,9,12,.92) 0%,rgba(5,9,12,.7) 38%,rgba(5,9,12,0) 62%)}
+  .testo{position:absolute;left:64px;top:56px;bottom:52px;width:640px;display:flex;flex-direction:column}
+  .testata{display:flex;align-items:center;gap:16px}
+  .fenice{width:34px;height:68px;background:var(--oro);
+    -webkit-mask:url(../logo.png) center/contain no-repeat;mask:url(../logo.png) center/contain no-repeat}
+  .societa{font:700 22px Oswald;letter-spacing:.14em;text-transform:uppercase;color:#d7e4e1}
+  .bollino{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;margin-top:26px;
+    background:var(--rosso);font:700 28px/1 Oswald;letter-spacing:.07em;padding:11px 20px 12px;border-radius:7px}
+  .bollino::before{content:'';width:14px;height:14px;border-radius:50%;background:#fff}
+  .fine .bollino{background:var(--oro);color:var(--notte)}
+  .fine .bollino::before{display:none}
+  .camp{font:700 24px Oswald;color:var(--oro);letter-spacing:.1em;text-transform:uppercase;margin:24px 0 12px}
+  .squadra{font:700 76px/1 Oswald;text-transform:uppercase;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+  .noi{color:var(--oro)}
+  .contro{font:500 26px Oswald;color:var(--acqua);letter-spacing:.24em;margin:12px 0 10px}
+  .risultato{font:700 96px/1 Oswald;letter-spacing:.04em;margin-top:14px;color:#fff}
+  .risultato span{color:var(--oro)}
+  .piede{margin-top:auto}
+  .quando{font:800 32px Inter;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+  .dove{font:500 22px Inter;color:var(--acqua);margin-top:6px}
+  .nascosto{display:none !important}
+</style>
+</head>
+<body>
+<img class="foto" id="foto" alt="">
+<div class="velo"></div>
+<div class="testo">
+  <div class="testata"><div class="fenice"></div><div class="societa">Martesana Volley</div></div>
+  <div class="bollino" id="bollino">IN DIRETTA</div>
+  <div class="camp" id="camp"></div>
+  <div class="squadra" id="casa"></div>
+  <div class="contro" id="contro">CONTRO</div>
+  <div class="squadra" id="ospiti"></div>
+  <div class="risultato nascosto" id="risultato"></div>
+  <div class="piede">
+    <div class="quando" id="quando"></div>
+    <div class="dove" id="dove"></div>
+  </div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+const el = id => document.getElementById(id);
+const tipo = q.get('tipo') || 'partita';
+el('foto').src = (q.get('foto') || 'schiacciata') + '.jpg';
+for (const k of ['camp', 'casa', 'ospiti', 'quando', 'dove']) el(k).textContent = q.get(k) || '';
+el(q.get('noi') === 'casa' ? 'casa' : 'ospiti').classList.add('noi');
+
+if (tipo === 'generica') {
+  // nessuna partita: una sola scritta grande
+  el('casa').textContent = 'Martesana Volley';
+  el('casa').classList.add('noi');
+  el('contro').classList.add('nascosto');
+  el('ospiti').textContent = 'in diretta';
+  el('ospiti').classList.remove('noi');
+  el('camp').textContent = q.get('camp') || 'Pallavolo femminile';
+}
+if (tipo === 'fine') {
+  document.body.classList.add('fine');
+  el('bollino').textContent = 'RIVEDI LA PARTITA';
+  const r = (q.get('risultato') || '').split('-');
+  if (r.length === 2) {
+    el('risultato').innerHTML = '';
+    const [a, b] = r.map(s => s.trim());
+    const sx = document.createElement('span'), dx = document.createElement('span');
+    sx.textContent = a; dx.textContent = b;
+    // la cifra della Martesana resta in oro, quella degli avversari in bianco
+    (q.get('noi') === 'casa' ? dx : sx).style.color = '#fff';
+    el('risultato').append(sx, document.createTextNode(' – '), dx);
+    el('risultato').classList.remove('nascosto');
+  }
+}
+
+/* I nomi lunghi ("Martesana Volley Cologno") si stringono finche' non
+   stanno in due righe: la copertina non deve mai andare fuori misura. */
+function adatta(n, massimo, minimo, righe) {
+  let px = massimo;
+  n.style.fontSize = px + 'px';
+  const alta = () => n.scrollHeight > px * 1.02 * righe + 2 || n.scrollWidth > n.clientWidth + 1;
+  while (alta() && px > minimo) { px -= 2; n.style.fontSize = px + 'px'; }
+}
+document.fonts.ready.then(() => {
+  // con il risultato serve spazio: i nomi stanno piu' piccoli
+  const max = tipo === 'fine' ? 56 : 76;
+  adatta(el('casa'), max, 34, 2);
+  adatta(el('ospiti'), max, 34, 2);
+  document.body.dataset.pronta = '1';
+});
+</script>
+</body>
+</html>

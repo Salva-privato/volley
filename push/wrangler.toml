@@ -5,6 +5,11 @@ name = "volley-notifiche"
 main = "worker.js"
 compatibility_date = "2026-09-21"
 keep_vars = true          # le variabili scritte a mano sul pannello restano
+compatibility_flags = ["nodejs_compat"]   # lo chiede la libreria del browser
+
+# il browser di Cloudflare, per disegnare le copertine delle dirette
+[browser]
+binding = "BROWSER"
 
 [observability]
 enabled = true

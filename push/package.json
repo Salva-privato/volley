@@ -1,0 +1,9 @@
+{
+  "name": "volley-notifiche",
+  "private": true,
+  "type": "module",
+  "description": "Il servizio su Cloudflare: si pubblica con  npx wrangler@4 deploy",
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.0.0"
+  }
+}

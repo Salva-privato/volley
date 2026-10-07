@@ -196,7 +196,7 @@ function istanteRoma(data, ora) {
 
 /** Le nostre partite, prese dal sito e tenute da parte per qualche ora. */
 async function nostrePartite(env) {
-  const salvato = await leggi(env, 'calendario-nomi');
+  const salvato = await leggi(env, 'calendario-v3');
   if (salvato && Date.now() - Date.parse(salvato.quando) < 6 * 36e5) return salvato.partite;
   try {
     const dati = await (await fetch(SITO + 'data.json')).json();
@@ -204,8 +204,9 @@ async function nostrePartite(env) {
     for (const c of dati.championships || [])
       for (const m of c.matches || [])
         if (m.mine && m.date) partite.push({ gara: m.gara, inizio: istanteRoma(m.date, m.time),
-                                             casa: m.home, ospiti: m.away });
-    await scrivi(env, 'calendario-nomi', { quando: new Date().toISOString(), partite });
+                                             casa: m.home, ospiti: m.away, camp: c.label,
+                                             giornata: m.giornata, palestra: m.venue, indirizzo: m.address });
+    await scrivi(env, 'calendario-v3', { quando: new Date().toISOString(), partite });
     return partite;
   } catch (e) { return salvato?.partite || []; }
 }
@@ -268,6 +269,7 @@ const MASSIMO_PEZZI = 6;
 
 async function finisci(env, prima) {
   const adesso = Date.now();
+  if (prima.gara) await accodaFine(env, prima).catch(() => {});
   await scrivi(env, 'diretta', { ...prima, finita: true, fino: new Date(adesso).toISOString() });
   const archivio = (await leggi(env, 'registrazioni')) || {};
   const giorno = new Date(adesso).toISOString().slice(0, 10);
@@ -363,9 +365,12 @@ async function flussoId(env) {
 async function bersaglio(env) {
   const adesso = Date.now();
   const p = await leggi(env, 'punteggio');
-  if (p?.gara && !p.finita && adesso - Date.parse(p.quando || 0) < 3 * 36e5)
-    return { gara: p.gara, casa: p.casa, ospiti: p.ospiti, inizio: adesso };
-  const prossime = (await nostrePartite(env))
+  const partite = await nostrePartite(env);
+  if (p?.gara && !p.finita && adesso - Date.parse(p.quando || 0) < 3 * 36e5) {
+    const dal = partite.find(x => x.gara === p.gara);   // se e' di campionato, con palestra e giornata
+    return { ...dal, gara: p.gara, casa: p.casa, ospiti: p.ospiti, inizio: dal?.inizio || adesso };
+  }
+  const prossime = partite
     .filter(x => x.inizio > adesso - 3 * 36e5 && x.inizio < adesso + FINESTRA_PROSSIMA)
     .sort((a, b) => a.inizio - b.inizio);
   return prossime[0] || null;
@@ -429,7 +434,7 @@ async function crea(env, t) {
     await canale(env, 'POST', `liveBroadcasts/bind?id=${nuova.id}&part=id&streamId=${flusso}`);
     await liberaFlusso(env, flusso, nuova.id);
     const preparata = { video: nuova.id, gara: t?.gara || '', titolo, inizio: quando.toISOString(),
-                        creata: new Date(adesso).toISOString() };
+                        creata: new Date(adesso).toISOString(), partita: t || null };
     await scrivi(env, 'preparata', preparata);
     return preparata;
   } finally {
@@ -453,6 +458,134 @@ async function assicuraPreparata(env) {
     }
   }
   return crea(env, await bersaglio(env));
+}
+
+// --- le copertine -----------------------------------------------------------
+/* Le disegna il browser di Cloudflare fotografando docs/copertine/copertina.html
+   con i dati della partita, e le carica su YouTube (il canale dev'essere
+   verificato col telefono: lo e'). Due momenti:
+     - appena la diretta e' preparata: la partita, o quella generica;
+     - a partita finita: "Rivedi la partita" col risultato, preso dalla regia
+       o, se la regia non l'ha segnato, dal calendario FIPAV.
+   Una copertina sbagliata non deve mai fermare una diretta: ogni errore
+   mette in pausa le copertine per mezz'ora e basta. */
+const FOTO = ['schiacciata', 'alzata', 'ricezione'];
+const PICCOLE = new Set(['di', 'del', 'della', 'delle', 'dei', 'degli', 'e', 'al', 'alla', 'in', 'da']);
+// la FIPAV scrive "LIBERTA'": l'apostrofo in fondo alla parola torna accento
+const ACCENTI = { a: 'à', e: 'è', i: 'ì', o: 'ò', u: 'ù' };
+const nome = s => bello(String(s || '').replace(/''/g, "'")).split(' ')
+  .map((w, i) => i && PICCOLE.has(w.toLowerCase()) ? w.toLowerCase() : w)
+  .map(w => w.replace(/([aeiou])'$/i, (_, v) => ACCENTI[v.toLowerCase()]))
+  .join(' ');
+
+function datiCopertina(t, tipo, risultato) {
+  if (!t?.casa || !t?.ospiti) return { tipo: 'generica', foto: FOTO[new Date().getDate() % 3] };
+  let h = 0;
+  for (const c of String(t.gara || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const giorno = new Date(t.inizio || Date.now());
+  const fmt = o => giorno.toLocaleString('it-IT', { timeZone: 'Europe/Rome', ...o });
+  let quando = fmt({ weekday: 'long', day: 'numeric', month: 'long' });
+  quando = quando[0].toUpperCase() + quando.slice(1);
+  if (tipo !== 'fine') quando += ' · ore ' + fmt({ hour: '2-digit', minute: '2-digit' });
+  const amichevole = String(t.gara || '').startsWith('A-');
+  return {
+    tipo, foto: FOTO[(h + (tipo === 'fine' ? 1 : 0)) % 3],
+    casa: bello(t.casa), ospiti: bello(t.ospiti),
+    noi: /martesana/i.test(t.casa) ? 'casa' : 'ospiti',
+    camp: amichevole ? 'Amichevole' : [t.camp, t.giornata ? t.giornata + 'ª giornata' : ''].filter(Boolean).join(' · '),
+    quando,
+    dove: [nome(String(t.indirizzo || '').split(' - ')[0]), nome(t.palestra)].filter(Boolean).join(' · '),
+    ...(risultato ? { risultato } : {}),
+  };
+}
+
+async function disegna(env, dati) {
+  const { default: puppeteer } = await import('@cloudflare/puppeteer');
+  const browser = await puppeteer.launch(env.BROWSER);
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 720 });
+    await page.goto(SITO + 'copertine/copertina.html?' + new URLSearchParams(dati), { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.waitForSelector('body[data-pronta]', { timeout: 15000 });
+    return await page.screenshot({ type: 'jpeg', quality: 88 });
+  } finally {
+    await browser.close();
+  }
+}
+
+async function mettiCopertina(env, video, jpg) {
+  const token = await accessoGoogle(env);
+  const r = await fetch(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${video}&uploadType=media`, {
+    method: 'POST', headers: { authorization: 'Bearer ' + token, 'content-type': 'image/jpeg' }, body: jpg,
+  });
+  if (!r.ok) throw new Error('YouTube: ' + ((await r.json().catch(() => ({}))).error?.message || r.status));
+}
+
+/** Chi giocava in quella gara: dal calendario, se no dalla regia. */
+async function datiPartita(env, gara) {
+  const dal = (await nostrePartite(env)).find(x => x.gara === gara);
+  if (dal) return dal;
+  const prep = await leggi(env, 'preparata');
+  if (prep?.gara === gara && prep.partita) return prep.partita;
+  const p = await leggi(env, 'punteggio');
+  return p?.gara === gara ? { gara, casa: p.casa, ospiti: p.ospiti, inizio: Date.parse(p.quando) } : null;
+}
+
+async function accodaFine(env, diretta) {
+  const t = await datiPartita(env, diretta.gara);
+  if (!t) return;
+  const coda = ((await leggi(env, 'copertine-fine')) || []).filter(x => x.video !== diretta.video);
+  coda.push({ video: diretta.video, t, quando: Date.now(), provato: 0 });
+  await scrivi(env, 'copertine-fine', coda.slice(-6));
+}
+
+/** Il risultato in set, "3-1" dal punto di vista di casa-ospiti. */
+async function risultato(env, t) {
+  const p = await leggi(env, 'punteggio');
+  if (p?.gara === t.gara && p.finita && p.set?.length) {
+    let a = 0, b = 0;
+    for (const [x, y] of p.set) { if (x > y) a++; else if (y > x) b++; }
+    if (a || b) return `${a}-${b}`;
+  }
+  if (String(t.gara).startsWith('A-')) return null;
+  try {
+    const dati = await (await fetch(SITO + 'data.json?t=' + Date.now())).json();
+    for (const c of dati.championships || [])
+      for (const m of c.matches || [])
+        if (m.gara === t.gara && m.sets) {
+          const r = /(\d)\D+(\d)/.exec(m.sets);
+          if (r) return `${r[1]}-${r[2]}`;
+        }
+  } catch (e) {}
+  return null;
+}
+
+/** Un lavoro per giro al massimo: il browser di Cloudflare e' a tempo. */
+async function lavoraCopertine(env) {
+  if (!env.BROWSER) return 'manca il browser';
+  if (await leggi(env, 'pausa-copertine')) return 'in pausa';
+  try {
+    const prep = await leggi(env, 'preparata');
+    if (prep?.video && !prep.copertina) {
+      await mettiCopertina(env, prep.video, await disegna(env, datiCopertina(prep.partita, 'partita')));
+      await scrivi(env, 'preparata', { ...prep, copertina: new Date().toISOString() });
+      return 'fatta: ' + prep.video;
+    }
+    const adesso = Date.now();
+    let coda = ((await leggi(env, 'copertine-fine')) || []).filter(x => adesso - x.quando < 3 * UN_GIORNO);
+    const tocca = coda.find(x => adesso - (x.provato || 0) > 30 * 60e3);
+    if (!tocca) return 'niente da fare';
+    const r = await risultato(env, tocca.t);
+    if (r) {
+      await mettiCopertina(env, tocca.video, await disegna(env, datiCopertina(tocca.t, 'fine', r)));
+      coda = coda.filter(x => x !== tocca);
+    } else tocca.provato = adesso;   // il risultato non c'e' ancora: si riguarda fra mezz'ora
+    await scrivi(env, 'copertine-fine', coda);
+    return r ? 'fine fatta: ' + tocca.video : 'aspetto il risultato';
+  } catch (e) {
+    await env.ISCRITTI.put('meta:pausa-copertine', JSON.stringify(e.message), { expirationTtl: 30 * 60 });
+    return 'errore: ' + e.message;
+  }
 }
 
 /** Il cuore: guarda il canale e rimette le cose a posto. Lo chiamano il
@@ -499,6 +632,7 @@ async function sistema(env, opz = {}) {
       if (diretta?.video === viva.id && !diretta.finita) await finisci(env, diretta);
       fuori.stato = 'chiusa perche\' muta';
     }
+    fuori.copertina = await lavoraCopertine(env);
     return fuori;
   }
 
@@ -555,6 +689,7 @@ async function sistema(env, opz = {}) {
   }
   if (prep && !prep.usata) Object.assign(fuori, { stato: 'pronta', video: prep.video, titolo: prep.titolo, inizio: prep.inizio });
   else fuori.stato = 'niente in programma';
+  fuori.copertina = await lavoraCopertine(env);
   return fuori;
 }
 
