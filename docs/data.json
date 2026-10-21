@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-17T20:24:45.785Z",
+ "updatedAt": "2026-10-21T07:40:29.628Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -35,9 +35,11 @@
      "dateRaw": "18/10/2026 dom : 15.00",
      "home": "G.S. CAGLIERO ROSSA",
      "away": "VOLLEY SEGRATE U17 BLU",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "1 3",
+     "partials": "19/25 18/25 25/23 14/25",
+     "partialsLines": [
+      "19/25 18/25 25/23 14/25"
+     ],
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -890,6 +892,21 @@
     },
     {
      "pos": 3,
+     "team": "VOLLEY SEGRATE U17 BLU",
+     "club": "VOLLEY SEGRATE ASD",
+     "points": "3",
+     "played": "1",
+     "won": "1",
+     "lost": "0",
+     "setsWon": "3",
+     "setsLost": "1",
+     "setRatio": "3,000",
+     "pointsFor": "98",
+     "pointsAgainst": "76",
+     "pointRatio": "1,29"
+    },
+    {
+     "pos": 4,
      "team": "CEM TORRICELLI ROSSA",
      "club": "CEM TORRICELLI MILANO SSDARL",
      "points": "3",
@@ -904,7 +921,7 @@
      "pointRatio": "1,20"
     },
     {
-     "pos": 4,
+     "pos": 5,
      "team": "A.S.D CITTA' DI OPERA GIALLA",
      "club": "A.S.D CITTA' DI OPERA",
      "points": "0",
@@ -919,7 +936,22 @@
      "pointRatio": "0,84"
     },
     {
-     "pos": 5,
+     "pos": 6,
+     "team": "G.S. CAGLIERO ROSSA",
+     "club": "G.S. CAGLIERO",
+     "points": "0",
+     "played": "1",
+     "won": "0",
+     "lost": "1",
+     "setsWon": "1",
+     "setsLost": "3",
+     "setRatio": "0,333",
+     "pointsFor": "76",
+     "pointsAgainst": "98",
+     "pointRatio": "0,78"
+    },
+    {
+     "pos": 7,
      "team": "MI3 VOLLEY ROSSA",
      "club": "ASD MI3 VOLLEY",
      "points": "0",
@@ -934,7 +966,7 @@
      "pointRatio": "0,63"
     },
     {
-     "pos": 6,
+     "pos": 8,
      "team": "AD ASTRA - BELLATRIX",
      "club": "AD ASTRA ASD",
      "points": "0",
@@ -947,36 +979,6 @@
      "pointsFor": "41",
      "pointsAgainst": "75",
      "pointRatio": "0,55"
-    },
-    {
-     "pos": 7,
-     "team": "VOLLEY SEGRATE U17 BLU",
-     "club": "VOLLEY SEGRATE ASD",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 8,
-     "team": "G.S. CAGLIERO ROSSA",
-     "club": "G.S. CAGLIERO",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
     }
    ]
   },
@@ -1012,9 +1014,11 @@
      "dateRaw": "18/10/2026 dom : 18.00",
      "home": "ASD OSG 2001",
      "away": "G.S. SF 82",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "18/25 24/26 12/25",
+     "partialsLines": [
+      "18/25 24/26 12/25"
+     ],
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1044,9 +1048,11 @@
      "dateRaw": "18/10/2026 dom : 19.30",
      "home": "CALIMAN BRESSO",
      "away": "EXPERIENCE FITNESS CLUB",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "9/25 14/25 12/25",
+     "partialsLines": [
+      "9/25 14/25 12/25"
+     ],
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1835,6 +1841,21 @@
    "standings": [
     {
      "pos": 1,
+     "team": "EXPERIENCE FITNESS CLUB",
+     "club": "LISSONE VOLLEY TEAM",
+     "points": "3",
+     "played": "1",
+     "won": "1",
+     "lost": "0",
+     "setsWon": "3",
+     "setsLost": "0",
+     "setRatio": "MAX",
+     "pointsFor": "75",
+     "pointsAgainst": "35",
+     "pointRatio": "2,14"
+    },
+    {
+     "pos": 2,
      "team": "BILLA VOLLEY MILANO GIALLA",
      "club": "BILLA VOLLEY TEAM",
      "points": "3",
@@ -1849,7 +1870,22 @@
      "pointRatio": "1,97"
     },
     {
-     "pos": 2,
+     "pos": 3,
+     "team": "G.S. SF 82",
+     "club": "G.S. SF 82",
+     "points": "3",
+     "played": "1",
+     "won": "1",
+     "lost": "0",
+     "setsWon": "3",
+     "setsLost": "0",
+     "setRatio": "MAX",
+     "pointsFor": "76",
+     "pointsAgainst": "54",
+     "pointRatio": "1,41"
+    },
+    {
+     "pos": 4,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
      "points": "2",
@@ -1864,7 +1900,7 @@
      "pointRatio": "0,98"
     },
     {
-     "pos": 3,
+     "pos": 5,
      "team": "GEAS VOLLEY",
      "club": "GEAS VOLLEY ASD",
      "points": "1",
@@ -1879,7 +1915,22 @@
      "pointRatio": "1,02"
     },
     {
-     "pos": 4,
+     "pos": 6,
+     "team": "ASD OSG 2001",
+     "club": "ASD OSG 2001",
+     "points": "0",
+     "played": "1",
+     "won": "0",
+     "lost": "1",
+     "setsWon": "0",
+     "setsLost": "3",
+     "setRatio": "0,000",
+     "pointsFor": "54",
+     "pointsAgainst": "76",
+     "pointRatio": "0,71"
+    },
+    {
+     "pos": 7,
      "team": "PALLAVOLO RONDO' MUGGIO'",
      "club": "PALLAVOLO RONDO' MUGGIO'",
      "points": "0",
@@ -1894,64 +1945,19 @@
      "pointRatio": "0,51"
     },
     {
-     "pos": 5,
+     "pos": 8,
      "team": "CALIMAN BRESSO",
      "club": "POL. CIRCOLO GIOVANILE BRESSO",
      "points": "0",
-     "played": "0",
+     "played": "1",
      "won": "0",
-     "lost": "0",
+     "lost": "1",
      "setsWon": "0",
-     "setsLost": "0",
+     "setsLost": "3",
      "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 6,
-     "team": "EXPERIENCE FITNESS CLUB",
-     "club": "LISSONE VOLLEY TEAM",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 7,
-     "team": "ASD OSG 2001",
-     "club": "ASD OSG 2001",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
-    },
-    {
-     "pos": 8,
-     "team": "G.S. SF 82",
-     "club": "G.S. SF 82",
-     "points": "0",
-     "played": "0",
-     "won": "0",
-     "lost": "0",
-     "setsWon": "0",
-     "setsLost": "0",
-     "setRatio": "0,000",
-     "pointsFor": "0",
-     "pointsAgainst": "0",
-     "pointRatio": "0,00"
+     "pointsFor": "35",
+     "pointsAgainst": "75",
+     "pointRatio": "0,47"
     }
    ]
   }
