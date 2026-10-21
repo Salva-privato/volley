@@ -12,6 +12,8 @@ import { readFileSync } from 'node:fs';
 const ATTESA_FINE = 2 * 60 * 60 * 1000;        // una gara si considera finita 2h dopo l'inizio
 const LIMITE      = 12 * 24 * 60 * 60 * 1000;  // oltre 12 giorni si rinuncia (gara annullata)
 const PRE_STAGIONE = 2 * 24 * 60 * 60 * 1000;  // ritmo dei controlli prima dell'inizio
+const GIRO_COMPLETO = 20 * 60 * 60 * 1000;     // a stagione in corso, almeno un giro intero al giorno
+const ALTRE       = 4 * 24 * 60 * 60 * 1000;   // i risultati delle altre squadre si aspettano 4 giorni
 
 const esito = (attiva, serve, motivo, dettaglio) => {
   console.log(`attiva=${attiva}`);
@@ -42,16 +44,27 @@ if (ora < inizio) {
 }
 
 // --- a stagione in corso: si cercano i risultati mancanti ---
+// Le nostre partite si aspettano fino a 12 giorni; quelle delle altre squadre
+// dei nostri gironi (servono a risultati e classifica) per 4 giorni, poi
+// basta il giro intero del giorno.
 const mancanti = [];
 for (const c of dati.championships || []) {
   for (const m of c.matches || []) {
-    if (!m.mine || !m.date || !m.time) continue;
+    if (!m.date || !m.time) continue;
     if (m.sets && /\d/.test(m.sets)) continue;
     const avvio = new Date(`${m.date}T${m.time}:00`).getTime();
     const da = ora - (avvio + ATTESA_FINE);
-    if (da > 0 && da < LIMITE) mancanti.push(`${c.label} ${m.date} ${m.time}`);
+    if (da > 0 && da < (m.mine ? LIMITE : ALTRE))
+      mancanti.push(`${c.label} ${m.date} ${m.time} ${m.home} – ${m.away}`);
   }
 }
-esito(true, mancanti.length > 0,
-      mancanti.length ? 'mancano-risultati' : 'tutto-aggiornato',
-      mancanti.length ? 'In attesa di:\n  ' + mancanti.join('\n  ') : null);
+if (mancanti.length)
+  esito(true, true, 'mancano-risultati', 'In attesa di:\n  ' + mancanti.join('\n  '));
+
+// Una volta al giorno si va comunque a fondo: cambi di calendario, rinvii,
+// nuovi campionati. Si guarda l'eta' dei dati e non l'ora, perche' GitHub
+// le corse programmate le fa partire anche con ore di ritardo.
+const eta = ora - Date.parse(dati.updatedAt || 0);
+if (eta >= GIRO_COMPLETO)
+  esito(true, true, 'giro-del-giorno', `Dati di ${(eta / 3600000).toFixed(1)} ore fa: giro completo.`);
+esito(true, false, 'tutto-aggiornato');

@@ -4,7 +4,10 @@ on:
   schedule:
     # Orari in UTC; d'inverno l'Italia e' UTC+1, quindi 8 UTC = 09:00 italiane.
     # Di notte nessuno inserisce risultati: si va dalle 09:00 alle 23:00.
-    - cron: '0 8,10,12,14,16,18,20,22 * * *'
+    # Ogni ora e non ogni due: GitHub ne salta parecchie e fa partire le altre
+    # in ritardo (a ottobre 2026 ne arrivavano tre o quattro al giorno).
+    # Quando non c'e' niente da cercare la corsa esce in pochi secondi.
+    - cron: '7 8-22 * * *'
   workflow_dispatch:            # avvio manuale dal sito di GitHub
   push:
     branches: [main]
@@ -26,8 +29,8 @@ jobs:
           node-version: '22'
 
       # Si scarica il sito solo se manca qualche risultato di gare gia' giocate.
-      # La prima corsa del mattino va comunque a fondo, per intercettare
-      # cambi di calendario, rinvii e nuovi campionati.
+      # Una volta al giorno si va comunque a fondo, per intercettare cambi
+      # di calendario, rinvii e nuovi campionati (lo decide verifica.mjs).
       - id: verifica
         run: node scraper/verifica.mjs >> "$GITHUB_OUTPUT"
       - id: decide
@@ -37,8 +40,7 @@ jobs:
           elif [ "${{ steps.verifica.outputs.attiva }}" != "true" ]; then
             echo "vai=false" >> "$GITHUB_OUTPUT"
             echo "Stagione non ancora iniziata: nulla da fare." >> "$GITHUB_STEP_SUMMARY"
-          elif [ "${{ steps.verifica.outputs.serve }}" = "true" ] \
-             || [ "$(date -u +%H)" = "08" ]; then
+          elif [ "${{ steps.verifica.outputs.serve }}" = "true" ]; then
             echo "vai=true" >> "$GITHUB_OUTPUT"
           else
             echo "vai=false" >> "$GITHUB_OUTPUT"

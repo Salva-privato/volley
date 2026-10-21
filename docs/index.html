@@ -71,7 +71,7 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 .track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .track::-webkit-scrollbar{display:none}
-.slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always}
+.slide{flex:0 0 100%;min-width:0;scroll-snap-align:center;scroll-snap-stop:always}
 .wk{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   color:var(--gold);margin-bottom:9px}
 .dots{display:flex;gap:6px;justify-content:center;align-items:center;margin-top:11px;min-height:8px}
@@ -94,10 +94,13 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--mute
 /* --- prossima partita --- */
 .hero{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold-fill);
   border-radius:var(--radius);padding:16px}
-.hero .when{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
-.hero .day{font-size:22px;font-weight:700;letter-spacing:-.02em}
+/* data e "tra 4 giorni" sempre sulla stessa riga: sul telefono stretto
+   si rimpicciolisce la data invece di mandare a capo il richiamo */
+.hero .when{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.hero .day{font-size:clamp(14px,4.9vw,22px);font-weight:700;letter-spacing:-.02em;
+  white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .hero .cd{font-size:11px;font-weight:700;background:var(--gold-fill);color:#fff;
-  padding:3px 9px;border-radius:999px;white-space:nowrap}
+  padding:3px 9px;border-radius:999px;white-space:nowrap;flex:0 0 auto}
 .hero .cd.att{background:var(--surface-2);color:var(--muted)}
 .hero .cd.vinta{background:var(--win)} .hero .cd.persa{background:var(--loss)}
 .vs .sep.ris{font-size:20px;color:var(--text);letter-spacing:-.02em}
@@ -364,8 +367,9 @@ const numeri=t=>(String(t??'').match(/\d+/g)||[]).map(Number);
 
 /** I parziali dei set, come coppie [casa, ospite].
  *  La FIPAV li manda su due righe (sopra i punti di casa, sotto quelli degli
- *  ospiti); a volte pero' arrivano appiattiti o gia' scritti "25-20".
- *  Li accetto in tutti e tre i modi, cosi' non si rompe nulla. */
+ *  ospiti); a volte pero' arrivano appiattiti o gia' in coppia, "25-20" o
+ *  "25/20" (cosi' li scrive dalla stagione 2026/27). Li accetto in tutti i
+ *  modi, cosi' non si rompe nulla. */
 function parziali(m){
   const righe=m.partialsLines;
   if(Array.isArray(righe)&&righe.length===2){
@@ -373,7 +377,7 @@ function parziali(m){
     if(a.length&&a.length===b.length) return a.map((x,i)=>[x,b[i]]);
   }
   const pezzi=String(m.partials||'').trim().split(/\s+/).filter(Boolean);
-  if(pezzi.length&&pezzi.every(t=>/^\d+[-–]\d+$/.test(t))) return pezzi.map(numeri);
+  if(pezzi.length&&pezzi.every(t=>/^\d+[-–\/]\d+$/.test(t))) return pezzi.map(numeri);
   const tutti=numeri(m.partials);
   if(tutti.length>=2&&tutti.length%2===0){
     const meta=tutti.length/2;
@@ -521,7 +525,7 @@ function matchHTML(m){
   return `<div class="match">
     <div class="when"><span class="day">${esc(fmtLong(m))}</span>
       ${finita?`<span class="cd ${vinta?'vinta':'persa'}">${vinta?'Vinta':'Persa'}</span>`
-       :attesa?`<span class="cd att">In attesa del risultato</span>`
+       :attesa?`<span class="cd att">Risultato in attesa</span>`
        :cd?`<span class="cd">${esc(cd)}</span>`:''}</div>
     <span class="badge">${esc(m.champ)} · ${m.home_us?'in casa':'trasferta'}</span>
     ${avvisoHTML(m,false)}
@@ -1028,11 +1032,23 @@ function render(){
   chiudiSquadra();
   $('#app').innerHTML=h;
   initTrack(slides.length);
+  stringiDate();
   // il chip scelto puo' finire fuori schermo a destra: lo riporto al centro
   const scelto=$('.months button[aria-selected="true"]');
   if(scelto) scelto.scrollIntoView({block:'nearest',inline:'center'});
   $('#foot').textContent=DATA.championships.map(x=>`${x.label} · girone ${x.girone}`).join(' — ');
 }
+/** La data della scheda e il richiamo accanto stanno su una riga sola: se
+ *  non ci entrano (giorno lungo, "Risultato in attesa", telefono stretto)
+ *  la data si rimpicciolisce un pixel alla volta, fino a 13. */
+function stringiDate(){
+  document.querySelectorAll('.hero .day').forEach(d=>{
+    d.style.fontSize='';
+    let px=parseFloat(getComputedStyle(d).fontSize);
+    while(d.scrollWidth>d.clientWidth&&px>13) d.style.fontSize=(--px)+'px';
+  });
+}
+addEventListener('resize',stringiDate);
 /** Carosello: swipe orizzontale con aggancio, pallini sincronizzati. */
 function initTrack(n){
   const t=$('#track'); if(!t) return;
