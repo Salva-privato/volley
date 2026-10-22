@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-21T07:40:29.628Z",
+ "updatedAt": "2026-10-22T13:43:23.903Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1065,9 +1065,11 @@
      "dateRaw": "21/10/2026 mer : 21.00",
      "home": "MARTESANA VOLLEY COLOGNO",
      "away": "CALIMAN BRESSO",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 1",
+     "partials": "25/18 25/19 23/25 25/19",
+     "partialsLines": [
+      "25/18 25/19 23/25 25/19"
+     ],
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1841,6 +1843,21 @@
    "standings": [
     {
      "pos": 1,
+     "team": "MARTESANA VOLLEY COLOGNO",
+     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
+     "points": "5",
+     "played": "2",
+     "won": "2",
+     "lost": "0",
+     "setsWon": "6",
+     "setsLost": "3",
+     "setRatio": "2,000",
+     "pointsFor": "190",
+     "pointsAgainst": "175",
+     "pointRatio": "1,09"
+    },
+    {
+     "pos": 2,
      "team": "EXPERIENCE FITNESS CLUB",
      "club": "LISSONE VOLLEY TEAM",
      "points": "3",
@@ -1855,7 +1872,7 @@
      "pointRatio": "2,14"
     },
     {
-     "pos": 2,
+     "pos": 3,
      "team": "BILLA VOLLEY MILANO GIALLA",
      "club": "BILLA VOLLEY TEAM",
      "points": "3",
@@ -1870,7 +1887,7 @@
      "pointRatio": "1,97"
     },
     {
-     "pos": 3,
+     "pos": 4,
      "team": "G.S. SF 82",
      "club": "G.S. SF 82",
      "points": "3",
@@ -1883,21 +1900,6 @@
      "pointsFor": "76",
      "pointsAgainst": "54",
      "pointRatio": "1,41"
-    },
-    {
-     "pos": 4,
-     "team": "MARTESANA VOLLEY COLOGNO",
-     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
-     "points": "2",
-     "played": "1",
-     "won": "1",
-     "lost": "0",
-     "setsWon": "3",
-     "setsLost": "2",
-     "setRatio": "1,500",
-     "pointsFor": "92",
-     "pointsAgainst": "94",
-     "pointRatio": "0,98"
     },
     {
      "pos": 5,
@@ -1916,6 +1918,21 @@
     },
     {
      "pos": 6,
+     "team": "CALIMAN BRESSO",
+     "club": "POL. CIRCOLO GIOVANILE BRESSO",
+     "points": "0",
+     "played": "2",
+     "won": "0",
+     "lost": "2",
+     "setsWon": "1",
+     "setsLost": "6",
+     "setRatio": "0,167",
+     "pointsFor": "116",
+     "pointsAgainst": "173",
+     "pointRatio": "0,67"
+    },
+    {
+     "pos": 7,
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "0",
@@ -1930,7 +1947,7 @@
      "pointRatio": "0,71"
     },
     {
-     "pos": 7,
+     "pos": 8,
      "team": "PALLAVOLO RONDO' MUGGIO'",
      "club": "PALLAVOLO RONDO' MUGGIO'",
      "points": "0",
@@ -1943,21 +1960,6 @@
      "pointsFor": "38",
      "pointsAgainst": "75",
      "pointRatio": "0,51"
-    },
-    {
-     "pos": 8,
-     "team": "CALIMAN BRESSO",
-     "club": "POL. CIRCOLO GIOVANILE BRESSO",
-     "points": "0",
-     "played": "1",
-     "won": "0",
-     "lost": "1",
-     "setsWon": "0",
-     "setsLost": "3",
-     "setRatio": "0,000",
-     "pointsFor": "35",
-     "pointsAgainst": "75",
-     "pointRatio": "0,47"
     }
    ]
   }
