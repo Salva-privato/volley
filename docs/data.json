@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-24T00:30:10.041Z",
+ "updatedAt": "2026-10-24T19:24:51.309Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -116,9 +116,11 @@
      "dateRaw": "24/10/2026 sab : 15.30",
      "home": "A.S.D CITTA' DI OPERA GIALLA",
      "away": "G.S. CAGLIERO ROSSA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/23 25/15 25/19",
+     "partialsLines": [
+      "25/23 25/15 25/19"
+     ],
      "venue": "PALESTRA COMUNALE OPERA",
      "address": "OPERA - VIA DANTE ALIGHIERI",
      "mine": false
@@ -924,31 +926,31 @@
      "pos": 5,
      "team": "A.S.D CITTA' DI OPERA GIALLA",
      "club": "A.S.D CITTA' DI OPERA",
-     "points": "0",
-     "played": "1",
-     "won": "0",
+     "points": "3",
+     "played": "2",
+     "won": "1",
      "lost": "1",
-     "setsWon": "1",
+     "setsWon": "4",
      "setsLost": "3",
-     "setRatio": "0,333",
-     "pointsFor": "82",
-     "pointsAgainst": "98",
-     "pointRatio": "0,84"
+     "setRatio": "1,333",
+     "pointsFor": "157",
+     "pointsAgainst": "155",
+     "pointRatio": "1,01"
     },
     {
      "pos": 6,
      "team": "G.S. CAGLIERO ROSSA",
      "club": "G.S. CAGLIERO",
      "points": "0",
-     "played": "1",
+     "played": "2",
      "won": "0",
-     "lost": "1",
+     "lost": "2",
      "setsWon": "1",
-     "setsLost": "3",
-     "setRatio": "0,333",
-     "pointsFor": "76",
-     "pointsAgainst": "98",
-     "pointRatio": "0,78"
+     "setsLost": "6",
+     "setRatio": "0,167",
+     "pointsFor": "133",
+     "pointsAgainst": "173",
+     "pointRatio": "0,77"
     },
     {
      "pos": 7,
