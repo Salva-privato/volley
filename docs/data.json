@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-23T13:19:54.654Z",
+ "updatedAt": "2026-10-24T00:30:10.041Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1097,9 +1097,11 @@
      "dateRaw": "23/10/2026 ven : 21.00",
      "home": "PALLAVOLO RONDO' MUGGIO'",
      "away": "G.S. SF 82",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "23/25 22/25 9/25",
+     "partialsLines": [
+      "23/25 22/25 9/25"
+     ],
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1112,9 +1114,11 @@
      "dateRaw": "23/10/2026 ven : 21.00",
      "home": "EXPERIENCE FITNESS CLUB",
      "away": "BILLA VOLLEY MILANO GIALLA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "17/25 18/25 21/25",
+     "partialsLines": [
+      "17/25 18/25 21/25"
+     ],
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1843,6 +1847,36 @@
    "standings": [
     {
      "pos": 1,
+     "team": "BILLA VOLLEY MILANO GIALLA",
+     "club": "BILLA VOLLEY TEAM",
+     "points": "6",
+     "played": "2",
+     "won": "2",
+     "lost": "0",
+     "setsWon": "6",
+     "setsLost": "0",
+     "setRatio": "MAX",
+     "pointsFor": "150",
+     "pointsAgainst": "94",
+     "pointRatio": "1,60"
+    },
+    {
+     "pos": 2,
+     "team": "G.S. SF 82",
+     "club": "G.S. SF 82",
+     "points": "6",
+     "played": "2",
+     "won": "2",
+     "lost": "0",
+     "setsWon": "6",
+     "setsLost": "0",
+     "setRatio": "MAX",
+     "pointsFor": "151",
+     "pointsAgainst": "108",
+     "pointRatio": "1,40"
+    },
+    {
+     "pos": 3,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
      "points": "5",
@@ -1857,49 +1891,19 @@
      "pointRatio": "1,09"
     },
     {
-     "pos": 2,
+     "pos": 4,
      "team": "EXPERIENCE FITNESS CLUB",
      "club": "LISSONE VOLLEY TEAM",
      "points": "3",
-     "played": "1",
+     "played": "2",
      "won": "1",
-     "lost": "0",
+     "lost": "1",
      "setsWon": "3",
-     "setsLost": "0",
-     "setRatio": "MAX",
-     "pointsFor": "75",
-     "pointsAgainst": "35",
-     "pointRatio": "2,14"
-    },
-    {
-     "pos": 3,
-     "team": "BILLA VOLLEY MILANO GIALLA",
-     "club": "BILLA VOLLEY TEAM",
-     "points": "3",
-     "played": "1",
-     "won": "1",
-     "lost": "0",
-     "setsWon": "3",
-     "setsLost": "0",
-     "setRatio": "MAX",
-     "pointsFor": "75",
-     "pointsAgainst": "38",
-     "pointRatio": "1,97"
-    },
-    {
-     "pos": 4,
-     "team": "G.S. SF 82",
-     "club": "G.S. SF 82",
-     "points": "3",
-     "played": "1",
-     "won": "1",
-     "lost": "0",
-     "setsWon": "3",
-     "setsLost": "0",
-     "setRatio": "MAX",
-     "pointsFor": "76",
-     "pointsAgainst": "54",
-     "pointRatio": "1,41"
+     "setsLost": "3",
+     "setRatio": "1,000",
+     "pointsFor": "131",
+     "pointsAgainst": "110",
+     "pointRatio": "1,19"
     },
     {
      "pos": 5,
@@ -1951,15 +1955,15 @@
      "team": "PALLAVOLO RONDO' MUGGIO'",
      "club": "PALLAVOLO RONDO' MUGGIO'",
      "points": "0",
-     "played": "1",
+     "played": "2",
      "won": "0",
-     "lost": "1",
+     "lost": "2",
      "setsWon": "0",
-     "setsLost": "3",
+     "setsLost": "6",
      "setRatio": "0,000",
-     "pointsFor": "38",
-     "pointsAgainst": "75",
-     "pointRatio": "0,51"
+     "pointsFor": "92",
+     "pointsAgainst": "150",
+     "pointRatio": "0,61"
     }
    ]
   }
