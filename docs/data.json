@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-25T13:08:46.636Z",
+ "updatedAt": "2026-10-25T17:45:22.601Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -135,9 +135,11 @@
      "dateRaw": "25/10/2026 dom : 15.15",
      "home": "ASPES VOLLEY CUS STATALE MEDNOW",
      "away": "CEM TORRICELLI ROSSA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/20 25/17 25/14",
+     "partialsLines": [
+      "25/20 25/17 25/14"
+     ],
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": false
@@ -868,16 +870,16 @@
      "pos": 1,
      "team": "ASPES VOLLEY CUS STATALE MEDNOW",
      "club": "ASPES VOLLEY ASD",
-     "points": "3",
-     "played": "1",
-     "won": "1",
+     "points": "6",
+     "played": "2",
+     "won": "2",
      "lost": "0",
-     "setsWon": "3",
+     "setsWon": "6",
      "setsLost": "0",
      "setRatio": "MAX",
-     "pointsFor": "75",
-     "pointsAgainst": "41",
-     "pointRatio": "1,83"
+     "pointsFor": "150",
+     "pointsAgainst": "92",
+     "pointRatio": "1,63"
     },
     {
      "pos": 2,
@@ -911,21 +913,6 @@
     },
     {
      "pos": 4,
-     "team": "CEM TORRICELLI ROSSA",
-     "club": "CEM TORRICELLI MILANO SSDARL",
-     "points": "3",
-     "played": "1",
-     "won": "1",
-     "lost": "0",
-     "setsWon": "3",
-     "setsLost": "1",
-     "setRatio": "3,000",
-     "pointsFor": "98",
-     "pointsAgainst": "82",
-     "pointRatio": "1,20"
-    },
-    {
-     "pos": 5,
      "team": "A.S.D CITTA' DI OPERA GIALLA",
      "club": "A.S.D CITTA' DI OPERA",
      "points": "3",
@@ -938,6 +925,21 @@
      "pointsFor": "157",
      "pointsAgainst": "155",
      "pointRatio": "1,01"
+    },
+    {
+     "pos": 5,
+     "team": "CEM TORRICELLI ROSSA",
+     "club": "CEM TORRICELLI MILANO SSDARL",
+     "points": "3",
+     "played": "2",
+     "won": "1",
+     "lost": "1",
+     "setsWon": "3",
+     "setsLost": "4",
+     "setRatio": "0,750",
+     "pointsFor": "149",
+     "pointsAgainst": "157",
+     "pointRatio": "0,95"
     },
     {
      "pos": 6,
@@ -1972,29 +1974,5 @@
    ]
   }
  ],
- "avvisi": [
-  {
-   "id": "1001237-9544-2026-09-25T13:32",
-   "champId": "1001237",
-   "champ": "Under 19 Femminile",
-   "gara": "9544",
-   "home": "MARTESANA VOLLEY COLOGNO",
-   "away": "ASD OSG 2001",
-   "cosa": [
-    "data",
-    "ora"
-   ],
-   "prima": {
-    "date": "2027-01-10",
-    "time": "18:30",
-    "venue": "PALESTRA TOTI"
-   },
-   "dopo": {
-    "date": "2027-01-13",
-    "time": "21:00",
-    "venue": "PALESTRA TOTI"
-   },
-   "quando": "2026-09-25T13:32:38.841Z"
-  }
- ]
+ "avvisi": []
 }
