@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-24T22:24:45.651Z",
+ "updatedAt": "2026-10-25T13:08:46.636Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -86,9 +86,11 @@
      "dateRaw": "24/10/2026 sab : 18.00",
      "home": "MI3 VOLLEY ROSSA",
      "away": "AD ASTRA - BELLATRIX",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 2",
+     "partials": "18/25 25/19 11/25 25/16 15/11",
+     "partialsLines": [
+      "18/25 25/19 11/25 25/16 15/11"
+     ],
      "venue": "CENTRO POLIFUNZIONALE - SC. MEDIA",
      "address": "BASIGLIO - MILANO 3 - PIAZZA LEONARDO DA VINCI 1",
      "mine": false
@@ -939,6 +941,36 @@
     },
     {
      "pos": 6,
+     "team": "MI3 VOLLEY ROSSA",
+     "club": "ASD MI3 VOLLEY",
+     "points": "2",
+     "played": "2",
+     "won": "1",
+     "lost": "1",
+     "setsWon": "3",
+     "setsLost": "5",
+     "setRatio": "0,600",
+     "pointsFor": "141",
+     "pointsAgainst": "171",
+     "pointRatio": "0,82"
+    },
+    {
+     "pos": 7,
+     "team": "AD ASTRA - BELLATRIX",
+     "club": "AD ASTRA ASD",
+     "points": "1",
+     "played": "2",
+     "won": "0",
+     "lost": "2",
+     "setsWon": "2",
+     "setsLost": "6",
+     "setRatio": "0,333",
+     "pointsFor": "137",
+     "pointsAgainst": "169",
+     "pointRatio": "0,81"
+    },
+    {
+     "pos": 8,
      "team": "G.S. CAGLIERO ROSSA",
      "club": "G.S. CAGLIERO",
      "points": "0",
@@ -951,36 +983,6 @@
      "pointsFor": "133",
      "pointsAgainst": "173",
      "pointRatio": "0,77"
-    },
-    {
-     "pos": 7,
-     "team": "MI3 VOLLEY ROSSA",
-     "club": "ASD MI3 VOLLEY",
-     "points": "0",
-     "played": "1",
-     "won": "0",
-     "lost": "1",
-     "setsWon": "0",
-     "setsLost": "3",
-     "setRatio": "0,000",
-     "pointsFor": "47",
-     "pointsAgainst": "75",
-     "pointRatio": "0,63"
-    },
-    {
-     "pos": 8,
-     "team": "AD ASTRA - BELLATRIX",
-     "club": "AD ASTRA ASD",
-     "points": "0",
-     "played": "1",
-     "won": "0",
-     "lost": "1",
-     "setsWon": "0",
-     "setsLost": "3",
-     "setRatio": "0,000",
-     "pointsFor": "41",
-     "pointsAgainst": "75",
-     "pointRatio": "0,55"
     }
    ]
   },
