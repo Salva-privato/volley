@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-25T20:44:22.199Z",
+ "updatedAt": "2026-10-25T23:09:57.084Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -103,9 +103,11 @@
      "dateRaw": "25/10/2026 dom : 18.30",
      "home": "VOLLEY SEGRATE U17 BLU",
      "away": "MARTESANA VOLLEY COLOGNO",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "1 3",
+     "partials": "19/25 11/25 25/20 16/25",
+     "partialsLines": [
+      "19/25 11/25 25/20 16/25"
+     ],
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": true
@@ -885,34 +887,19 @@
      "pos": 2,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
-     "points": "3",
-     "played": "1",
-     "won": "1",
+     "points": "6",
+     "played": "2",
+     "won": "2",
      "lost": "0",
-     "setsWon": "3",
-     "setsLost": "0",
-     "setRatio": "MAX",
-     "pointsFor": "75",
-     "pointsAgainst": "47",
-     "pointRatio": "1,60"
+     "setsWon": "6",
+     "setsLost": "1",
+     "setRatio": "6,000",
+     "pointsFor": "170",
+     "pointsAgainst": "118",
+     "pointRatio": "1,44"
     },
     {
      "pos": 3,
-     "team": "VOLLEY SEGRATE U17 BLU",
-     "club": "VOLLEY SEGRATE ASD",
-     "points": "3",
-     "played": "1",
-     "won": "1",
-     "lost": "0",
-     "setsWon": "3",
-     "setsLost": "1",
-     "setRatio": "3,000",
-     "pointsFor": "98",
-     "pointsAgainst": "76",
-     "pointRatio": "1,29"
-    },
-    {
-     "pos": 4,
      "team": "A.S.D CITTA' DI OPERA GIALLA",
      "club": "A.S.D CITTA' DI OPERA",
      "points": "3",
@@ -925,6 +912,21 @@
      "pointsFor": "157",
      "pointsAgainst": "155",
      "pointRatio": "1,01"
+    },
+    {
+     "pos": 4,
+     "team": "VOLLEY SEGRATE U17 BLU",
+     "club": "VOLLEY SEGRATE ASD",
+     "points": "3",
+     "played": "2",
+     "won": "1",
+     "lost": "1",
+     "setsWon": "4",
+     "setsLost": "4",
+     "setRatio": "1,000",
+     "pointsFor": "169",
+     "pointsAgainst": "171",
+     "pointRatio": "0,99"
     },
     {
      "pos": 5,
