@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-25T17:45:22.601Z",
+ "updatedAt": "2026-10-25T20:44:22.199Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1088,9 +1088,11 @@
      "dateRaw": "25/10/2026 dom : 18.00",
      "home": "ASD OSG 2001",
      "away": "GEAS VOLLEY",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "21/25 15/25 24/26",
+     "partialsLines": [
+      "21/25 15/25 24/26"
+     ],
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1898,6 +1900,21 @@
     },
     {
      "pos": 4,
+     "team": "GEAS VOLLEY",
+     "club": "GEAS VOLLEY ASD",
+     "points": "4",
+     "played": "2",
+     "won": "1",
+     "lost": "1",
+     "setsWon": "5",
+     "setsLost": "3",
+     "setRatio": "1,667",
+     "pointsFor": "170",
+     "pointsAgainst": "152",
+     "pointRatio": "1,12"
+    },
+    {
+     "pos": 5,
      "team": "EXPERIENCE FITNESS CLUB",
      "club": "LISSONE VOLLEY TEAM",
      "points": "3",
@@ -1910,21 +1927,6 @@
      "pointsFor": "131",
      "pointsAgainst": "110",
      "pointRatio": "1,19"
-    },
-    {
-     "pos": 5,
-     "team": "GEAS VOLLEY",
-     "club": "GEAS VOLLEY ASD",
-     "points": "1",
-     "played": "1",
-     "won": "0",
-     "lost": "1",
-     "setsWon": "2",
-     "setsLost": "3",
-     "setRatio": "0,667",
-     "pointsFor": "94",
-     "pointsAgainst": "92",
-     "pointRatio": "1,02"
     },
     {
      "pos": 6,
@@ -1946,15 +1948,15 @@
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "0",
-     "played": "1",
+     "played": "2",
      "won": "0",
-     "lost": "1",
+     "lost": "2",
      "setsWon": "0",
-     "setsLost": "3",
+     "setsLost": "6",
      "setRatio": "0,000",
-     "pointsFor": "54",
-     "pointsAgainst": "76",
-     "pointRatio": "0,71"
+     "pointsFor": "114",
+     "pointsAgainst": "152",
+     "pointRatio": "0,75"
     },
     {
      "pos": 8,
