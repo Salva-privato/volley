@@ -740,7 +740,37 @@ async function sistema(env, opz = {}) {
   if (prep && !prep.usata) Object.assign(fuori, { stato: 'pronta', video: prep.video, titolo: prep.titolo, inizio: prep.inizio });
   else fuori.stato = 'niente in programma';
   fuori.copertina = await lavoraCopertine(env);
+  fuori.incorporate = await rendiIncorporabili(env).catch(e => 'errore: ' + e.message);
   return fuori;
+}
+
+/** YouTube, a fine diretta, spegne "Consenti incorporamento" (visto il 23/09
+ *  e di nuovo il 25/10: la pagina scout diceva "riproduzione su altri siti
+ *  disattivata"). A canale fermo si riaccende sulle registrazioni, poche
+ *  per giro. Una si segna come fatta solo quando YouTube conferma la spunta:
+ *  subito dopo la diretta il video e' ancora in lavorazione e puo' perderla. */
+async function rendiIncorporabili(env) {
+  const archivio = (await leggi(env, 'registrazioni')) || {};
+  const fatte = (await leggi(env, 'incorporate')) || [];
+  const tutte = Object.values(archivio).flat().filter(Boolean);
+  const da = tutte.filter(v => !fatte.includes(v)).slice(-3);
+  if (!da.length) return 0;
+  const d = await canale(env, 'GET', `videos?part=status&id=${da.join(',')}`);
+  const nuove = [];
+  for (const v of d.items || []) {
+    const st = v.status || {};
+    if (st.embeddable) { nuove.push(v.id); continue; }
+    // con part=status YouTube azzera i campi non mandati: si rimanda tutto
+    await canale(env, 'PUT', 'videos?part=status', { id: v.id, status: {
+      privacyStatus: st.privacyStatus, license: st.license, embeddable: true,
+      publicStatsViewable: st.publicStatsViewable, selfDeclaredMadeForKids: st.selfDeclaredMadeForKids,
+    } }).catch(() => {});
+  }
+  // un video cancellato da Studio non torna: lo si toglie dalla lista
+  const trovate = new Set((d.items || []).map(v => v.id));
+  nuove.push(...da.filter(v => !trovate.has(v)));
+  if (nuove.length) await scrivi(env, 'incorporate', [...fatte, ...nuove].slice(-200));
+  return nuove.length;
 }
 
 /** Il controllo del canale. Cercare costa cento gettoni, controllare un
