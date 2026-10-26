@@ -137,16 +137,63 @@ async function permesso(req, env, ruolo) {
 // Il tabellone chiede il punteggio ogni paio di secondi, e lo chiedono in
 // tanti insieme. Senza questa cache ogni spettatore sarebbe una lettura del
 // magazzino: con due ore di partita si sfonderebbe il piano gratuito. Cosi'
-// invece la risposta la serve la rete di Cloudflare, e il magazzino lo si
-// legge una volta ogni due secondi in tutto.
+// invece la risposta la serve la rete di Cloudflare, e il punteggio lo si
+// legge una volta al secondo per ogni posto della rete. Il tabellone del
+// video non passa di qui: il punto gli arriva spinto (/punteggio/vivo).
 const CHIAVE_CACHE = 'https://volley.invalid/punteggio';
-const RESPIRO = 2;   // secondi
+const RESPIRO = 1;   // secondi
+
+/* Il punteggio vive in un oggetto durevole di Cloudflare, non nel magazzino
+   KV. Il KV mostra una scrittura agli altri posti anche un minuto dopo
+   (provato il 25/10: in regia 2-0, su Moblin ancora 0-0). L'oggetto
+   durevole ha una copia sola: chi legge vede subito l'ultimo tocco, e il
+   tabellone del video lo riceve spinto, senza chiedere, da una WebSocket.
+   Nel KV il punteggio si continua a scrivere, per chi lo legge da li'
+   (la diretta da preparare, i risultati delle amichevoli). */
+const tabellone = env => env.PUNTEGGIO.get(env.PUNTEGGIO.idFromName('unico'));
+
+export class Punteggio {
+  constructor(ctx) {
+    this.ctx = ctx;
+    // risponde ai "ping" del tabellone senza svegliare l'oggetto
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
+  }
+  async fetch(req) {
+    const via = new URL(req.url).pathname;
+    if (req.headers.get('Upgrade') === 'websocket') {
+      const [cliente, server] = Object.values(new WebSocketPair());
+      this.ctx.acceptWebSocket(server);
+      server.send(JSON.stringify((await this.ctx.storage.get('p')) ?? null));
+      return new Response(null, { status: 101, webSocket: cliente });
+    }
+    if (via === '/scrivi') {
+      const p = await req.json();
+      await this.ctx.storage.put('p', p);
+      this.spingi(p);
+      return new Response('ok');
+    }
+    if (via === '/togli') {
+      await this.ctx.storage.put('p', {});
+      this.spingi({});
+      return new Response('ok');
+    }
+    // null = mai scritto (appena pubblicato): chi chiede legge dal magazzino
+    return new Response(JSON.stringify((await this.ctx.storage.get('p')) ?? null));
+  }
+  spingi(p) {
+    const testo = JSON.stringify(p);
+    for (const ws of this.ctx.getWebSockets()) { try { ws.send(testo); } catch (e) {} }
+  }
+  webSocketMessage() {}
+  webSocketClose(ws) { try { ws.close(); } catch (e) {} }
+}
 
 async function punteggioInCache(env) {
   const cache = caches.default;
   const pronta = await cache.match(CHIAVE_CACHE);
   if (pronta) return pronta;
-  const dati = await leggi(env, 'punteggio');
+  const dati = (await (await tabellone(env).fetch('https://punteggio/leggi')).json())
+    ?? await leggi(env, 'punteggio');
   const fresca = new Response(JSON.stringify(dati || {}), {
     headers: { 'content-type': 'application/json', 'Cache-Control': `public, max-age=${RESPIRO}`, ...CORS },
   });
@@ -836,15 +883,22 @@ async function rottaDiretta(req, env, url) {
   const via = url.pathname;
 
   // --- il punteggio ---------------------------------------------------
+  // il tabellone del video si collega qui e riceve ogni punto appena segnato
+  if (via === '/punteggio/vivo' && req.headers.get('Upgrade') === 'websocket')
+    return tabellone(env).fetch(req);
   if (via === '/punteggio' && req.method === 'GET') return punteggioInCache(env);
 
   if (via === '/punteggio' && (req.method === 'POST' || req.method === 'DELETE')) {
     if (!(await permesso(req, env, 'punti')).ok) return risposta({ errore: 'no' }, 401);
-    if (req.method === 'DELETE') await env.ISCRITTI.delete('meta:punteggio');
-    else {
+    if (req.method === 'DELETE') {
+      await tabellone(env).fetch('https://punteggio/togli', { method: 'POST' });
+      await env.ISCRITTI.delete('meta:punteggio');
+    } else {
       const corpo = await req.json().catch(() => null);
       if (!corpo) return risposta({ errore: 'manca il punteggio' }, 400);
       const p = ripulisciPunteggio(corpo);
+      // prima il tabellone (e' quello che si vede), poi il magazzino
+      await tabellone(env).fetch('https://punteggio/scrivi', { method: 'POST', body: JSON.stringify(p) });
       await scrivi(env, 'punteggio', p);
       // "Partita finita": il risultato si annota a parte, perche' il punteggio
       // poi si toglie o lo riscrive la partita dopo (provato il 07/10)

@@ -191,8 +191,38 @@ async function chiedi(){
   } catch (e) { /* rete assente in palestra: si resta su quello che c'e' */ }
 }
 
+/* Il punto arriva spinto dal servizio appena la regia lo segna, su una
+   WebSocket: niente attesa. Se la linea cade (in palestra succede) si torna
+   a chiedere ogni secondo e intanto si riprova a collegarsi. Un "ping" ogni
+   venti secondi scopre le linee morte che non lo dicono. */
+let linea = null, viva = false, ultimoPong = 0;
+function collega(){
+  try { linea = new WebSocket(SERVIZIO.replace(/^http/, 'ws') + '/punteggio/vivo'); }
+  catch (e) { setTimeout(collega, 3000); return; }
+  linea.onopen = () => { viva = true; ultimoPong = Date.now(); };
+  linea.onmessage = e => {
+    ultimoPong = Date.now();
+    if (e.data === 'pong') return;
+    let p; try { p = JSON.parse(e.data); } catch (_) { return; }
+    if (p === null) { chiedi(); return; }    // il servizio non l'ha ancora: lo si chiede
+    ultimo = p;
+    disegna(p);
+  };
+  linea.onclose = () => { viva = false; setTimeout(collega, 2000); };
+  linea.onerror = () => { try { linea.close(); } catch (_) {} };
+}
+setInterval(() => {
+  if (!viva) return;
+  if (Date.now() - ultimoPong > 45e3) { try { linea.close(); } catch (_) {} return; }
+  try { linea.send('ping'); } catch (_) {}
+}, 20e3);
+
 chiedi();
-setInterval(chiedi, 1200);
+collega();
+setInterval(() => { if (!viva) chiedi(); }, 1000);
+// con la linea viva non arriva niente se nessuno segna: si ridisegna lo
+// stesso ogni tanto, cosi' un tabellone fermo da troppo sparisce
+setInterval(() => { if (viva && ultimo) disegna(ultimo); }, 30e3);
 
 // --- gli sponsor, solo nel video ------------------------------------------
 async function sponsor(){
