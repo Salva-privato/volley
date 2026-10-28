@@ -515,6 +515,12 @@ let modifica=null,soloNote=false;
 let filtroF='tutte',filtroN='tutte',tempo=0,gira=null,attiva=null,vista='ins';
 const $=id=>document.getElementById(id);
 const mmss=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+/* Il tempo di un'azione si tiene al centesimo e si mostra al decimo ("115:31,6"): prima si
+   arrotondava al secondo (115:31,6 diventava 115:32) e rivedendola si ripartiva un secondo
+   prima, cosi' l'azione non era mai dove la si era segnata. */
+const preciso=t=>Math.round(Math.max(0,t)*100)/100;
+const mmssd=s=>{s=Math.max(0,s);const d=Math.floor(s*10+1e-6)/10;
+  return mmss(d)+','+Math.round((d-Math.floor(d))*10)};
 const durataTesto=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return h?h+' h '+(m%60)+' min':m+' min'};
 /* Un video aperto dal computer non si puo' salvare ne' riaprire da soli: il
    browser lo legge dal disco e basta. Si tiene a mente come si chiama e quanto
@@ -575,7 +581,7 @@ function disegnaIns(st){
 
 function registra(e){
   const id=S.azioni.reduce((m,a)=>Math.max(m,a.id),0)+1;
-  const az={id,t:Math.round(adesso()),sq:sel.sq,n:sel.sq==='noi'?sel.n:null,f:sel.f,e};
+  const az={id,t:preciso(adesso()),sq:sel.sq,n:sel.sq==='noi'?sel.n:null,f:sel.f,e};
   const img=fotogramma();if(img)az.img=img;
   S.azioni.push(az);
   S.azioni.sort((a,b)=>a.t-b.t||a.id-b.id);
@@ -625,9 +631,9 @@ function disegnaElenco(){
       el.append(h)}
     const d=descr(a);
     const b=document.createElement('button');b.type='button';b.className='az'+(a.img?' con-img':'')+(a.id===attiva?' attiva':'');
-    b.innerHTML=(a.img?`<img src="${a.img}" alt="">`:'')+`<span class="t num">${mmss(a.t)}</span><span class="d"><b class="${a.sq==='loro'?'loro':''}">${esc(d.chi)}</b> ${d.cosa}</span><span class="esito ${d.cls}">${d.es}</span>`;
-    b.title='Rivedi dal secondo '+mmss(Math.max(0,a.t-1));
-    b.onclick=()=>{attiva=a.id;vai(Math.max(0,a.t-1));disegnaElenco()};
+    b.innerHTML=(a.img?`<img src="${a.img}" alt="">`:'')+`<span class="t num">${mmssd(a.t)}</span><span class="d"><b class="${a.sq==='loro'?'loro':''}">${esc(d.chi)}</b> ${d.cosa}</span><span class="esito ${d.cls}">${d.es}</span>`;
+    b.title='Rivedi da '+mmssd(a.t);
+    b.onclick=()=>{attiva=a.id;vai(a.t);disegnaElenco()};
     const riga=document.createElement('div');riga.className='riga'+(a.img?' con-img':'');
     const m=document.createElement('button');m.type='button';m.className='matita';
     m.setAttribute('aria-label','Modifica o aggiungi una nota');m.title='Modifica o aggiungi una nota';
@@ -643,8 +649,9 @@ function disegnaElenco(){
 }
 
 // Modifica di un'azione già salvata: secondo del video, chi, cosa, esito, nota.
-const leggiTempo=v=>{v=v.trim();const m=v.match(/^(\d+):([0-5]?\d)$/);
-  if(m)return Number(m[1])*60+Number(m[2]);return /^\d+$/.test(v)?Number(v):null};
+// "115:31", "115:31,6" o "115:31.6"; anche solo secondi ("6931" o "6931,6")
+const leggiTempo=v=>{v=v.trim().replace(',','.');const m=v.match(/^(\d+):([0-5]?\d(?:\.\d+)?)$/);
+  if(m)return preciso(Number(m[1])*60+Number(m[2]));return /^\d+(\.\d+)?$/.test(v)?preciso(Number(v)):null};
 function editor(a){
   const d=document.createElement('div');d.className='editor';
   const q=a.id;
@@ -653,7 +660,7 @@ function editor(a){
       <label>Secondo del video
         <span class="tempo-riga">
           <button type="button" data-dt="-1" aria-label="Un secondo prima">−1 s</button>
-          <input id="ed-t-${q}" class="num" value="${mmss(a.t)}" aria-label="Minuto e secondo">
+          <input id="ed-t-${q}" class="num" value="${mmssd(a.t)}" aria-label="Minuto, secondo e decimo">
           <button type="button" data-dt="1" aria-label="Un secondo dopo">+1 s</button>
           <button type="button" data-ora>Usa il punto attuale del video</button>
         </span>
@@ -681,6 +688,9 @@ function editor(a){
   const $e=id=>d.querySelector('#ed-'+id+'-'+q);
   const sq=$e('sq'),n=$e('n'),f=$e('f'),e=$e('e'),t=$e('t'),nota=$e('nota'),err=$e('err');
   sq.value=a.sq;f.value=a.f;nota.value=a.nota||'';
+  // se il tempo scritto non e' stato toccato vale quello salvato, al centesimo
+  const scrittoAllInizio=t.value;
+  const tempoScritto=()=>t.value===scrittoAllInizio?a.t:leggiTempo(t.value);
   disegnaMisure(a,$e('misure'));
   const numeri=()=>{
     if(sq.value==='loro'||f.value==='punto'){n.innerHTML='<option value="">—</option>';n.disabled=true;return}
@@ -698,13 +708,13 @@ function editor(a){
   numeri();esiti();
   sq.onchange=numeri;f.onchange=()=>{numeri();esiti()};
   d.querySelectorAll('[data-dt]').forEach(b=>b.onclick=()=>{
-    const v=leggiTempo(t.value);t.value=mmss(Math.max(0,(v??a.t)+Number(b.dataset.dt)))});
-  d.querySelector('[data-ora]').onclick=()=>{t.value=mmss(adesso())};
-  d.querySelector('[data-rall]').onclick=()=>{const v=leggiTempo(t.value);rallenty(v??a.t)};
-  d.querySelector('[data-rivedi]').onclick=()=>{const v=leggiTempo(t.value);vai(Math.max(0,(v??a.t)-1))};
+    const v=tempoScritto();t.value=mmssd(Math.max(0,(v??a.t)+Number(b.dataset.dt)))});
+  d.querySelector('[data-ora]').onclick=()=>{t.value=mmssd(adesso())};
+  d.querySelector('[data-rall]').onclick=()=>{const v=tempoScritto();rallenty(v??a.t)};
+  d.querySelector('[data-rivedi]').onclick=()=>{const v=tempoScritto();vai(v??a.t)};
   d.querySelector('[data-annulla]').onclick=()=>{modifica=null;disegnaElenco()};
   d.querySelector('[data-salva]').onclick=()=>{
-    const v=leggiTempo(t.value);
+    const v=tempoScritto();
     if(v===null){err.textContent='Scrivi il tempo come minuti:secondi, per esempio 10:52.';t.focus();return}
     if(sq.value==='noi'&&f.value!=='punto'&&n.value===''){err.textContent='Scegli la giocatrice.';n.focus();return}
     a.t=v;a.sq=sq.value;a.f=f.value;
@@ -824,7 +834,7 @@ function aggiornaDurata(){
 function mostraTempo(t){
   if(fineRall!==null&&t>=fineRall)fermaRallenty();
   tempo=t;if(!trascino)$('cursore').value=t;   // la barra tenuta col dito non si tocca
-  $('tempo').textContent=mmss(t)+' / '+(durata?mmss(durata):'…');
+  $('tempo').textContent=mmssd(t)+' / '+(durata?mmss(durata):'…');
   const p=punteggioAl(t);$('pNoi').textContent=p.noi;$('pLoro').textContent=p.loro;
   disegnaSopra();
 }
@@ -1530,7 +1540,7 @@ $('puntoNoi').onclick=()=>registraPunto('noi');
 $('puntoLoro').onclick=()=>registraPunto('loro');
 function registraPunto(sq){
   const id=S.azioni.reduce((m,a)=>Math.max(m,a.id),0)+1;
-  S.azioni.push({id,t:Math.round(adesso()),sq,n:null,f:'punto',e:''});
+  S.azioni.push({id,t:preciso(adesso()),sq,n:null,f:'punto',e:''});
   S.azioni.sort((a,b)=>a.t-b.t||a.id-b.id);
   const st=ricostruisci();sel.f='battuta';sel.sq=st.batte;sel.n=null;attiva=id;salva();disegna();
 }
