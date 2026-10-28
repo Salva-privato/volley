@@ -795,25 +795,41 @@ function punteggioAl(t){
 // Video: finto (un orologio) finché non se ne apre uno vero dal computer.
 const vid=$('vid');let conVideo=false,durata=900,vel=1;
 let yt=null,conYt=false;
-// YouTube aggiorna il tempo con un po' di ritardo dopo un salto: a video fermo, per un attimo
-// vale il punto dove l'abbiamo mandato noi. Così i passi a fotogramma si sommano bene.
+// YouTube aggiorna il tempo con ritardo dopo un salto, e su una registrazione lunga deve
+// prima scaricare il pezzo nuovo. Finché non ci arriva vale il punto dove l'abbiamo mandato
+// noi: altrimenti la barra torna indietro dove YouTube era prima. A video fermo vale comunque
+// per un attimo, così i passi a fotogramma (1/30 di secondo) si sommano bene.
 let ultimoSalto=null;
 function adesso(){
   if(conYt){
-    if(ultimoSalto&&yt.getPlayerState()!==1&&performance.now()-ultimoSalto.quando<1500)return ultimoSalto.t;
-    return yt.getCurrentTime();
+    const ora=yt.getCurrentTime();
+    if(ultimoSalto){
+      const passato=performance.now()-ultimoSalto.quando;
+      const fermo=yt.getPlayerState()!==1;
+      if(fermo&&passato<1500)return ultimoSalto.t;
+      if(Math.abs(ora-ultimoSalto.t)>1&&passato<10000)return ultimoSalto.t;   // non c'e' ancora arrivato
+      ultimoSalto=null;
+    }
+    return ora;
   }
   return conVideo?vid.currentTime:tempo;
 }
+// La durata di un video YouTube: appena aperto, specie se e' la registrazione di una
+// diretta, YouTube può rispondere 0 o una parte. Si ricontrolla di continuo e si
+// tiene quella che dice adesso: 0 vuol dire "non ancora nota", e allora non si limita.
+function aggiornaDurata(){
+  const d=Math.floor(yt&&yt.getDuration?yt.getDuration():0);
+  if(d>0&&d!==durata){durata=d;$('cursore').max=d;$('tempo').textContent=mmss(tempo)+' / '+mmss(durata)}
+}
 function mostraTempo(t){
   if(fineRall!==null&&t>=fineRall)fermaRallenty();
-  tempo=t;$('cursore').value=t;
-  $('tempo').textContent=mmss(t)+' / '+mmss(durata);
+  tempo=t;if(!trascino)$('cursore').value=t;   // la barra tenuta col dito non si tocca
+  $('tempo').textContent=mmss(t)+' / '+(durata?mmss(durata):'…');
   const p=punteggioAl(t);$('pNoi').textContent=p.noi;$('pLoro').textContent=p.loro;
   disegnaSopra();
 }
 function vai(t){
-  t=Math.min(durata,Math.max(0,t));
+  t=Math.max(0,durata?Math.min(durata,t):t);
   if(conYt){yt.seekTo(t,true);ultimoSalto={t,quando:performance.now()}}
   else if(conVideo)vid.currentTime=t;
   mostraTempo(t);
@@ -827,7 +843,22 @@ function playPausa(){
   if(gira){clearInterval(gira);gira=null;statoPlay(false)}
   else{gira=setInterval(()=>{vai(tempo+.25*vel);if(tempo>=durata){clearInterval(gira);gira=null;statoPlay(false)}},250);statoPlay(true)}
 }
-$('cursore').oninput=e=>vai(Number(e.target.value));
+/* La barra: mentre la si trascina con YouTube si fa al massimo un salto leggero ogni
+   quarto di secondo (senza scaricare: cento salti al secondo lo ingolfavano) e il salto
+   vero quando si lascia. Con il video sul computer il salto è immediato: va sempre. */
+let trascino=false,ultimoLeggero=0;
+$('cursore').onpointerdown=()=>{trascino=true};
+const lascia=()=>{trascino=false};
+$('cursore').onpointerup=$('cursore').onpointercancel=lascia;
+addEventListener('pointerup',lascia);   // se il dito si alza fuori dalla barra
+$('cursore').oninput=e=>{
+  const t=Number(e.target.value);
+  if(!conYt||!trascino){vai(t);return}
+  const ora=performance.now();
+  if(ora-ultimoLeggero>250){ultimoLeggero=ora;yt.seekTo(t,false);ultimoSalto={t,quando:ora}}
+  mostraTempo(t);
+};
+$('cursore').onchange=e=>{trascino=false;vai(Number(e.target.value))};
 $('indietro').onclick=()=>vai(adesso()-5);
 $('play').onclick=playPausa;
 $('playBarra').onclick=playPausa;
@@ -1438,22 +1469,26 @@ async function apriYoutube(testo){
   $('ytBox').hidden=false;$('avviso').hidden=true;
   $('video').classList.add('con-video','con-yt');
   const pronto=()=>{
-    conYt=true;durata=Math.floor(yt.getDuration())||durata;$('cursore').max=durata;yt.setPlaybackRate(vel);
+    conYt=true;durata=0;aggiornaDurata();yt.setPlaybackRate(vel);
     let t='Video YouTube aperto. Metti in pausa quando vuoi segnare un\'azione, oppure segna mentre scorre.';
     if(togliEsempio())t+=' Ho tolto i dati di esempio: le azioni che inserisci ora sono legate a questo video.';
     S.yt=id;delete S.videoLocale;salva();try{localStorage.setItem('scout-ultimo-video',id)}catch(e){}
     messaggio(t);disegna();
   };
-  if(yt){yt.loadVideoById(id);yt.pauseVideo();setTimeout(pronto,800);return}
+  durata=0;ultimoSalto=null;   // niente durata del video di prima
+  // Un video nuovo vuole un lettore nuovo: cambiando video nello stesso lettore YouTube
+  // non dice quanto dura finché non parte, e la barra restava con la durata di prima.
+  if(yt){conYt=false;try{yt.destroy()}catch(e){}yt=null;$('ytBox').innerHTML='<div id="ytPlayer"></div>'}
   yt=new YT.Player('ytPlayer',{videoId:id,width:'100%',height:'100%',
     playerVars:{rel:0,playsinline:1,modestbranding:1,origin:location.origin},
     events:{
       onReady:pronto,
-      onStateChange:e=>{statoPlay(e.data===1);if(e.data===1&&!durata)durata=Math.floor(yt.getDuration())},
+      onStateChange:e=>{statoPlay(e.data===1);aggiornaDurata()},
       onError:e=>messaggio(ERRORI_YT[e.data]||'YouTube ha dato un errore ('+e.data+').',true),
     }});
 }
-setInterval(()=>{if(conYt&&yt&&yt.getCurrentTime)mostraTempo(adesso())},100);
+// mentre si trascina la barra comanda il dito, non YouTube
+setInterval(()=>{if(conYt&&yt&&yt.getCurrentTime){aggiornaDurata();if(!trascino)mostraTempo(adesso())}},100);
 $('ytForm').onsubmit=e=>{e.preventDefault();apriYoutube($('ytLink').value)};
 let togliMsg=null;
 function messaggio(testo,errore,resta){const m=$('msg');m.textContent=testo;m.hidden=!testo;m.classList.toggle('errore',!!errore);
