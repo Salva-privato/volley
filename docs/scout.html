@@ -458,7 +458,7 @@ const ESITI={
   alzata:[['gioco','In gioco',''],['err','Errore','p']],
   attacco:[['punto','Punto','v'],['gioco','In gioco',''],['err','Errore','p'],['murato','Murato','p']],
   muro:[['punto','Punto','v'],['tocco','Tocco',''],['err','Invasione','p']],
-  difesa:[['ok','Buona',''],['scarsa','Scarsa','']],
+  difesa:[['ok','Buona',''],['scarsa','Scarsa',''],['err','Errore','p']],
 };
 const DOPO={battuta:['ricezione',true],ricezione:['alzata',false],alzata:['attacco',false],
   attacco:['difesa',true],muro:['difesa',false],difesa:['alzata',false]};
@@ -734,7 +734,7 @@ function editor(a){
 
 function disegnaStat(){
   const mie=S.azioni.filter(a=>a.sq==='noi'&&a.n!=null);
-  const vuota=()=>({att:0,kp:0,ke:0,km:0,bt:0,ace:0,be:0,r:[0,0,0,0],alz:0,mp:0,mt:0,dif:0,salti:[],contatti:[]});
+  const vuota=()=>({att:0,kp:0,ke:0,km:0,bt:0,ace:0,be:0,r:[0,0,0,0],alz:0,mp:0,mt:0,dif:0,de:0,salti:[],contatti:[]});
   const per={};const tot=vuota();
   for(const a of mie){
     const g=per[a.n]||(per[a.n]=vuota());
@@ -744,7 +744,7 @@ function disegnaStat(){
       if(a.f==='ricezione')x.r[3-Number(a.e)]++;
       if(a.f==='alzata')x.alz++;
       if(a.f==='muro'){if(a.e==='punto')x.mp++;if(a.e==='tocco')x.mt++}
-      if(a.f==='difesa')x.dif++;
+      if(a.f==='difesa'){x.dif++;if(a.e==='err')x.de++}
       const hs=cmSalto(a),hc=cmContatto(a);if(hs!==null)x.salti.push(hs);if(hc!==null)x.contatti.push(hc);
     }
   }
@@ -760,18 +760,19 @@ function disegnaStat(){
     `<td class="num gr">${x.ace||'–'}</td>`+c(x.be)+c(x.bt)+
     `<td class="num gr">${x.r[0]||'–'}</td>`+c(x.r[1])+c(x.r[2])+c(x.r[3])+c(rt(x))+
     (media(x)===null?'<td class="num">–</td>':`<td class="num">${media(x).toFixed(2).replace('.',',')}</td>`)+
-    `<td class="num gr">${x.mp||'–'}</td>`+c(x.mt)+`<td class="num gr">${x.alz||'–'}</td>`+c(x.dif)+
+    `<td class="num gr">${x.mp||'–'}</td>`+c(x.mt)+`<td class="num gr">${x.alz||'–'}</td>`+
+    `<td class="num gr">${x.dif||'–'}</td>`+c(x.de)+
     `<td class="num gr">${x.salti.length?Math.max(...x.salti):'–'}</td>`+
     `<td class="num">${x.salti.length?Math.round(x.salti.reduce((a,b)=>a+b,0)/x.salti.length):'–'}</td>`+
     `<td class="num">${x.contatti.length?(Math.max(...x.contatti)/100).toFixed(2).replace('.',','):'–'}</td>`+'</tr>';
   const nums=Object.keys(per).map(Number).sort((a,b)=>a-b);
   $('tabella').innerHTML=`<thead><tr><th></th><th colspan="4">Attacco</th><th colspan="3" class="gr">Battuta</th>
-    <th colspan="6" class="gr">Ricezione</th><th colspan="2" class="gr">Muro</th><th colspan="2" class="gr">Altro</th><th colspan="3" class="gr">Misure</th></tr>
+    <th colspan="6" class="gr">Ricezione</th><th colspan="2" class="gr">Muro</th><th class="gr">Alzata</th><th colspan="2" class="gr">Difesa</th><th colspan="3" class="gr">Misure</th></tr>
     <tr><th>Giocatrice</th><th>Punti</th><th>Err.</th><th>Tot.</th><th>Eff.</th>
     <th class="gr">Ace</th><th>Err.</th><th>Tot.</th>
     <th class="gr">3</th><th>2</th><th>1</th><th>0</th><th>Tot.</th><th>Media</th>
-    <th class="gr">Punti</th><th>Tocchi</th><th class="gr">Alzate</th><th>Difese</th><th class="gr">Salto max (cm)</th><th>Salto medio</th><th>Contatto max (m)</th></tr></thead><tbody>`+
-    (nums.length?nums.map(n=>riga(esc(etichetta(n)),per[n])).join(''):'<tr><td colspan="21" class="vuoto">Nessuna azione di Martesana inserita.</td></tr>')+
+    <th class="gr">Punti</th><th>Tocchi</th><th class="gr">Tot.</th><th class="gr">Tot.</th><th>Err.</th><th class="gr">Salto max (cm)</th><th>Salto medio</th><th>Contatto max (m)</th></tr></thead><tbody>`+
+    (nums.length?nums.map(n=>riga(esc(etichetta(n)),per[n])).join(''):'<tr><td colspan="22" class="vuoto">Nessuna azione di Martesana inserita.</td></tr>')+
     riga('Squadra',tot,'squadra')+'</tbody>';
   const st=ricostruisci();
   const pct=v=>v===null?'–':Math.round(v*100)+'%';
