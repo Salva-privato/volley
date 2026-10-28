@@ -893,11 +893,12 @@ function staGirando(){return conYt?yt.getPlayerState()===1:conVideo?!vid.paused:
 function avvia(){if(!staGirando())playPausa()}
 function ferma(){if(staGirando())playPausa()}
 
-// Rallenty: parte 1,5 s prima dell'azione a 0,25× e si ferma 2,5 s dopo, poi torna alla velocità di prima.
+// Rallenty: parte esattamente dal tempo dell'azione a 0,25× e si ferma 4 s dopo (16 s veri),
+// poi torna alla velocità di prima.
 let fineRall=null,velPrima=1;
 function rallenty(t){
   if(fineRall===null)velPrima=vel===.25?1:vel;
-  impostaVel(.25);vai(Math.max(0,t-1.5));fineRall=t+2.5;avvia();
+  impostaVel(.25);vai(Math.max(0,t));fineRall=t+4;avvia();
 }
 function fermaRallenty(){fineRall=null;ferma();impostaVel(velPrima)}
 $('rallenty').onclick=()=>{
