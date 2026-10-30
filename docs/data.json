@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-30T19:54:39.013Z",
+ "updatedAt": "2026-10-30T23:37:47.409Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1158,9 +1158,11 @@
      "dateRaw": "30/10/2026 ven : 21.00",
      "home": "GEAS VOLLEY",
      "away": "PALLAVOLO RONDO' MUGGIO'",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/18 25/12 25/23",
+     "partialsLines": [
+      "25/18 25/12 25/23"
+     ],
      "venue": "SCUOLA EL. MARTIRI DELLA LIBERTA''",
      "address": "SESTO SAN GIOVANNI - VIA FIORANI (DI FRONTE AL CIVICO 93)",
      "mine": false
@@ -1878,6 +1880,21 @@
     },
     {
      "pos": 2,
+     "team": "GEAS VOLLEY",
+     "club": "GEAS VOLLEY ASD",
+     "points": "7",
+     "played": "3",
+     "won": "2",
+     "lost": "1",
+     "setsWon": "8",
+     "setsLost": "3",
+     "setRatio": "2,667",
+     "pointsFor": "245",
+     "pointsAgainst": "205",
+     "pointRatio": "1,20"
+    },
+    {
+     "pos": 3,
      "team": "G.S. SF 82",
      "club": "G.S. SF 82",
      "points": "6",
@@ -1892,7 +1909,7 @@
      "pointRatio": "1,15"
     },
     {
-     "pos": 3,
+     "pos": 4,
      "team": "EXPERIENCE FITNESS CLUB",
      "club": "LISSONE VOLLEY TEAM",
      "points": "6",
@@ -1907,7 +1924,7 @@
      "pointRatio": "1,25"
     },
     {
-     "pos": 4,
+     "pos": 5,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
      "points": "5",
@@ -1920,21 +1937,6 @@
      "pointsFor": "256",
      "pointsAgainst": "264",
      "pointRatio": "0,97"
-    },
-    {
-     "pos": 5,
-     "team": "GEAS VOLLEY",
-     "club": "GEAS VOLLEY ASD",
-     "points": "4",
-     "played": "2",
-     "won": "1",
-     "lost": "1",
-     "setsWon": "5",
-     "setsLost": "3",
-     "setRatio": "1,667",
-     "pointsFor": "170",
-     "pointsAgainst": "152",
-     "pointRatio": "1,12"
     },
     {
      "pos": 6,
@@ -1971,15 +1973,15 @@
      "team": "PALLAVOLO RONDO' MUGGIO'",
      "club": "PALLAVOLO RONDO' MUGGIO'",
      "points": "0",
-     "played": "2",
+     "played": "3",
      "won": "0",
-     "lost": "2",
+     "lost": "3",
      "setsWon": "0",
-     "setsLost": "6",
+     "setsLost": "9",
      "setRatio": "0,000",
-     "pointsFor": "92",
-     "pointsAgainst": "150",
-     "pointRatio": "0,61"
+     "pointsFor": "145",
+     "pointsAgainst": "225",
+     "pointRatio": "0,64"
     }
    ]
   }
