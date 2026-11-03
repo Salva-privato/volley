@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-02T18:12:37.864Z",
+ "updatedAt": "2026-11-03T16:06:34.761Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -230,16 +230,16 @@
     {
      "gara": "70405",
      "giornata": 4,
-     "date": "2026-11-07",
-     "time": "17:45",
-     "dateRaw": "07/11/2026 sab : 17.45",
+     "date": "2026-11-20",
+     "time": "21:00",
+     "dateRaw": "20/11/2026 ven : 21.00",
      "home": "A.S.D CITTA' DI OPERA GIALLA",
      "away": "AD ASTRA - BELLATRIX",
      "sets": null,
      "partials": null,
      "partialsLines": null,
-     "venue": "PALESTRA COMUNALE OPERA",
-     "address": "OPERA - VIA DANTE ALIGHIERI",
+     "venue": "SCUOLA MEDIA OPERA",
+     "address": "OPERA - VIA PAPA GIOVANNI XXIII",
      "mine": false
     },
     {
