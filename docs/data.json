@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-04T16:10:23.573Z",
+ "updatedAt": "2026-11-05T16:24:23.638Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1230,9 +1230,11 @@
      "dateRaw": "04/11/2026 mer : 21.00",
      "home": "PALLAVOLO RONDO' MUGGIO'",
      "away": "CALIMAN BRESSO",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 1",
+     "partials": "25/23 19/25 27/25 25/14",
+     "partialsLines": [
+      "25/23 19/25 27/25 25/14"
+     ],
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1946,21 +1948,36 @@
     },
     {
      "pos": 6,
-     "team": "CALIMAN BRESSO",
-     "club": "POL. CIRCOLO GIOVANILE BRESSO",
-     "points": "2",
-     "played": "3",
+     "team": "PALLAVOLO RONDO' MUGGIO'",
+     "club": "PALLAVOLO RONDO' MUGGIO'",
+     "points": "3",
+     "played": "4",
      "won": "1",
-     "lost": "2",
-     "setsWon": "4",
-     "setsLost": "8",
-     "setRatio": "0,500",
-     "pointsFor": "222",
-     "pointsAgainst": "269",
-     "pointRatio": "0,83"
+     "lost": "3",
+     "setsWon": "3",
+     "setsLost": "10",
+     "setRatio": "0,300",
+     "pointsFor": "241",
+     "pointsAgainst": "312",
+     "pointRatio": "0,77"
     },
     {
      "pos": 7,
+     "team": "CALIMAN BRESSO",
+     "club": "POL. CIRCOLO GIOVANILE BRESSO",
+     "points": "2",
+     "played": "4",
+     "won": "1",
+     "lost": "3",
+     "setsWon": "5",
+     "setsLost": "11",
+     "setRatio": "0,455",
+     "pointsFor": "309",
+     "pointsAgainst": "365",
+     "pointRatio": "0,85"
+    },
+    {
+     "pos": 8,
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "1",
@@ -1973,21 +1990,6 @@
      "pointsFor": "210",
      "pointsAgainst": "258",
      "pointRatio": "0,81"
-    },
-    {
-     "pos": 8,
-     "team": "PALLAVOLO RONDO' MUGGIO'",
-     "club": "PALLAVOLO RONDO' MUGGIO'",
-     "points": "0",
-     "played": "3",
-     "won": "0",
-     "lost": "3",
-     "setsWon": "0",
-     "setsLost": "9",
-     "setRatio": "0,000",
-     "pointsFor": "145",
-     "pointsAgainst": "225",
-     "pointRatio": "0,64"
     }
    ]
   }
