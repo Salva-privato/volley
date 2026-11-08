@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-07T19:21:37.878Z",
+ "updatedAt": "2026-11-08T19:29:57.493Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1221,9 +1221,11 @@
      "dateRaw": "08/11/2026 dom : 18.00",
      "home": "ASD OSG 2001",
      "away": "MARTESANA VOLLEY COLOGNO",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "18/25 24/26 21/25",
+     "partialsLines": [
+      "18/25 24/26 21/25"
+     ],
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": true
@@ -1913,6 +1915,21 @@
     },
     {
      "pos": 3,
+     "team": "MARTESANA VOLLEY COLOGNO",
+     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
+     "points": "8",
+     "played": "4",
+     "won": "3",
+     "lost": "1",
+     "setsWon": "10",
+     "setsLost": "6",
+     "setRatio": "1,667",
+     "pointsFor": "332",
+     "pointsAgainst": "327",
+     "pointRatio": "1,02"
+    },
+    {
+     "pos": 4,
      "team": "GEAS VOLLEY",
      "club": "GEAS VOLLEY ASD",
      "points": "7",
@@ -1927,7 +1944,7 @@
      "pointRatio": "1,05"
     },
     {
-     "pos": 4,
+     "pos": 5,
      "team": "EXPERIENCE FITNESS CLUB",
      "club": "LISSONE VOLLEY TEAM",
      "points": "7",
@@ -1940,21 +1957,6 @@
      "pointsFor": "336",
      "pointsAgainst": "298",
      "pointRatio": "1,13"
-    },
-    {
-     "pos": 5,
-     "team": "MARTESANA VOLLEY COLOGNO",
-     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
-     "points": "5",
-     "played": "3",
-     "won": "2",
-     "lost": "1",
-     "setsWon": "7",
-     "setsLost": "6",
-     "setRatio": "1,167",
-     "pointsFor": "256",
-     "pointsAgainst": "264",
-     "pointRatio": "0,97"
     },
     {
      "pos": 6,
@@ -1991,15 +1993,15 @@
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "1",
-     "played": "3",
+     "played": "4",
      "won": "0",
-     "lost": "3",
+     "lost": "4",
      "setsWon": "2",
-     "setsLost": "9",
-     "setRatio": "0,222",
-     "pointsFor": "210",
-     "pointsAgainst": "258",
-     "pointRatio": "0,81"
+     "setsLost": "12",
+     "setRatio": "0,167",
+     "pointsFor": "273",
+     "pointsAgainst": "334",
+     "pointRatio": "0,82"
     }
    ]
   }
