@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-10T16:22:19.603Z",
+ "updatedAt": "2026-11-11T22:37:47.836Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1304,9 +1304,11 @@
      "dateRaw": "11/11/2026 mer : 21.00",
      "home": "CALIMAN BRESSO",
      "away": "BILLA VOLLEY MILANO GIALLA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "13/25 15/25 9/25",
+     "partialsLines": [
+      "13/25 15/25 9/25"
+     ],
      "venue": "SCUOLA MEDIA MANZONI",
      "address": "BRESSO - VIA PATELLANI",
      "mine": false
@@ -1319,9 +1321,11 @@
      "dateRaw": "11/11/2026 mer : 21.00",
      "home": "MARTESANA VOLLEY COLOGNO",
      "away": "PALLAVOLO RONDO' MUGGIO'",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/19 25/14 25/13",
+     "partialsLines": [
+      "25/19 25/14 25/13"
+     ],
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -1887,19 +1891,34 @@
      "pos": 1,
      "team": "BILLA VOLLEY MILANO GIALLA",
      "club": "BILLA VOLLEY TEAM",
-     "points": "12",
-     "played": "4",
-     "won": "4",
+     "points": "15",
+     "played": "5",
+     "won": "5",
      "lost": "0",
-     "setsWon": "12",
+     "setsWon": "15",
      "setsLost": "0",
      "setRatio": "MAX",
-     "pointsFor": "300",
-     "pointsAgainst": "203",
-     "pointRatio": "1,48"
+     "pointsFor": "375",
+     "pointsAgainst": "240",
+     "pointRatio": "1,56"
     },
     {
      "pos": 2,
+     "team": "MARTESANA VOLLEY COLOGNO",
+     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
+     "points": "11",
+     "played": "5",
+     "won": "4",
+     "lost": "1",
+     "setsWon": "13",
+     "setsLost": "6",
+     "setRatio": "2,167",
+     "pointsFor": "407",
+     "pointsAgainst": "373",
+     "pointRatio": "1,09"
+    },
+    {
+     "pos": 3,
      "team": "G.S. SF 82",
      "club": "G.S. SF 82",
      "points": "8",
@@ -1912,21 +1931,6 @@
      "pointsFor": "332",
      "pointsAgainst": "299",
      "pointRatio": "1,11"
-    },
-    {
-     "pos": 3,
-     "team": "MARTESANA VOLLEY COLOGNO",
-     "club": "MARTESANA VOLLEY COLOGNO MONZ.",
-     "points": "8",
-     "played": "4",
-     "won": "3",
-     "lost": "1",
-     "setsWon": "10",
-     "setsLost": "6",
-     "setRatio": "1,667",
-     "pointsFor": "332",
-     "pointsAgainst": "327",
-     "pointRatio": "1,02"
     },
     {
      "pos": 4,
@@ -1963,30 +1967,30 @@
      "team": "PALLAVOLO RONDO' MUGGIO'",
      "club": "PALLAVOLO RONDO' MUGGIO'",
      "points": "3",
-     "played": "4",
+     "played": "5",
      "won": "1",
-     "lost": "3",
+     "lost": "4",
      "setsWon": "3",
-     "setsLost": "10",
-     "setRatio": "0,300",
-     "pointsFor": "241",
-     "pointsAgainst": "312",
-     "pointRatio": "0,77"
+     "setsLost": "13",
+     "setRatio": "0,231",
+     "pointsFor": "287",
+     "pointsAgainst": "387",
+     "pointRatio": "0,74"
     },
     {
      "pos": 7,
      "team": "CALIMAN BRESSO",
      "club": "POL. CIRCOLO GIOVANILE BRESSO",
      "points": "2",
-     "played": "4",
+     "played": "5",
      "won": "1",
-     "lost": "3",
+     "lost": "4",
      "setsWon": "5",
-     "setsLost": "11",
-     "setRatio": "0,455",
-     "pointsFor": "309",
-     "pointsAgainst": "365",
-     "pointRatio": "0,85"
+     "setsLost": "14",
+     "setRatio": "0,357",
+     "pointsFor": "346",
+     "pointsAgainst": "440",
+     "pointRatio": "0,79"
     },
     {
      "pos": 8,
