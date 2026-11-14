@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-14T19:52:18.864Z",
+ "updatedAt": "2026-11-14T23:50:00.233Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -301,9 +301,11 @@
      "dateRaw": "14/11/2026 sab : 19.00",
      "home": "AD ASTRA - BELLATRIX",
      "away": "CEM TORRICELLI ROSSA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "1 3",
+     "partials": "11/25 25/21 18/25 19/25",
+     "partialsLines": [
+      "11/25 25/21 18/25 19/25"
+     ],
      "venue": "SCUOLA ELEMENTARE MARZABOTTO",
      "address": "SESTO SAN GIOVANNI - VIA MARZABOTTO (ANG. VIA SAVONA) 130",
      "mine": false
@@ -946,16 +948,16 @@
      "pos": 5,
      "team": "CEM TORRICELLI ROSSA",
      "club": "CEM TORRICELLI MILANO SSDARL",
-     "points": "3",
-     "played": "3",
-     "won": "1",
+     "points": "6",
+     "played": "4",
+     "won": "2",
      "lost": "2",
-     "setsWon": "3",
-     "setsLost": "7",
-     "setRatio": "0,429",
-     "pointsFor": "213",
-     "pointsAgainst": "233",
-     "pointRatio": "0,91"
+     "setsWon": "6",
+     "setsLost": "8",
+     "setRatio": "0,750",
+     "pointsFor": "309",
+     "pointsAgainst": "306",
+     "pointRatio": "1,01"
     },
     {
      "pos": 6,
@@ -977,15 +979,15 @@
      "team": "AD ASTRA - BELLATRIX",
      "club": "AD ASTRA ASD",
      "points": "1",
-     "played": "3",
+     "played": "4",
      "won": "0",
-     "lost": "3",
-     "setsWon": "2",
-     "setsLost": "9",
-     "setRatio": "0,222",
-     "pointsFor": "195",
-     "pointsAgainst": "244",
-     "pointRatio": "0,80"
+     "lost": "4",
+     "setsWon": "3",
+     "setsLost": "12",
+     "setRatio": "0,250",
+     "pointsFor": "268",
+     "pointsAgainst": "340",
+     "pointRatio": "0,79"
     },
     {
      "pos": 8,
