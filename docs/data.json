@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-14T23:50:00.233Z",
+ "updatedAt": "2026-11-15T20:58:40.497Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -286,9 +286,11 @@
      "dateRaw": "15/11/2026 dom : 18.00",
      "home": "MARTESANA VOLLEY COLOGNO",
      "away": "G.S. CAGLIERO ROSSA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/11 25/13 25/11",
+     "partialsLines": [
+      "25/11 25/13 25/11"
+     ],
      "venue": "PALESTRA TOTI",
      "address": "COLOGNO MONZESE - S.MAURIZIO AL LAMBRO - VIA TOTI 15",
      "mine": true
@@ -335,9 +337,11 @@
      "dateRaw": "15/11/2026 dom : 18.30",
      "home": "VOLLEY SEGRATE U17 BLU",
      "away": "ASPES VOLLEY CUS STATALE MEDNOW",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "13/25 17/25 19/25",
+     "partialsLines": [
+      "13/25 17/25 19/25"
+     ],
      "venue": "STRUTTURA PRESSOSTATICA S.E.",
      "address": "SEGRATE - VIA MODIGLIANI",
      "mine": false
@@ -888,46 +892,46 @@
      "pos": 1,
      "team": "ASPES VOLLEY CUS STATALE MEDNOW",
      "club": "ASPES VOLLEY ASD",
-     "points": "12",
-     "played": "4",
-     "won": "4",
+     "points": "15",
+     "played": "5",
+     "won": "5",
      "lost": "0",
-     "setsWon": "12",
+     "setsWon": "15",
      "setsLost": "0",
      "setRatio": "MAX",
-     "pointsFor": "300",
-     "pointsAgainst": "157",
-     "pointRatio": "1,91"
+     "pointsFor": "375",
+     "pointsAgainst": "206",
+     "pointRatio": "1,82"
     },
     {
      "pos": 2,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
-     "points": "12",
-     "played": "4",
-     "won": "4",
+     "points": "15",
+     "played": "5",
+     "won": "5",
      "lost": "0",
-     "setsWon": "12",
+     "setsWon": "15",
      "setsLost": "2",
-     "setRatio": "6,000",
-     "pointsFor": "338",
-     "pointsAgainst": "261",
-     "pointRatio": "1,30"
+     "setRatio": "7,500",
+     "pointsFor": "413",
+     "pointsAgainst": "296",
+     "pointRatio": "1,40"
     },
     {
      "pos": 3,
      "team": "VOLLEY SEGRATE U17 BLU",
      "club": "VOLLEY SEGRATE ASD",
      "points": "9",
-     "played": "4",
+     "played": "5",
      "won": "3",
-     "lost": "1",
+     "lost": "2",
      "setsWon": "10",
-     "setsLost": "5",
-     "setRatio": "2,000",
-     "pointsFor": "333",
-     "pointsAgainst": "302",
-     "pointRatio": "1,10"
+     "setsLost": "8",
+     "setRatio": "1,250",
+     "pointsFor": "382",
+     "pointsAgainst": "377",
+     "pointRatio": "1,01"
     },
     {
      "pos": 4,
@@ -994,15 +998,15 @@
      "team": "G.S. CAGLIERO ROSSA",
      "club": "G.S. CAGLIERO",
      "points": "0",
-     "played": "3",
+     "played": "4",
      "won": "0",
-     "lost": "3",
+     "lost": "4",
      "setsWon": "1",
-     "setsLost": "9",
-     "setRatio": "0,111",
-     "pointsFor": "166",
-     "pointsAgainst": "248",
-     "pointRatio": "0,67"
+     "setsLost": "12",
+     "setRatio": "0,083",
+     "pointsFor": "201",
+     "pointsAgainst": "323",
+     "pointRatio": "0,62"
     }
    ]
   },
@@ -1344,9 +1348,11 @@
      "dateRaw": "15/11/2026 dom : 18.00",
      "home": "ASD OSG 2001",
      "away": "EXPERIENCE FITNESS CLUB",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "17/25 18/25 15/25",
+     "partialsLines": [
+      "17/25 18/25 15/25"
+     ],
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1940,6 +1946,21 @@
     },
     {
      "pos": 4,
+     "team": "EXPERIENCE FITNESS CLUB",
+     "club": "LISSONE VOLLEY TEAM",
+     "points": "10",
+     "played": "5",
+     "won": "3",
+     "lost": "2",
+     "setsWon": "11",
+     "setsLost": "7",
+     "setRatio": "1,571",
+     "pointsFor": "411",
+     "pointsAgainst": "348",
+     "pointRatio": "1,18"
+    },
+    {
+     "pos": 5,
      "team": "GEAS VOLLEY",
      "club": "GEAS VOLLEY ASD",
      "points": "8",
@@ -1952,21 +1973,6 @@
      "pointsFor": "399",
      "pointsAgainst": "389",
      "pointRatio": "1,03"
-    },
-    {
-     "pos": 5,
-     "team": "EXPERIENCE FITNESS CLUB",
-     "club": "LISSONE VOLLEY TEAM",
-     "points": "7",
-     "played": "4",
-     "won": "2",
-     "lost": "2",
-     "setsWon": "8",
-     "setsLost": "7",
-     "setRatio": "1,143",
-     "pointsFor": "336",
-     "pointsAgainst": "298",
-     "pointRatio": "1,13"
     },
     {
      "pos": 6,
@@ -2003,15 +2009,15 @@
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "1",
-     "played": "4",
+     "played": "5",
      "won": "0",
-     "lost": "4",
+     "lost": "5",
      "setsWon": "2",
-     "setsLost": "12",
-     "setRatio": "0,167",
-     "pointsFor": "273",
-     "pointsAgainst": "334",
-     "pointRatio": "0,82"
+     "setsLost": "15",
+     "setRatio": "0,133",
+     "pointsFor": "323",
+     "pointsAgainst": "409",
+     "pointRatio": "0,79"
     }
    ]
   }
