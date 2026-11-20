@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-20T00:33:11.991Z",
+ "updatedAt": "2026-11-20T23:02:21.762Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -237,9 +237,11 @@
      "dateRaw": "20/11/2026 ven : 21.00",
      "home": "A.S.D CITTA' DI OPERA GIALLA",
      "away": "AD ASTRA - BELLATRIX",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/15 25/14 25/17",
+     "partialsLines": [
+      "25/15 25/14 25/17"
+     ],
      "venue": "SCUOLA MEDIA OPERA",
      "address": "OPERA - VIA PAPA GIOVANNI XXIII",
      "mine": false
@@ -920,6 +922,21 @@
     },
     {
      "pos": 3,
+     "team": "A.S.D CITTA' DI OPERA GIALLA",
+     "club": "A.S.D CITTA' DI OPERA",
+     "points": "9",
+     "played": "5",
+     "won": "3",
+     "lost": "2",
+     "setsWon": "11",
+     "setsLost": "6",
+     "setRatio": "1,833",
+     "pointsFor": "386",
+     "pointsAgainst": "349",
+     "pointRatio": "1,11"
+    },
+    {
+     "pos": 4,
      "team": "VOLLEY SEGRATE U17 BLU",
      "club": "VOLLEY SEGRATE ASD",
      "points": "9",
@@ -932,21 +949,6 @@
      "pointsFor": "382",
      "pointsAgainst": "377",
      "pointRatio": "1,01"
-    },
-    {
-     "pos": 4,
-     "team": "A.S.D CITTA' DI OPERA GIALLA",
-     "club": "A.S.D CITTA' DI OPERA",
-     "points": "6",
-     "played": "4",
-     "won": "2",
-     "lost": "2",
-     "setsWon": "8",
-     "setsLost": "6",
-     "setRatio": "1,333",
-     "pointsFor": "311",
-     "pointsAgainst": "303",
-     "pointRatio": "1,03"
     },
     {
      "pos": 5,
@@ -983,15 +985,15 @@
      "team": "AD ASTRA - BELLATRIX",
      "club": "AD ASTRA ASD",
      "points": "1",
-     "played": "4",
+     "played": "5",
      "won": "0",
-     "lost": "4",
+     "lost": "5",
      "setsWon": "3",
-     "setsLost": "12",
-     "setRatio": "0,250",
-     "pointsFor": "268",
-     "pointsAgainst": "340",
-     "pointRatio": "0,79"
+     "setsLost": "15",
+     "setRatio": "0,200",
+     "pointsFor": "314",
+     "pointsAgainst": "415",
+     "pointRatio": "0,76"
     },
     {
      "pos": 8,
@@ -1365,9 +1367,11 @@
      "dateRaw": "20/11/2026 ven : 21.00",
      "home": "PALLAVOLO RONDO' MUGGIO'",
      "away": "ASD OSG 2001",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 1",
+     "partials": "25/17 11/25 25/20 25/20",
+     "partialsLines": [
+      "25/17 11/25 25/20 25/20"
+     ],
      "venue": "PALAZZETTO FERRUCCIO PARRI",
      "address": "MUGGIO' - VIA MONTEGRAPPA ANGOLO VIA LIBERTA'",
      "mine": false
@@ -1380,9 +1384,11 @@
      "dateRaw": "20/11/2026 ven : 21.00",
      "home": "BILLA VOLLEY MILANO GIALLA",
      "away": "MARTESANA VOLLEY COLOGNO",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 0",
+     "partials": "25/22 25/16 25/20",
+     "partialsLines": [
+      "25/22 25/16 25/20"
+     ],
      "venue": "I.I.S. V.F. PARETO - CAMPO 1",
      "address": "MILANO - VIA LITTA MODIGNANI 55",
      "mine": true
@@ -1905,16 +1911,16 @@
      "pos": 1,
      "team": "BILLA VOLLEY MILANO GIALLA",
      "club": "BILLA VOLLEY TEAM",
-     "points": "15",
-     "played": "5",
-     "won": "5",
+     "points": "18",
+     "played": "6",
+     "won": "6",
      "lost": "0",
-     "setsWon": "15",
+     "setsWon": "18",
      "setsLost": "0",
      "setRatio": "MAX",
-     "pointsFor": "375",
-     "pointsAgainst": "240",
-     "pointRatio": "1,56"
+     "pointsFor": "450",
+     "pointsAgainst": "298",
+     "pointRatio": "1,51"
     },
     {
      "pos": 2,
@@ -1936,15 +1942,15 @@
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
      "points": "11",
-     "played": "5",
+     "played": "6",
      "won": "4",
-     "lost": "1",
+     "lost": "2",
      "setsWon": "13",
-     "setsLost": "6",
-     "setRatio": "2,167",
-     "pointsFor": "407",
-     "pointsAgainst": "373",
-     "pointRatio": "1,09"
+     "setsLost": "9",
+     "setRatio": "1,444",
+     "pointsFor": "465",
+     "pointsAgainst": "448",
+     "pointRatio": "1,04"
     },
     {
      "pos": 4,
@@ -1980,16 +1986,16 @@
      "pos": 6,
      "team": "PALLAVOLO RONDO' MUGGIO'",
      "club": "PALLAVOLO RONDO' MUGGIO'",
-     "points": "3",
-     "played": "5",
-     "won": "1",
+     "points": "6",
+     "played": "6",
+     "won": "2",
      "lost": "4",
-     "setsWon": "3",
-     "setsLost": "13",
-     "setRatio": "0,231",
-     "pointsFor": "287",
-     "pointsAgainst": "387",
-     "pointRatio": "0,74"
+     "setsWon": "6",
+     "setsLost": "14",
+     "setRatio": "0,429",
+     "pointsFor": "373",
+     "pointsAgainst": "469",
+     "pointRatio": "0,80"
     },
     {
      "pos": 7,
@@ -2011,15 +2017,15 @@
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "1",
-     "played": "5",
+     "played": "6",
      "won": "0",
-     "lost": "5",
-     "setsWon": "2",
-     "setsLost": "15",
-     "setRatio": "0,133",
-     "pointsFor": "323",
-     "pointsAgainst": "409",
-     "pointRatio": "0,79"
+     "lost": "6",
+     "setsWon": "3",
+     "setsLost": "18",
+     "setRatio": "0,167",
+     "pointsFor": "405",
+     "pointsAgainst": "495",
+     "pointRatio": "0,82"
     }
    ]
   }
