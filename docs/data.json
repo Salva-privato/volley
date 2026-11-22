@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-21T21:37:09.052Z",
+ "updatedAt": "2026-11-22T22:24:02.887Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -390,9 +390,11 @@
      "dateRaw": "22/11/2026 dom : 15.00",
      "home": "G.S. CAGLIERO ROSSA",
      "away": "AD ASTRA - BELLATRIX",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "2 3",
+     "partials": "16/25 25/17 25/23 17/25 7/15",
+     "partialsLines": [
+      "16/25 25/17 25/23 17/25 7/15"
+     ],
      "venue": "SCUOLA MEDIA \"R. FRANCESCHI\"",
      "address": "MILANO - VIA CAGLIERO 20",
      "mine": false
@@ -405,9 +407,11 @@
      "dateRaw": "22/11/2026 dom : 15.15",
      "home": "ASPES VOLLEY CUS STATALE MEDNOW",
      "away": "MARTESANA VOLLEY COLOGNO",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 1",
+     "partials": "25/27 25/16 25/21 28/26",
+     "partialsLines": [
+      "25/27 25/16 25/21 28/26"
+     ],
      "venue": "CENTRO SPORTIVO ISU",
      "address": "MILANO - VIA VALVASSORI PERONI 21",
      "mine": true
@@ -898,31 +902,31 @@
      "pos": 1,
      "team": "ASPES VOLLEY CUS STATALE MEDNOW",
      "club": "ASPES VOLLEY ASD",
-     "points": "15",
-     "played": "5",
-     "won": "5",
+     "points": "18",
+     "played": "6",
+     "won": "6",
      "lost": "0",
-     "setsWon": "15",
-     "setsLost": "0",
-     "setRatio": "MAX",
-     "pointsFor": "375",
-     "pointsAgainst": "206",
-     "pointRatio": "1,82"
+     "setsWon": "18",
+     "setsLost": "1",
+     "setRatio": "18,000",
+     "pointsFor": "478",
+     "pointsAgainst": "296",
+     "pointRatio": "1,61"
     },
     {
      "pos": 2,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
      "points": "15",
-     "played": "5",
+     "played": "6",
      "won": "5",
-     "lost": "0",
-     "setsWon": "15",
-     "setsLost": "2",
-     "setRatio": "7,500",
-     "pointsFor": "413",
-     "pointsAgainst": "296",
-     "pointRatio": "1,40"
+     "lost": "1",
+     "setsWon": "16",
+     "setsLost": "5",
+     "setRatio": "3,200",
+     "pointsFor": "503",
+     "pointsAgainst": "399",
+     "pointRatio": "1,26"
     },
     {
      "pos": 3,
@@ -971,6 +975,21 @@
     },
     {
      "pos": 6,
+     "team": "AD ASTRA - BELLATRIX",
+     "club": "AD ASTRA ASD",
+     "points": "3",
+     "played": "6",
+     "won": "1",
+     "lost": "5",
+     "setsWon": "6",
+     "setsLost": "17",
+     "setRatio": "0,353",
+     "pointsFor": "419",
+     "pointsAgainst": "505",
+     "pointRatio": "0,83"
+    },
+    {
+     "pos": 7,
      "team": "MI3 VOLLEY ROSSA",
      "club": "ASD MI3 VOLLEY",
      "points": "2",
@@ -985,9 +1004,9 @@
      "pointRatio": "0,74"
     },
     {
-     "pos": 7,
-     "team": "AD ASTRA - BELLATRIX",
-     "club": "AD ASTRA ASD",
+     "pos": 8,
+     "team": "G.S. CAGLIERO ROSSA",
+     "club": "G.S. CAGLIERO",
      "points": "1",
      "played": "5",
      "won": "0",
@@ -995,24 +1014,9 @@
      "setsWon": "3",
      "setsLost": "15",
      "setRatio": "0,200",
-     "pointsFor": "314",
-     "pointsAgainst": "415",
-     "pointRatio": "0,76"
-    },
-    {
-     "pos": 8,
-     "team": "G.S. CAGLIERO ROSSA",
-     "club": "G.S. CAGLIERO",
-     "points": "0",
-     "played": "4",
-     "won": "0",
-     "lost": "4",
-     "setsWon": "1",
-     "setsLost": "12",
-     "setRatio": "0,083",
-     "pointsFor": "201",
-     "pointsAgainst": "323",
-     "pointRatio": "0,62"
+     "pointsFor": "291",
+     "pointsAgainst": "428",
+     "pointRatio": "0,68"
     }
    ]
   },
@@ -1422,9 +1426,11 @@
      "dateRaw": "22/11/2026 dom : 18.30",
      "home": "EXPERIENCE FITNESS CLUB",
      "away": "GEAS VOLLEY",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "3 1",
+     "partials": "25/19 25/14 24/26 25/13",
+     "partialsLines": [
+      "25/19 25/14 24/26 25/13"
+     ],
      "venue": "SCUOLA MEDIA",
      "address": "LISSONE - BAREGGIA - Via G. B. Vico 4",
      "mine": false
@@ -1943,6 +1949,21 @@
     },
     {
      "pos": 3,
+     "team": "EXPERIENCE FITNESS CLUB",
+     "club": "LISSONE VOLLEY TEAM",
+     "points": "13",
+     "played": "6",
+     "won": "4",
+     "lost": "2",
+     "setsWon": "14",
+     "setsLost": "8",
+     "setRatio": "1,750",
+     "pointsFor": "510",
+     "pointsAgainst": "420",
+     "pointRatio": "1,21"
+    },
+    {
+     "pos": 4,
      "team": "MARTESANA VOLLEY COLOGNO",
      "club": "MARTESANA VOLLEY COLOGNO MONZ.",
      "points": "11",
@@ -1957,34 +1978,19 @@
      "pointRatio": "1,04"
     },
     {
-     "pos": 4,
-     "team": "EXPERIENCE FITNESS CLUB",
-     "club": "LISSONE VOLLEY TEAM",
-     "points": "10",
-     "played": "5",
-     "won": "3",
-     "lost": "2",
-     "setsWon": "11",
-     "setsLost": "7",
-     "setRatio": "1,571",
-     "pointsFor": "411",
-     "pointsAgainst": "348",
-     "pointRatio": "1,18"
-    },
-    {
      "pos": 5,
      "team": "GEAS VOLLEY",
      "club": "GEAS VOLLEY ASD",
      "points": "8",
-     "played": "5",
+     "played": "6",
      "won": "2",
-     "lost": "3",
-     "setsWon": "10",
-     "setsLost": "9",
-     "setRatio": "1,111",
-     "pointsFor": "399",
-     "pointsAgainst": "389",
-     "pointRatio": "1,03"
+     "lost": "4",
+     "setsWon": "11",
+     "setsLost": "12",
+     "setRatio": "0,917",
+     "pointsFor": "471",
+     "pointsAgainst": "488",
+     "pointRatio": "0,97"
     },
     {
      "pos": 6,
