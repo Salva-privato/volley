@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-26T02:08:06.569Z",
+ "updatedAt": "2026-11-27T02:07:56.039Z",
  "season": "2026",
  "teamMatch": "MARTESANA",
  "championships": [
@@ -1475,9 +1475,11 @@
      "dateRaw": "26/11/2026 gio : 19.30",
      "home": "ASD OSG 2001",
      "away": "BILLA VOLLEY MILANO GIALLA",
-     "sets": null,
-     "partials": null,
-     "partialsLines": null,
+     "sets": "0 3",
+     "partials": "16/25 15/25 5/25",
+     "partialsLines": [
+      "16/25 15/25 5/25"
+     ],
      "venue": "PALESTRA ISTITUTO SAN GAETANO",
      "address": "MILANO - VIA MONTE CENERI 1",
      "mine": false
@@ -1923,16 +1925,16 @@
      "pos": 1,
      "team": "BILLA VOLLEY MILANO GIALLA",
      "club": "BILLA VOLLEY TEAM",
-     "points": "18",
-     "played": "6",
-     "won": "6",
+     "points": "21",
+     "played": "7",
+     "won": "7",
      "lost": "0",
-     "setsWon": "18",
+     "setsWon": "21",
      "setsLost": "0",
      "setRatio": "MAX",
-     "pointsFor": "450",
-     "pointsAgainst": "298",
-     "pointRatio": "1,51"
+     "pointsFor": "525",
+     "pointsAgainst": "334",
+     "pointRatio": "1,57"
     },
     {
      "pos": 2,
@@ -2029,15 +2031,15 @@
      "team": "ASD OSG 2001",
      "club": "ASD OSG 2001",
      "points": "1",
-     "played": "6",
+     "played": "7",
      "won": "0",
-     "lost": "6",
+     "lost": "7",
      "setsWon": "3",
-     "setsLost": "18",
-     "setRatio": "0,167",
-     "pointsFor": "405",
-     "pointsAgainst": "495",
-     "pointRatio": "0,82"
+     "setsLost": "21",
+     "setRatio": "0,143",
+     "pointsFor": "441",
+     "pointsAgainst": "570",
+     "pointRatio": "0,77"
     }
    ]
   }
